@@ -1,2 +1,2 @@
-#Shop Categories Service
+#Shop Products Service
 ###Description: `Service description goes here`
