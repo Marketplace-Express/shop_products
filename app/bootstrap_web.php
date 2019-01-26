@@ -45,13 +45,14 @@ try {
      * Register application modules
      */
     $application->registerModules([
-        'frontend' => ['className' => 'Shop_products\Modules\Frontend\Module'],
+        'api' => ['className' => 'Shop_products\Modules\Api\Module'],
+        'cli' => ['className' => 'Shop_products\Modules\Cli\Module']
     ]);
 
     /**
-     * Include routes
+     * Disable view service
      */
-    require APP_PATH . '/config/routes.php';
+    $application->useImplicitView(false);
 
     echo str_replace(["\n","\r","\t"], '', $application->handle()->getContent());
 

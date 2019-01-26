@@ -8,21 +8,59 @@ defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
 return new \Phalcon\Config([
     'version' => '1.0',
+    'api' => [
+        'version' => '1.0'
+    ],
 
     'database' => [
         'adapter'  => 'Mysql',
         'host'     => 'localhost',
-        'username' => 'root',
-        'password' => '',
+        'username' => 'phalcon',
+        'password' => 'secret',
         'dbname'   => 'shop_products',
-        'charset'  => 'utf8',
+        'charset'  => 'utf8'
+    ],
+
+    'mongodb' => [
+        'host' => 'localhost',
+        'username' => '',
+        'password' => '',
+        'port' => '27017',
+        'dbname' => 'shop_products'
+    ],
+
+    'cache' => [
+        'productsCache' => [
+            'host' => 'localhost',
+            'port' => 6379,
+            'persistent' => true,
+            'database' => 2,
+            'ttl' => -1
+        ],
+        'productsVariationCache' => [
+            'host' => 'localhost',
+            'port' => 6379,
+            'persistent' => true,
+            'database' => 3,
+            'ttl' => -1
+        ]
     ],
 
     'application' => [
         'appDir'         => APP_PATH . '/',
         'modelsDir'      => APP_PATH . '/common/models/',
+        'collectionsDir' => APP_PATH . '/common/collections/',
         'migrationsDir'  => APP_PATH . '/migrations/',
-        'cacheDir'       => BASE_PATH . '/cache/',
+        'logsDir'        => APP_PATH . '/logs/',
+
+        'validation' => [
+            'productTitle' => [
+                'whiteSpace' => true,
+                'underscore' => true,
+                'min' => 3,
+                'max' => 200
+            ]
+        ],
 
         // This allows the baseUri to be understand project paths that are not in the root directory
         // of the webpspace.  This will break if the public/index.php entry point is moved or

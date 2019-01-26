@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/app/common" isTestSource="false" packagePrefix="Shop_products" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/dnoegel/php-xdg-base-dir" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/jakub-onderka/php-console-color" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/jakub-onderka/php-console-highlighter" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/nikic/php-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/phalcon/devtools" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/phalcon/ide-stubs" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/psy/psysh" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/symfony/console" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/symfony/contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/symfony/polyfill-mbstring" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/symfony/polyfill-php72" />
+      <excludeFolder url="file://$MODULE_DIR$/app/common/library/vendor/symfony/var-dumper" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
