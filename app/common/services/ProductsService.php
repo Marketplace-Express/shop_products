@@ -35,26 +35,34 @@ class ProductsService
     }
 
     /**
-     * @param array $getBy
+     * @param array $identifier
      * @return array
      * @throws \Exception
      */
-    public function getAll(array $getBy)
+    public function getAll(array $identifier)
     {
-        if (!empty($getBy['vendorId']) && empty($getBy['categoryId'])) {
-            return $this->getDataSource()->getByVendorId($getBy['vendorId']);
-        } elseif (!empty($getBy['vendorId']) && !empty($getBy['vendorId'])) {
-            return $this->getDataSource()->getByCategoryId($getBy['categoryId'], $getBy['vendorId']);
+        if (!empty($identifier['vendorId']) && empty($identifier['categoryId'])) {
+            return $this->getDataSource()->getByVendorId($identifier['vendorId']);
+        } elseif (!empty($identifier['vendorId']) && !empty($identifier['vendorId'])) {
+            return $this->getDataSource()->getByCategoryId($identifier['categoryId'], $identifier['vendorId']);
         } else {
             throw new \Exception('Unknown modifier');
         }
     }
 
+    /**
+     * Get product by id
+     *
+     * @param string $vendorId
+     * @param string $categoryId
+     * @param string $productId
+     * @return \Phalcon\Mvc\ModelInterface|\Shop_products\Models\Product
+     *
+     * @throws \Exception
+     */
     public function getProduct(string $vendorId, string $categoryId, string $productId)
     {
-        if ($product = self::getDataSource()->getById($productId, $vendorId, $categoryId)) {
-            return $product;
-        }
+        return self::getDataSource()->getById($productId, $vendorId, $categoryId);
     }
 
     /**
