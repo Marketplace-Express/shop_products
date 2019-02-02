@@ -8,6 +8,7 @@
 namespace Shop_products\Repositories;
 
 use Phalcon\Mvc\Model\Resultset;
+use Phalcon\Mvc\ModelInterface;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\Interfaces\DataSourceInterface;
 use Shop_products\Models\Product as ProductModel;
@@ -39,9 +40,10 @@ class ProductRepository implements DataSourceInterface
 
     /**
      * Get product by id
+     *
      * @param string $productId
      * @param bool $editMode
-     * @return ProductModel
+     * @return ProductModel|ModelInterface
      * @throws \Exception
      */
     public function getById(string $productId, bool $editMode = false)
@@ -63,6 +65,7 @@ class ProductRepository implements DataSourceInterface
 
     /**
      * Get products by category id
+     *
      * @param string $categoryId
      * @param string $vendorId
      * @param bool $editMode
@@ -91,6 +94,7 @@ class ProductRepository implements DataSourceInterface
 
     /**
      * Get products by vendor id
+     *
      * @param string $vendorId
      * @param bool $editMode
      * @return array|null

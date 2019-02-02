@@ -51,6 +51,16 @@ class ProductCache implements DataSourceInterface
     }
 
     /**
+     * @param string $key
+     * @param string $hashKey
+     * @return mixed
+     */
+    private static function hGet(string $key, string $hashKey)
+    {
+        return json_decode(self::$instance->hGet($key, $hashKey), true);
+    }
+
+    /**
      * Set product in cache
      *
      * @param string $vendorId
@@ -84,11 +94,13 @@ class ProductCache implements DataSourceInterface
 
     /**
      * Update product cache
+     *
      * @param string $vendorId
      * @param string $categoryId
      * @param string $productId
      * @param array $data
      * @return bool|int
+     *
      * @throws \Exception
      */
     public function updateCache(string $vendorId, string $categoryId, string $productId, array $data)
@@ -97,6 +109,8 @@ class ProductCache implements DataSourceInterface
     }
 
     /**
+     * Get products by category id
+     *
      * @param string $categoryId
      * @param string $vendorId
      * @return array
@@ -115,6 +129,8 @@ class ProductCache implements DataSourceInterface
     }
 
     /**
+     * Get products by vendor id
+     *
      * @param string $vendorId
      * @param int $cursor
      * @return array
@@ -135,7 +151,7 @@ class ProductCache implements DataSourceInterface
     }
 
     /**
-     * Get product from cache
+     * Get product by id
      *
      * @param string $productId
      * @param string|null $vendorId
@@ -148,7 +164,7 @@ class ProductCache implements DataSourceInterface
         if (empty($vendorId) || empty($categoryId)) {
             throw new \Exception('Missing vendorId or categoryId');
         }
-        if (!$product = self::$instance->hGet($this->getKey($vendorId, $categoryId), $productId)) {
+        if (!$product = self::hGet($this->getKey($vendorId, $categoryId), $productId)) {
             $repository = ProductRepository::getInstance();
             if (count($product = $repository->getById($productId))) {
                 $product = $product->toApiArray();

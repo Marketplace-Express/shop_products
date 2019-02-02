@@ -52,6 +52,24 @@ class IndexController extends BaseController
     }
 
     /**
+     * @Get('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
+     * @param $id
+     */
+    public function getAction($id)
+    {
+        try {
+            /** @var GetRequestHandler $request */
+            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new GetRequestHandler());
+            if (!$request->isValid()) {
+                $request->invalidRequest();
+            }
+            $request->successRequest($this->getService()->getProduct($request->getVendorId(), $request->getCategoryId(), $id));
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
+        }
+    }
+
+    /**
      * @Post('/')
      */
     public function createAction()
