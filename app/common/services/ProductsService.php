@@ -71,13 +71,16 @@ class ProductsService
      * @param array $data
      * @return array
      * @throws ArrayOfStringsException
-     * @throws \RedisException
      * @throws \Exception
      */
     public function create(array $data)
     {
         $product = $this->getRepository()->create($data);
-        ProductCache::getInstance()->setInCache($data['productVendorId'], $data['productCategoryId'], $data);
+        try {
+            ProductCache::getInstance()->setInCache($data['productVendorId'], $data['productCategoryId'], $data);
+        } catch (\RedisException $exception) {
+            // do nothing
+        }
         return $product->toApiArray();
     }
 
@@ -88,13 +91,16 @@ class ProductsService
      * @param array $data
      * @return array
      * @throws ArrayOfStringsException
-     * @throws \RedisException
      * @throws \Exception
      */
     public function update(string $productId, array $data)
     {
         $product = self::getRepository()->update($productId, $data)->toApiArray();
-        ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $productId, $product);
+        try {
+            ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $productId, $product);
+        } catch (\RedisException $exception) {
+            // do nothing
+        }
         return $product;
     }
 
@@ -103,13 +109,16 @@ class ProductsService
      *
      * @param string $productId
      * @return bool
-     * @throws \RedisException
      * @throws \Exception
      */
     public function delete(string $productId)
     {
         $deletedProduct = self::getRepository()->delete($productId);
-        ProductCache::getInstance()->invalidateCache($deletedProduct['productVendorId'], $deletedProduct['productCategoryId'], [$productId]);
+        try {
+            ProductCache::getInstance()->invalidateCache($deletedProduct['productVendorId'], $deletedProduct['productCategoryId'], [$productId]);
+        } catch (\RedisException $exception) {
+            // do nothing
+        }
         return true;
     }
 }
