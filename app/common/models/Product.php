@@ -4,7 +4,6 @@ namespace Shop_products\Models;
 
 use Phalcon\Validation;
 use Shop_products\Enums\ProductTypesEnums;
-use Shop_products\Validators\TypeValidator;
 use Shop_products\Validators\UuidValidator;
 
 /**
@@ -25,12 +24,9 @@ class Product extends Base
         'productLinkSlug',
         'productType',
         'productCustomPageId',
-        'productBrandId',
         'productPrice',
         'productSalePrice',
         'productSaleEndTime',
-        'productWeight',
-        'productDimensions',
         'createdAt',
         'updatedAt',
         'deletedAt',
@@ -78,19 +74,7 @@ class Product extends Base
      *
      * @var string
      */
-    public $productType;
-
-    /**
-     *
-     * @var string
-     */
     public $productCustomPageId;
-
-    /**
-     *
-     * @var string
-     */
-    public $productBrandId;
 
     /**
      * @var float
@@ -106,11 +90,6 @@ class Product extends Base
      * @var string
      */
     public $productSaleEndTime;
-
-    /**
-     * @var float
-     */
-    public $productWeight;
 
     /**
      *
@@ -138,11 +117,6 @@ class Product extends Base
     /**
      * @var array
      */
-    private $dimensions;
-
-    /**
-     * @var array
-     */
     private $keywords;
 
     /**
@@ -150,34 +124,14 @@ class Product extends Base
      */
     private $segments;
 
-    public function setDimensions(array $dimensions): void
-    {
-        $this->dimensions = $dimensions;
-    }
-
-    public function getDimensions()
-    {
-        return $this->dimensions;
-    }
-
     public function setKeywords(array $keywords)
     {
         $this->keywords = $keywords;
     }
 
-    public function getKeywords()
-    {
-        return $this->keywords;
-    }
-
     public function setSegments(array $segments)
     {
         $this->segments = $segments;
-    }
-
-    public function getSegments()
-    {
-        return $this->segments;
     }
 
     /**
@@ -247,6 +201,11 @@ class Product extends Base
         return $query;
     }
 
+    public static function getWhiteList()
+    {
+        return self::WHITE_LIST;
+    }
+
     /**
      * Independent Column Mapping.
      * Keys are the real names in the table and the values their names in the application
@@ -264,11 +223,12 @@ class Product extends Base
             'product_link_slug' => 'productLinkSlug',
             'product_type' => 'productType',
             'product_custom_page_id' => 'productCustomPageId',
-            'product_brand_id' => 'productBrandId',
             'product_price' => 'productPrice',
             'product_sale_price' => 'productSalePrice',
             'product_sale_end_time' => 'productSaleEndTime',
+            'product_brand_id' => 'productBrandId',
             'product_weight' => 'productWeight',
+            'product_digital_size' => 'productDigitalSize',
             'created_at' => 'createdAt',
             'updated_at' => 'updatedAt',
             'deleted_at' => 'deletedAt',
@@ -283,26 +243,28 @@ class Product extends Base
             'productId' => $this->productId,
             'productCategoryId' => $this->productCategoryId,
             'productVendorId' => $this->productVendorId,
-            'productBrandId' => $this->productBrandId,
             'productTitle' => $this->productTitle,
             'productLink' => $this->productLinkSlug,
-            'productType' => $this->productType,
             'productCustomPageId' => $this->productCustomPageId,
             'productPrice' => $this->productPrice,
             'productSalePrice' => $this->productSalePrice,
             'productSaleEndTime' => $this->productSaleEndTime,
-            'productWeight' => $this->productWeight,
-            'productDimensions' => $this->getDimensions() ?? null,
-            'productKeywords' => $this->getKeywords() ?? null,
-            'productSegments' => $this->getSegments() ?? null
+            'productKeywords' => $this->keywords ?? null,
+            'productSegments' => $this->segments ?? null
         ];
     }
 
+    /**
+     * @return \Phalcon\Config
+     */
     private function getTitleValidationConfig()
     {
-        return \Phalcon\Di::getDefault()->getConfig()->application->validation->productTitle;
+        return $this->getDI()->getConfig()->application->validation->productTitle;
     }
 
+    /**
+     * @return bool
+     */
     public function validation()
     {
         $validation = new Validation();
@@ -313,7 +275,7 @@ class Product extends Base
         );
 
         $validation->add(
-            ['productBrandId', 'productCustomPageId'],
+            ['productCustomPageId'],
             new UuidValidator([
                 'allowEmpty' => true
             ])
@@ -358,33 +320,19 @@ class Product extends Base
             ])
         );
 
-        $validation->add(
-            'productWeight',
-            new Validation\Validator\NumericValidator([
-                'allowFloat' => true,
-                'min' => 0,
-                'allowEmpty' => true,
-                'message' => 'Invalid weight'
-            ])
-        );
-
         $message = $validation->validate([
             'productCategoryId' => $this->productCategoryId,
             'productVendorId' => $this->productVendorId,
             'productUserId' => $this->productUserId,
-            'productBrandId' => $this->productBrandId,
             'productCustomPageId' => $this->productCustomPageId,
             'productTitle' => $this->productTitle,
-            'productType' => $this->productType,
             'productPrice' => $this->productPrice,
             'productSalePrice' => $this->productSalePrice,
-            'productSaleEndTime' => $this->productSaleEndTime,
-            'productWeight' => $this->productWeight
+            'productSaleEndTime' => $this->productSaleEndTime
         ]);
 
-        if (count($message)) {
-            return false;
-        }
-        return true;
+        $this->_errorMessages = $message;
+
+        return !$message->count();
     }
 }

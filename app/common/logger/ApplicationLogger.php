@@ -30,7 +30,7 @@ class ApplicationLogger extends Injectable
 
     public function logError($errors)
     {
-        $errors = (is_array($errors)) ? implode('\n', $errors) : $errors;
+        $errors = (is_array($errors)) ? json_encode($errors) : $errors;
         $this->getFile()->log(\Phalcon\Logger::ERROR, $errors);
     }
 }

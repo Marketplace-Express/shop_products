@@ -34,9 +34,11 @@ class ProductCache implements DataSourceInterface
 
     /**
      * Get cache key
+     *
      * @param string $vendorId
      * @param string $categoryId
      * @return string
+     *
      * @throws \Exception
      */
     private function getKey(string $vendorId, ?string $categoryId = null)
@@ -124,6 +126,11 @@ class ProductCache implements DataSourceInterface
             $result = array_values(array_map(function ($product) {
                 return json_decode($product, true);
             }, $result));
+        } else {
+            $result = ProductRepository::getInstance()->getByCategoryId($categoryId, $vendorId);
+            foreach ($result as $product) {
+                $this->setInCache($vendorId, $categoryId, $product);
+            }
         }
         return $result;
     }

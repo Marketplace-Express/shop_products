@@ -40,12 +40,6 @@ class ProductImages extends Base
      *
      * @var string
      */
-    public $updatedAt;
-
-    /**
-     *
-     * @var string
-     */
     public $deletedAt;
 
     /**
@@ -114,7 +108,6 @@ class ProductImages extends Base
             'product_id' => 'productId',
             'image_file' => 'imageFile',
             'created_at' => 'createdAt',
-            'updated_at' => 'updatedAt',
             'deleted_at' => 'deletedAt',
             'is_deleted' => 'isDeleted'
         ];

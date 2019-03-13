@@ -14,7 +14,7 @@ return new \Phalcon\Config([
 
     'database' => [
         'adapter'  => 'Mysql',
-        'host'     => 'localhost',
+        'host'     => '172.17.0.5',
         'username' => 'phalcon',
         'password' => 'secret',
         'dbname'   => 'shop_products',
@@ -22,7 +22,7 @@ return new \Phalcon\Config([
     ],
 
     'mongodb' => [
-        'host' => 'localhost',
+        'host' => '172.17.0.4',
         'username' => '',
         'password' => '',
         'port' => '27017',
@@ -31,19 +31,28 @@ return new \Phalcon\Config([
 
     'cache' => [
         'productsCache' => [
-            'host' => 'localhost',
+            'host' => '172.17.0.2',
             'port' => 6379,
             'persistent' => true,
             'database' => 2,
-            'ttl' => -1
+            'ttl' => -1,
+            'auth' => ''
         ],
         'productsVariationCache' => [
-            'host' => 'localhost',
+            'host' => '172.17.0.2',
             'port' => 6379,
             'persistent' => true,
             'database' => 3,
-            'ttl' => -1
+            'ttl' => -1,
+            'auth' => ''
         ]
+    ],
+
+    'rabbitmq' => [
+        'host' => '172.17.0.3',
+        'port' => '5672',
+        'username' => 'guest',
+        'password' => 'guest'
     ],
 
     'application' => [
@@ -59,6 +68,9 @@ return new \Phalcon\Config([
                 'underscore' => true,
                 'min' => 3,
                 'max' => 200
+            ],
+            'downloadable' => [
+                'maxDigitalSize' => 104857600, // bytes = 100 Mb
             ]
         ],
 

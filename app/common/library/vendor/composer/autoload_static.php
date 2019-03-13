@@ -21,6 +21,7 @@ class ComposerStaticInitc9e60ead22e9ad8f51827fa835b7718b
         ),
         'P' => 
         array (
+            'PhpAmqpLib\\' => 11,
             'Phalcon\\' => 8,
         ),
     );
@@ -33,6 +34,10 @@ class ComposerStaticInitc9e60ead22e9ad8f51827fa835b7718b
         'Ramsey\\Uuid\\' => 
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
+        ),
+        'PhpAmqpLib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/php-amqplib/php-amqplib/PhpAmqpLib',
         ),
         'Phalcon\\' => 
         array (

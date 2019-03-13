@@ -8,12 +8,17 @@
 namespace Shop_products\Services;
 
 
+use Shop_products\Enums\QueueNamesEnum;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\Repositories\ProductRepository;
+use Shop_products\RequestHandler\Queue\QueueRequestHandler;
 use Shop_products\Services\Cache\ProductCache;
 
 class ProductsService
 {
+    /** @var QueueRequestHandler */
+    private $queueRequestHandler;
+
     /**
      * @return ProductCache|ProductRepository
      * @throws \Exception
@@ -35,6 +40,44 @@ class ProductsService
     }
 
     /**
+     * @return QueueRequestHandler
+     */
+    public function getQueueRequestHandler(): QueueRequestHandler
+    {
+        return $this->queueRequestHandler ??
+            $this->queueRequestHandler = new QueueRequestHandler();
+    }
+
+    /**
+     * Check if category exists
+     *
+     * @param string $categoryId
+     * @param string $vendorId
+     *
+     * @throws \ErrorException
+     * @throws \Exception
+     */
+    public function checkCategoryExistence(string $categoryId, string $vendorId)
+    {
+        $exists = $this->getQueueRequestHandler()
+            ->setQueueName(QueueNamesEnum::CATEGORY_SYNC_QUEUE)
+            ->setService('category')
+            ->setMethod('getCategory')
+            ->setData([
+                'categoryId' => $categoryId
+            ])
+            ->setServiceArgs([
+                'vendorId' => $vendorId
+            ])
+            ->setReplyTo(QueueNamesEnum::PRODUCT_SYNC_QUEUE)
+            ->sendSync();
+
+        if (empty($exists)) {
+            throw new \Exception('Category not found or maybe deleted', 404);
+        }
+    }
+
+    /**
      * @param array $identifier
      * @return array
      * @throws \Exception
@@ -43,7 +86,7 @@ class ProductsService
     {
         if (!empty($identifier['vendorId']) && empty($identifier['categoryId'])) {
             return $this->getDataSource()->getByVendorId($identifier['vendorId']);
-        } elseif (!empty($identifier['vendorId']) && !empty($identifier['vendorId'])) {
+        } elseif (!empty($identifier['vendorId']) && !empty($identifier['categoryId'])) {
             return $this->getDataSource()->getByCategoryId($identifier['categoryId'], $identifier['vendorId']);
         } else {
             throw new \Exception('Unknown modifier');
@@ -75,6 +118,7 @@ class ProductsService
      */
     public function create(array $data)
     {
+        $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
         $product = $this->getRepository()->create($data);
         try {
             ProductCache::getInstance()->setInCache($data['productVendorId'], $data['productCategoryId'], $data);
@@ -120,5 +164,19 @@ class ProductsService
             // do nothing
         }
         return true;
+    }
+
+    public function sendSync($data, array $options = [])
+    {
+        $queueInstance = \Phalcon\Di::getDefault()->getShared('queue');
+        $queueInstance->put(['categories' => $data], $options);
+        while($job = $queueInstance->reserve()) {
+            if (key($job->getBody()) != 'products') {
+                //continue;
+            }
+            \Phalcon\Di::getDefault()->getShared('logger')->logError($job->getBody()['products']);
+            $job->delete();
+            break;
+        }
     }
 }

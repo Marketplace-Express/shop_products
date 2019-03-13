@@ -131,3 +131,19 @@ $di->setShared('productsVariationsCache', function () {
 $di->setShared('modelsMetadata', function () {
     return new MetaDataAdapter();
 });
+
+$di->setShared('logger', function() {
+    return new \Shop_products\Logger\ApplicationLogger();
+});
+
+/** RabbitMQ service */
+$di->setShared('queue', function () {
+    $config = $this->getConfig();
+    $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
+        $config->rabbitmq->host,
+        $config->rabbitmq->port,
+        $config->rabbitmq->username,
+        $config->rabbitmq->password
+    );
+    return $connection->channel();
+});

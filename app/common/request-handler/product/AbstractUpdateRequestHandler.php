@@ -16,28 +16,19 @@ use Shop_products\RequestHandler\RequestHandlerInterface;
 use Shop_products\Validators\TypeValidator;
 use Shop_products\Validators\UuidValidator;
 
-class UpdateRequestHandler extends BaseController implements RequestHandlerInterface
+abstract class AbstractUpdateRequestHandler extends BaseController implements RequestHandlerInterface
 {
     private $title;
     private $categoryId;
     private $linkSlug;
     private $customPageId;
-    private $brandId;
     private $price;
     private $salePrice;
     private $endSaleTime;
     private $keywords;
     private $isPublished;
 
-    private $errorMessages;
-
-    /**
-     * @return mixed
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
+    protected $errorMessages;
 
     /**
      * @param mixed $title
@@ -45,14 +36,6 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     public function setTitle($title): void
     {
         $this->title = $title;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCategoryId()
-    {
-        return $this->categoryId;
     }
 
     /**
@@ -64,27 +47,11 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     }
 
     /**
-     * @return mixed
-     */
-    public function getLinkSlug()
-    {
-        return $this->linkSlug;
-    }
-
-    /**
      * @param mixed $linkSlug
      */
     public function setLinkSlug($linkSlug): void
     {
         $this->linkSlug = $linkSlug;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCustomPageId()
-    {
-        return $this->customPageId;
     }
 
     /**
@@ -96,43 +63,11 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     }
 
     /**
-     * @return mixed
-     */
-    public function getBrandId()
-    {
-        return $this->brandId;
-    }
-
-    /**
-     * @param mixed $brandId
-     */
-    public function setBrandId($brandId): void
-    {
-        $this->brandId = $brandId;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPrice()
-    {
-        return $this->price;
-    }
-
-    /**
      * @param mixed $price
      */
     public function setPrice($price): void
     {
         $this->price = $price;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSalePrice()
-    {
-        return $this->salePrice;
     }
 
     /**
@@ -144,14 +79,6 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     }
 
     /**
-     * @return mixed
-     */
-    public function getEndSaleTime()
-    {
-        return $this->endSaleTime;
-    }
-
-    /**
      * @param mixed $endSaleTime
      */
     public function setEndSaleTime($endSaleTime): void
@@ -160,27 +87,11 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     }
 
     /**
-     * @return mixed
-     */
-    public function getKeywords()
-    {
-        return $this->keywords;
-    }
-
-    /**
      * @param mixed $keywords
      */
     public function setKeywords($keywords): void
     {
         $this->keywords = $keywords;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getisPublished()
-    {
-        return $this->isPublished;
     }
 
     /**
@@ -194,6 +105,20 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     private function getValidationConfig()
     {
         return \Phalcon\Di::getDefault()->getConfig()->application->validation->productTitle;
+    }
+
+    protected function fields()
+    {
+        return [
+            'title' => $this->title,
+            'categoryId' => $this->categoryId,
+            'customPageId' => $this->customPageId,
+            'price' => $this->price,
+            'salePrice' => $this->salePrice,
+            'endSaleTime' => $this->endSaleTime,
+            'keywords' => $this->keywords,
+            'isPublished' => $this->isPublished
+        ];
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
@@ -215,7 +140,7 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
         );
 
         $validator->add(
-            ['categoryId', 'customPageId', 'brandId'],
+            ['categoryId', 'customPageId'],
             new UuidValidator()
         );
 
@@ -239,7 +164,7 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
         $validator->add(
             'keywords',
             new Validation\Validator\Callback([
-                'callback' => function($data) {
+                'callback' => function ($data) {
                     if (!empty($data['keywords'])) {
                         if (!is_array($data['keywords'])) {
                             return false;
@@ -265,15 +190,14 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
         );
 
         return $validator->validate([
-            'title' => $this->getTitle(),
-            'categoryId' => $this->getCategoryId(),
-            'customPageId' => $this->getCustomPageId(),
-            'brandId' => $this->getBrandId(),
-            'price' => $this->getPrice(),
-            'salePrice' => $this->getSalePrice(),
-            'endSaleTime' => $this->getEndSaleTime(),
-            'keywords' => $this->getKeywords(),
-            'isPublished' => $this->getisPublished()
+            'title' => $this->title,
+            'categoryId' => $this->categoryId,
+            'customPageId' => $this->customPageId,
+            'price' => $this->price,
+            'salePrice' => $this->salePrice,
+            'endSaleTime' => $this->endSaleTime,
+            'keywords' => $this->keywords,
+            'isPublished' => $this->isPublished
         ]);
     }
 
@@ -324,40 +248,36 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     {
         $result = [];
 
-        if (!empty($this->getTitle())) {
-            $result['productTitle'] = $this->getTitle();
+        if (!empty($this->title)) {
+            $result['productTitle'] = $this->title;
         }
 
-        if (!empty($this->getCategoryId())) {
-            $result['productCategoryId'] = $this->getCategoryId();
+        if (!empty($this->categoryId)) {
+            $result['productCategoryId'] = $this->categoryId;
         }
 
-        if (!empty($this->getBrandId())) {
-            $result['productBrandId'] = $this->getBrandId();
+        if (!empty($this->customPageId)) {
+            $result['productCustomPageId'] = $this->customPageId;
         }
 
-        if (!empty($this->getCustomPageId())) {
-            $result['productCustomPageId'] = $this->getCustomPageId();
+        if (!empty($this->price)) {
+            $result['productPrice'] = $this->price;
         }
 
-        if (!empty($this->getPrice())) {
-            $result['productPrice'] = $this->getPrice();
+        if (!empty($this->salePrice)) {
+            $result['productSalePrice'] = $this->salePrice;
         }
 
-        if (!empty($this->getSalePrice())) {
-            $result['productSalePrice'] = $this->getSalePrice();
+        if (!empty($this->endSaleTime)) {
+            $result['productEndSaleTime'] = $this->endSaleTime;
         }
 
-        if (!empty($this->getEndSaleTime())) {
-            $result['productEndSaleTime'] = $this->getEndSaleTime();
+        if (!empty($this->keywords)) {
+            $result['productKeywords'] = implode(',', $this->keywords);
         }
 
-        if (!empty($this->getKeywords())) {
-            $result['productKeywords'] = implode(',', $this->getKeywords());
-        }
-
-        if (!empty($this->getisPublished())) {
-            $result['isPublished'] = $this->getisPublished();
+        if (!empty($this->isPublished)) {
+            $result['isPublished'] = $this->isPublished;
         }
 
         if (empty($result)) {
