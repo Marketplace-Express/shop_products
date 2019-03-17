@@ -9,17 +9,23 @@ namespace Shop_products\RequestHandler\Queue;
 
 
 use Phalcon\Di\Injectable;
+use Phalcon\Validation;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
+use Shop_products\Exceptions\ArrayOfStringsException;
 
 class QueueRequestHandler extends Injectable
 {
+
+    const REQUEST_TYPE_SYNC = 'sync';
+    const REQUEST_TYPE_ASYNC = 'async';
+
     private $queueName;
     private $service;
     private $method;
-    private $correlationId;
     private $data;
     private $serviceArgs = [];
+    private $correlationId;
     private $replyTo = null;
     private $exchange = null;
 
@@ -29,10 +35,13 @@ class QueueRequestHandler extends Injectable
     /** @var AMQPMessage */
     private $response;
 
+    /** @var string */
+    private $requestType;
+
     /**
      * @return string
      */
-    public function getCorrelationId(): string
+    private function getCorrelationId(): string
     {
         return $this->correlationId = uniqid('', true);
     }
@@ -88,16 +97,6 @@ class QueueRequestHandler extends Injectable
     }
 
     /**
-     * @param string $replyTo
-     * @return QueueRequestHandler
-     */
-    public function setReplyTo(string $replyTo)
-    {
-        $this->replyTo = $replyTo;
-        return $this;
-    }
-
-    /**
      * @param string $exchange
      * @return QueueRequestHandler
      */
@@ -107,9 +106,59 @@ class QueueRequestHandler extends Injectable
         return $this;
     }
 
-    public function __construct()
+    /**
+     * QueueRequestHandler constructor.
+     * @param $requestType
+     */
+    public function __construct($requestType)
     {
+        $this->requestType = $requestType;
         $this->channel = $this->getDI()->get('queue');
+        if ($requestType == self::REQUEST_TYPE_SYNC) {
+            $this->queueName = \Phalcon\Di::getDefault()->getConfig()
+                ->rabbitmq->rpc->queue_name;
+            list($this->replyTo, ,) = $this->channel->queue_declare('', false, true, true, true);
+        }
+    }
+
+    /**
+     * @return bool
+     * @throws ArrayOfStringsException
+     * @throws \Exception
+     */
+    private function validate(): bool
+    {
+        $validator = new Validation();
+
+        $validator->add(
+            ['queueName', 'service', 'method'],
+            new Validation\Validator\PresenceOf()
+        );
+
+        $messages = $validator->validate([
+            'queueName' => $this->queueName,
+            'service' => $this->service,
+            'method' => $this->method
+        ]);
+
+        if (!count($messages)) {
+            return true;
+        }
+
+        $errors = [];
+        foreach ($messages as $message) {
+            $errors[$message->getField()] = $message->getMessage();
+        }
+
+        if ($this->requestType == self::REQUEST_TYPE_ASYNC) {
+            \Phalcon\Di::getDefault()->get('logger')->logError($errors);
+        } elseif ($this->requestType == self::REQUEST_TYPE_SYNC) {
+            throw new ArrayOfStringsException($errors, 400);
+        } else {
+            throw new \Exception('Unknown request type', 400);
+        }
+
+        return true;
     }
 
     /**
@@ -121,7 +170,7 @@ class QueueRequestHandler extends Injectable
         if (empty($this->replyTo)) {
             throw new \Exception('Property "reply_to" is missing');
         }
-        $this->channel->basic_consume($this->replyTo, '', false, false, false, false, [
+        $this->channel->basic_consume($this->replyTo, '', false, true, false, false, [
             $this,
             'getResponse'
         ]);
@@ -165,6 +214,9 @@ class QueueRequestHandler extends Injectable
      */
     public function sendSync()
     {
+        // validate request
+        $this->validate();
+
         $this->initializeConsumer();
         $message = new AMQPMessage(json_encode([
             'service' => $this->service,
@@ -174,22 +226,31 @@ class QueueRequestHandler extends Injectable
         ]), [
             'reply_to' => $this->replyTo,
             'correlation_id' => $this->getCorrelationId(),
-            'deliver_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT
+            'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT
         ]);
         $this->channel->basic_publish($message, $this->exchange, $this->queueName);
 
         // Waiting response
         $this->waitResponse();
 
-        // close connection
-        $this->channel->close();
-
         // Return response
         return $this->response;
     }
 
+    /**
+     * @throws ArrayOfStringsException
+     */
     public function sendAsync()
     {
+        // validate request
+        $this->validate();
 
+        $message = new AMQPMessage(json_encode([
+            'service' => $this->service,
+            'service_args' => $this->serviceArgs,
+            'method' => $this->method,
+            'data' => $this->data
+        ]));
+        $this->channel->basic_publish($message, $this->exchange, $this->queueName);
     }
 }

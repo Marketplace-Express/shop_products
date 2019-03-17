@@ -162,11 +162,19 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
         );
 
         $validator->add(
-            ['price', 'salePrice'],
+            'price',
+            new Validation\Validator\NumericValidator([
+                'allowFloat' => true,
+                'min' => 0
+            ])
+        );
+
+        $validator->add(
+            'salePrice',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => true,
                 'min' => 0,
-                'allowEmpty' => false
+                'allowEmpty' => true
             ])
         );
 
@@ -182,7 +190,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             'endSaleTime',
             new Validation\Validator\Callback([
                 'callback' => function ($data) {
-                    if (time() >= strtotime($data['endSaleTime'])) {
+                    if (!empty($data['endSaleTime']) && time() >= strtotime($data['endSaleTime'])) {
                         return false;
                     }
                     return true;

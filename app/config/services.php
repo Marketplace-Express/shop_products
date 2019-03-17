@@ -92,20 +92,37 @@ $di->setShared('collectionManager', function () {
 });
 
 /**
+ * Register Redis as a service
+ */
+$di->setShared('cache', function (){
+    $config = $this->getConfig()->cache;
+    $redisInstance = new \Shop_products\Redis\Connector();
+    $redisInstance->connect(
+        $config->products_cache->host,
+        $config->products_cache->port,
+        $config->products_cache->database,
+        $config->products_cache->auth
+    );
+    return ['adapter' => $redisInstance, 'instance' => $redisInstance->redis];
+});
+
+/**
  * Redis instance for product cache
  */
 $di->setShared('productsCache', function () {
-    $config = $this->getConfig();
-    $redis = new Redis();
-    if (!empty($auth = $config->cache->productsCache->auth)) {
-        $redis->auth($auth);
-    }
-    $redis->pconnect(
-        $config->cache->productsCache->host,
-        $config->cache->productsCache->port
+    return $this->getCache()['instance'];
+});
+
+$di->setShared('productsCacheIndex', function (){
+    return new \Ehann\RediSearch\Index($this->getCache()['adapter'],
+        \Shop_products\Enums\ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
-    $redis->select($config->cache->productsCache->database);
-    return $redis;
+});
+
+$di->set('productsCacheSuggestion', function (){
+    return new \Ehann\RediSearch\Suggestion($this->getCache()['adapter'],
+        \Shop_products\Enums\ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
+    );
 });
 
 /**
@@ -145,5 +162,16 @@ $di->setShared('queue', function () {
         $config->rabbitmq->username,
         $config->rabbitmq->password
     );
-    return $connection->channel();
+    $channel = $connection->channel();
+    $channel->queue_declare(
+        $config->rabbitmq->sync_queue->queue_name,
+        false, false, false, false, false,
+        new \PhpAmqpLib\Wire\AMQPTable(['x-message-ttl' => $config->rabbitmq->sync_queue->message_ttl])
+    );
+    $channel->queue_declare(
+        $config->rabbitmq->async_queue->queue_name,
+        false, false, false, false, false,
+        new \PhpAmqpLib\Wire\AMQPTable(['x-message-ttl' => $config->rabbitmq->async_queue->message_ttl])
+    );
+    return $channel;
 });

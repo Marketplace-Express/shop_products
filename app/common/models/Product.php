@@ -244,7 +244,8 @@ class Product extends Base
             'productCategoryId' => $this->productCategoryId,
             'productVendorId' => $this->productVendorId,
             'productTitle' => $this->productTitle,
-            'productLink' => $this->productLinkSlug,
+            'productType' => $this->productType,
+            'productLinkSlug' => $this->productLinkSlug,
             'productCustomPageId' => $this->productCustomPageId,
             'productPrice' => $this->productPrice,
             'productSalePrice' => $this->productSalePrice,
@@ -304,11 +305,19 @@ class Product extends Base
         }
 
         $validation->add(
-            ['productPrice', 'productSalePrice'],
+            'productPrice',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => true,
+                'min' => 0
+            ])
+        );
+
+        $validation->add(
+            'productSalePrice',
+            new Validation\Validator\NumericValidator([
+                'allowFlout' => true,
                 'min' => 0,
-                'allowEmpty' => false
+                'allowEmpty' => true
             ])
         );
 

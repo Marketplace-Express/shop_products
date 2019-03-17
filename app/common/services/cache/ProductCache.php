@@ -7,11 +7,16 @@
 
 namespace Shop_products\Services\Cache;
 
+use Shop_products\Enums\QueueNamesEnum;
 use Shop_products\Interfaces\DataSourceInterface;
 use Shop_products\Repositories\ProductRepository;
+use Shop_products\RequestHandler\Queue\QueueRequestHandler;
 
 class ProductCache implements DataSourceInterface
 {
+
+    const INDEX_NAME = 'product';
+
     /** @var \Redis $instance */
     private static $instance;
 
@@ -179,5 +184,25 @@ class ProductCache implements DataSourceInterface
             }
         }
         return $product;
+    }
+
+    /**
+     * @param array $product
+     * @throws \Shop_products\Exceptions\ArrayOfStringsException
+     */
+    public static function indexProduct(array $product)
+    {
+        if (empty($product)) {
+            return;
+        }
+        (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
+            ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
+            ->setService('indexing')
+            ->setMethod('add')
+            ->setData([
+                'id' => $product['productId'],
+                'title' => $product['productTitle'],
+                'linkSLug' => $product['productLinkSlug']
+            ])->sendAsync();
     }
 }

@@ -3,8 +3,6 @@
  * Modified: prepend directory path of current file, because of this file own different ENV under between Apache and command line.
  * NOTE: please remove this comment.
  */
-defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
-defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
 return new \Phalcon\Config([
     'version' => '1.0',
@@ -30,19 +28,19 @@ return new \Phalcon\Config([
     ],
 
     'cache' => [
-        'productsCache' => [
-            'host' => '172.17.0.2',
+        'products_cache' => [
+            'host' => '172.17.0.6',
             'port' => 6379,
             'persistent' => true,
-            'database' => 2,
+            'database' => 0,
             'ttl' => -1,
             'auth' => ''
         ],
-        'productsVariationCache' => [
-            'host' => '172.17.0.2',
+        'products_variation_cache' => [
+            'host' => '172.17.0.6',
             'port' => 6379,
             'persistent' => true,
-            'database' => 3,
+            'database' => 1,
             'ttl' => -1,
             'auth' => ''
         ]
@@ -52,7 +50,18 @@ return new \Phalcon\Config([
         'host' => '172.17.0.3',
         'port' => '5672',
         'username' => 'guest',
-        'password' => 'guest'
+        'password' => 'guest',
+        'sync_queue' => [
+            'queue_name' => 'products-sync',
+            'message_ttl' => 10000
+        ],
+        'async_queue' => [
+            'queue_name' => 'products-async',
+            'message_ttl' => 10000
+        ],
+        'rpc' => [
+            'queue_name' => 'rpc_queue'
+        ]
     ],
 
     'application' => [

@@ -44,7 +44,7 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
         return $this->getDI()->getConfig()->application->validation->downloadable->maxDigitalSize;
     }
 
-    /** Validate request fields using \Phalcon\Validation\Validator
+    /** Validate request fields using \Phalcon\Validation
      * @return Group
      */
     public function validate(): Group
@@ -71,6 +71,9 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
         return $validator->validate($this->fields());
     }
 
+    /**
+     * @return bool
+     */
     public function isValid(): bool
     {
         // TODO: TO BE ENHANCED LATER
@@ -88,7 +91,7 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
                 $this->errorMessages[$message->getField()] = $message->getMessage();
             }
         }
-        return parent::isValid() || true;
+        return parent::isValid();
     }
 
     public function notFound($message = 'Not Found')

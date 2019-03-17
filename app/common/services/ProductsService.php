@@ -40,12 +40,13 @@ class ProductsService
     }
 
     /**
+     * @param string $requestType
      * @return QueueRequestHandler
      */
-    public function getQueueRequestHandler(): QueueRequestHandler
+    public function getQueueRequestHandler($requestType = QueueRequestHandler::REQUEST_TYPE_SYNC): QueueRequestHandler
     {
         return $this->queueRequestHandler ??
-            $this->queueRequestHandler = new QueueRequestHandler();
+            $this->queueRequestHandler = new QueueRequestHandler($requestType);
     }
 
     /**
@@ -69,7 +70,6 @@ class ProductsService
             ->setServiceArgs([
                 'vendorId' => $vendorId
             ])
-            ->setReplyTo(QueueNamesEnum::PRODUCT_SYNC_QUEUE)
             ->sendSync();
 
         if (empty($exists)) {
@@ -122,6 +122,7 @@ class ProductsService
         $product = $this->getRepository()->create($data);
         try {
             ProductCache::getInstance()->setInCache($data['productVendorId'], $data['productCategoryId'], $data);
+            ProductCache::indexProduct($product->toApiArray());
         } catch (\RedisException $exception) {
             // do nothing
         }

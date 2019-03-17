@@ -145,11 +145,19 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
         );
 
         $validator->add(
-            ['price', 'salePrice'],
+            'price',
+            new Validation\Validator\NumericValidator([
+                'allowFloat' => true,
+                'min' => 0
+            ])
+        );
+
+        $validator->add(
+            'salePrice',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => true,
                 'min' => 0,
-                'allowEmpty' => false
+                'allowEmpty' => true
             ])
         );
 
