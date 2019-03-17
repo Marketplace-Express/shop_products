@@ -9,16 +9,38 @@ namespace Shop_products\Repositories;
 
 use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\ModelInterface;
+use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\Interfaces\DataSourceInterface;
-use Shop_products\Models\Product as ProductModel;
+use Shop_products\Models\DownloadableProduct;
+use Shop_products\Models\PhysicalProduct;
 use Shop_products\Collections\Product as ProductCollection;
+use Shop_products\Models\Product as ProductModel;
 
 class ProductRepository implements DataSourceInterface
 {
-    public function getModel(bool $new = false): ProductModel
+    /**
+     * @param string $type
+     * @param bool $new
+     * @return ProductModel|PhysicalProduct|DownloadableProduct
+     * @throws \Exception
+     */
+    public function getModel(bool $new = false, ?string $type = null)
     {
-        return ProductModel::model($new);
+        if (!is_null($type) && !in_array($type, ProductTypesEnums::getValues())) {
+            throw new \Exception('Unknown product type', 400);
+        }
+        switch ($type) {
+            case ProductTypesEnums::TYPE_PHYSICAL:
+                $model = PhysicalProduct::model($new);
+                break;
+            case ProductTypesEnums::TYPE_DOWNLOADABLE:
+                $model = DownloadableProduct::model($new);
+                break;
+            default:
+                $model = ProductModel::model($new);
+        }
+        return $model;
     }
 
     /**
@@ -70,6 +92,8 @@ class ProductRepository implements DataSourceInterface
      * @param string $vendorId
      * @param bool $editMode
      * @return array|null
+     *
+     * @throws \Exception
      */
     public function getByCategoryId(string $categoryId, string $vendorId, bool $editMode = false): ?array
     {
@@ -81,14 +105,20 @@ class ProductRepository implements DataSourceInterface
             $query->inWhere('isPublished', [true, false]);
         }
 
-        $query->bind(['productCategoryId' => $categoryId, 'productVendorId' => $vendorId])
-        ->execute()
-        ->setHydateMode(Resultset::HYDRATE_RECORDS);
+        $query->bind([
+            'productCategoryId' => $categoryId,
+            'productVendorId' => $vendorId
+        ]);
+
+        // execute query
+        $products = $query->execute();
 
         $result = [];
-        foreach ($query->fetchAll() as $item) {
-            $result[] = $item->toApiArray();
+        /** @var ProductModel $product */
+        foreach ($products as $product) {
+            $result[] = $product->toApiArray();
         }
+
         return $result;
     }
 
@@ -98,6 +128,8 @@ class ProductRepository implements DataSourceInterface
      * @param string $vendorId
      * @param bool $editMode
      * @return array|null
+     *
+     * @throws \Exception
      */
     public function getByVendorId(string $vendorId, bool $editMode = false): ?array
     {
@@ -108,12 +140,14 @@ class ProductRepository implements DataSourceInterface
             $query->inWhere('isPublished', [true, false]);
         }
 
-        $query->bind(['productVendorId' => $vendorId])
-            ->execute()
-            ->setHydateMode(Resultset::HYDRATE_RECORDS);
+        // Map result to model
+        $query->setModelName(ProductModel::class);
+
+        $resultSet = $query->bind(['productVendorId' => $vendorId])->execute();
 
         $result = [];
-        foreach ($query->fetchAll() as $item) {
+        /** @var ProductModel $item */
+        foreach ($resultSet->toArray() as $item) {
             $result[] = $item->toApiArray();
         }
         return $result;
@@ -127,8 +161,9 @@ class ProductRepository implements DataSourceInterface
      *
      * @throws ArrayOfStringsException
      * @throws \Phalcon\Mvc\Collection\Exception
+     * @throws \Exception
      */
-    public function create(array $data)
+    public function create(array $data): ProductModel
     {
         $productCollectionData = [];
         if (!empty($data['productKeywords']) || !empty($data['productSegments'] || !empty($data['productDimensions']))) {
@@ -141,8 +176,9 @@ class ProductRepository implements DataSourceInterface
             unset($data['productKeywords'], $data['productSegments'], $data['productDimensions']);
         }
 
-        $productModel = $this->getModel(true);
-        if (!$productModel->save($data, ProductModel::WHITE_LIST)) {
+        $productModel = $this->getModel(true, $data['productType']);
+
+        if (!$productModel->save($data, $productModel::getWhiteList())) {
             throw new ArrayOfStringsException($productModel->getMessages(), 400);
         }
 
@@ -173,7 +209,7 @@ class ProductRepository implements DataSourceInterface
     public function update(string $productId, array $data)
     {
         $product = $this->getById($productId, true);
-        if (!$product->update($data, ProductModel::WHITE_LIST)) {
+        if (!$product->update($data, $product::getWhiteList())) {
             throw new ArrayOfStringsException($product->getMessages(), 400);
         }
         return $product;

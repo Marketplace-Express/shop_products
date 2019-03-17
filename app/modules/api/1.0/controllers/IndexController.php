@@ -8,10 +8,13 @@
 namespace Shop_products\Modules\Api\Controllers;
 
 use Shop_products\Controllers\BaseController;
-use Shop_products\RequestHandler\Product\CreateRequestHandler;
-use Shop_products\RequestHandler\Product\DeleteRequestHandler;
-use Shop_products\RequestHandler\Product\GetRequestHandler;
-use Shop_products\RequestHandler\Product\UpdateRequestHandler;
+use Shop_products\RequestHandler\Product\{
+    AbstractCreateRequestHandler,
+    DeleteRequestHandler,
+    GetRequestHandler,
+    UpdatePhysicalProductRequestHandler
+};
+use Shop_products\RequestHandler\ProductRequestResolver;
 use Shop_products\Services\ProductsService;
 
 /**
@@ -23,6 +26,9 @@ class IndexController extends BaseController
 {
     /** @var ProductsService $service */
     private $service;
+
+    /** @var ProductRequestResolver */
+    private $resolver;
 
     public function initialize()
     {
@@ -75,8 +81,11 @@ class IndexController extends BaseController
     public function createAction()
     {
         try {
-            /** @var CreateRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new CreateRequestHandler());
+            $requestBody = $this->request->getJsonRawBody();
+            /** @var ProductRequestResolver $resolver */
+            $resolver= $this->getJsonMapper()->map($requestBody, new ProductRequestResolver());
+            /** @var AbstractCreateRequestHandler $request */
+            $request = $this->getJsonMapper()->map($requestBody, $resolver->resolve());
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
@@ -93,8 +102,8 @@ class IndexController extends BaseController
     public function updateAction($id)
     {
         try {
-            /** @var UpdateRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new UpdateRequestHandler());
+            /** @var UpdatePhysicalProductRequestHandler $request */
+            $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new UpdatePhysicalProductRequestHandler());
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
@@ -118,5 +127,13 @@ class IndexController extends BaseController
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
+    }
+
+    /**
+     * @Get('/test')
+     */
+    public function testAction()
+    {
+        $this->getService()->sendSync(['Hello World!']);
     }
 }

@@ -17,6 +17,7 @@ $di->setShared('router', function () {
     $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Images', '/api/' . $config->api->version . '/images');
     $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Rate', '/api/' . $config->api->version . '/rate');
     $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Questions', '/api/' . $config->api->version . '/questions');
+    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Search', '/api/' . $config->api->version . '/search');
     return $router;
 });
 

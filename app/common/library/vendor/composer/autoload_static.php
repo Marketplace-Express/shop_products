@@ -21,7 +21,14 @@ class ComposerStaticInitc9e60ead22e9ad8f51827fa835b7718b
         ),
         'P' => 
         array (
+            'Psr\\Log\\' => 8,
+            'PhpAmqpLib\\' => 11,
             'Phalcon\\' => 8,
+        ),
+        'E' => 
+        array (
+            'Ehann\\RedisRaw\\' => 15,
+            'Ehann\\RediSearch\\' => 17,
         ),
     );
 
@@ -34,9 +41,25 @@ class ComposerStaticInitc9e60ead22e9ad8f51827fa835b7718b
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
         ),
+        'Psr\\Log\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
+        'PhpAmqpLib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/php-amqplib/php-amqplib/PhpAmqpLib',
+        ),
         'Phalcon\\' => 
         array (
             0 => __DIR__ . '/..' . '/phalcon/incubator/Library/Phalcon',
+        ),
+        'Ehann\\RedisRaw\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ethanhann/redis-raw/src',
+        ),
+        'Ehann\\RediSearch\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/ethanhann/redisearch-php/src',
         ),
     );
 

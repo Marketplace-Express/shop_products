@@ -1,0 +1,8 @@
+# logs
+app/logs
+
+# .idea PHPSTORM
+.idea
+
+# phalcon auto generated folder
+.phalcon

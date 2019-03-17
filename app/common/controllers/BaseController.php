@@ -8,15 +8,19 @@
 namespace Shop_products\Controllers;
 
 use Phalcon\Mvc\Controller;
+use Shop_products\Logger\ApplicationLogger;
 use Shop_products\Utils\UuidUtil;
 
 class BaseController extends Controller
 {
-    /** @var \JsonMapper $jsonMapper */
+    /** @var \JsonMapper */
     protected $jsonMapper;
 
-    /** @var UuidUtil $uuidUtil */
+    /** @var UuidUtil */
     protected $uuidUtil;
+
+    /** @var ApplicationLogger */
+    protected $logger;
 
     protected function getJsonMapper(): \JsonMapper
     {
@@ -28,10 +32,16 @@ class BaseController extends Controller
         return $this->uuidUtil;
     }
 
+    public function getLogger(): ApplicationLogger
+    {
+        return $this->logger;
+    }
+
     public function onConstruct()
     {
         $this->jsonMapper = new \JsonMapper();
         $this->uuidUtil = new UuidUtil();
+        $this->logger = new ApplicationLogger();
     }
 
     /**

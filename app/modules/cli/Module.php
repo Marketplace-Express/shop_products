@@ -4,6 +4,7 @@ namespace Shop_products\Modules\Cli;
 use Phalcon\DiInterface;
 use Phalcon\Loader;
 use Phalcon\Mvc\ModuleDefinitionInterface;
+use Shop_products\Modules\Cli\Services\IndexingService;
 
 class Module implements ModuleDefinitionInterface
 {
@@ -30,5 +31,9 @@ class Module implements ModuleDefinitionInterface
      */
     public function registerServices(DiInterface $di)
     {
+        // Register indexing service as a service
+        $di->set('indexing', function() {
+            return new IndexingService();
+        });
     }
 }

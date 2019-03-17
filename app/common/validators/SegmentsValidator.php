@@ -34,7 +34,10 @@ class SegmentsValidator extends Validator implements ValidatorInterface
             || !property_exists($segments, 'age')
             || !property_exists($segments, 'gender')
         ) {
-            $validation->appendMessage(new Message($this->getOption('message') ?? 'Invalid segments provided', $attribute));
+            $validation->appendMessage(
+                new Message($this->getOption('message') ?? 'Invalid segments provided',
+                    $attribute)
+            );
             return false;
         }
 

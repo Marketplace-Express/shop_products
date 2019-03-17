@@ -95,7 +95,7 @@ class TypeValidator extends Validator implements ValidatorInterface
                     throw new \Exception('Unknown Type', 400);
             }
             if (!$allowEmpty && !$value) {
-                $message = $this->getOption('message', 'Invalid Type');
+                $message = $this->getOption('message', 'Invalid value type');
                 $validation->appendMessage(new Message($message, $attribute));
                 return false;
             }

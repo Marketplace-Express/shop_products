@@ -1,5 +1,103 @@
 [
     {
+        "name": "ethanhann/redis-raw",
+        "version": "0.3.1",
+        "version_normalized": "0.3.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ethanhann/redis-raw-php.git",
+            "reference": "f0173cd5cf938bf5a9f48f37a1792ca746f30f6f"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ethanhann/redis-raw-php/zipball/f0173cd5cf938bf5a9f48f37a1792ca746f30f6f",
+            "reference": "f0173cd5cf938bf5a9f48f37a1792ca746f30f6f",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=7",
+            "psr/log": "^1.0"
+        },
+        "require-dev": {
+            "cheprasov/php-redis-client": "^1.8",
+            "consolidation/robo": "^1.0",
+            "friendsofphp/php-cs-fixer": "^2.2",
+            "mockery/mockery": "^0.9.9",
+            "monolog/monolog": "^1.23",
+            "phpunit/phpunit": "^6.0",
+            "predis/predis": "^1.1",
+            "ukko/phpredis-phpdoc": "^2.2@dev"
+        },
+        "time": "2018-12-09T21:12:54+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Ehann\\RedisRaw\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Ethan Hann",
+                "email": "ethanhann@gmail.com"
+            }
+        ],
+        "description": "Redis/PHP connectors."
+    },
+    {
+        "name": "ethanhann/redisearch-php",
+        "version": "1.4.0",
+        "version_normalized": "1.4.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ethanhann/redisearch-php.git",
+            "reference": "e5bee0ec52d3c0529a10358edacf80c607bd536c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ethanhann/redisearch-php/zipball/e5bee0ec52d3c0529a10358edacf80c607bd536c",
+            "reference": "e5bee0ec52d3c0529a10358edacf80c607bd536c",
+            "shasum": ""
+        },
+        "require": {
+            "ethanhann/redis-raw": "^0.3",
+            "php": ">=7",
+            "psr/log": "^1.0"
+        },
+        "require-dev": {
+            "cheprasov/php-redis-client": "^1.8",
+            "consolidation/robo": "^1.0",
+            "friendsofphp/php-cs-fixer": "^2.2",
+            "mockery/mockery": "^0.9.9",
+            "monolog/monolog": "^1.23",
+            "phpunit/phpunit": "^6.0",
+            "predis/predis": "^1.1",
+            "ukko/phpredis-phpdoc": "^2.2@dev"
+        },
+        "time": "2019-02-10T21:37:25+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Ehann\\RediSearch\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Ethan Hann",
+                "email": "ethanhann@gmail.com"
+            }
+        ]
+    },
+    {
         "name": "netresearch/jsonmapper",
         "version": "v1.4.0",
         "version_normalized": "1.4.0.0",
@@ -42,66 +140,6 @@
             }
         ],
         "description": "Map nested JSON structures onto PHP classes"
-    },
-    {
-        "name": "symfony/polyfill-ctype",
-        "version": "v1.10.0",
-        "version_normalized": "1.10.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/symfony/polyfill-ctype.git",
-            "reference": "e3d826245268269cd66f8326bd8bc066687b4a19"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/e3d826245268269cd66f8326bd8bc066687b4a19",
-            "reference": "e3d826245268269cd66f8326bd8bc066687b4a19",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.3"
-        },
-        "suggest": {
-            "ext-ctype": "For best performance"
-        },
-        "time": "2018-08-06T14:22:27+00:00",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.9-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Symfony\\Polyfill\\Ctype\\": ""
-            },
-            "files": [
-                "bootstrap.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Symfony Community",
-                "homepage": "https://symfony.com/contributors"
-            },
-            {
-                "name": "Gert de Pagter",
-                "email": "BackEndTea@gmail.com"
-            }
-        ],
-        "description": "Symfony polyfill for ctype functions",
-        "homepage": "https://symfony.com",
-        "keywords": [
-            "compatibility",
-            "ctype",
-            "polyfill",
-            "portable"
-        ]
     },
     {
         "name": "paragonie/random_compat",
@@ -148,6 +186,198 @@
             "polyfill",
             "pseudorandom",
             "random"
+        ]
+    },
+    {
+        "name": "phalcon/incubator",
+        "version": "v3.4.3",
+        "version_normalized": "3.4.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/phalcon/incubator.git",
+            "reference": "2ab139c977577dbcb42e0f766cb7631966abe278"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/phalcon/incubator/zipball/2ab139c977577dbcb42e0f766cb7631966abe278",
+            "reference": "2ab139c977577dbcb42e0f766cb7631966abe278",
+            "shasum": ""
+        },
+        "require": {
+            "ext-phalcon": "~3.3",
+            "php": ">=5.5"
+        },
+        "require-dev": {
+            "codeception/aerospike-module": "^1.0",
+            "codeception/codeception": "2.3.6",
+            "codeception/mockery-module": "0.2.2",
+            "codeception/specify": "^0.4",
+            "codeception/verify": "^0.3",
+            "doctrine/instantiator": "1.0.5",
+            "phalcon/dd": "^1.1",
+            "phpdocumentor/reflection-docblock": "2.0.4",
+            "phpunit/phpunit": "^4.8",
+            "squizlabs/php_codesniffer": "^2.9",
+            "vlucas/phpdotenv": "^2.4"
+        },
+        "suggest": {
+            "duncan3dc/fork-helper": "To use extended class to access the beanstalk queue service",
+            "ext-aerospike": "*",
+            "phalcon/ide-stubs": "Phalcon IDE Stubs",
+            "sergeyklay/aerospike-php-stubs": "The most complete Aerospike PHP stubs which allows autocomplete in modern IDEs",
+            "swiftmailer/swiftmailer": "~5.2",
+            "twig/twig": "~1.35|~2.0"
+        },
+        "time": "2018-11-19T09:30:11+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Phalcon\\": "Library/Phalcon/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Phalcon Team",
+                "email": "team@phalconphp.com",
+                "homepage": "https://phalconphp.com/en/team"
+            },
+            {
+                "name": "Contributors",
+                "homepage": "https://github.com/phalcon/incubator/graphs/contributors"
+            }
+        ],
+        "description": "Adapters, prototypes or functionality that can be potentially incorporated to the C-framework.",
+        "homepage": "https://phalconphp.com",
+        "keywords": [
+            "framework",
+            "incubator",
+            "phalcon"
+        ]
+    },
+    {
+        "name": "php-amqplib/php-amqplib",
+        "version": "v2.8.0",
+        "version_normalized": "2.8.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/php-amqplib/php-amqplib.git",
+            "reference": "7df8553bd8b347cf6e919dd4a21e75f371547aa0"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/php-amqplib/php-amqplib/zipball/7df8553bd8b347cf6e919dd4a21e75f371547aa0",
+            "reference": "7df8553bd8b347cf6e919dd4a21e75f371547aa0",
+            "shasum": ""
+        },
+        "require": {
+            "ext-bcmath": "*",
+            "php": ">=5.4.0"
+        },
+        "replace": {
+            "videlalvaro/php-amqplib": "self.version"
+        },
+        "require-dev": {
+            "phpdocumentor/phpdocumentor": "^2.9",
+            "phpunit/phpunit": "^4.8",
+            "scrutinizer/ocular": "^1.1",
+            "squizlabs/php_codesniffer": "^2.5"
+        },
+        "suggest": {
+            "ext-sockets": "Use AMQPSocketConnection"
+        },
+        "time": "2018-10-23T18:48:24+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.8-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "PhpAmqpLib\\": "PhpAmqpLib/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "LGPL-2.1-or-later"
+        ],
+        "authors": [
+            {
+                "name": "Alvaro Videla",
+                "role": "Original Maintainer"
+            },
+            {
+                "name": "John Kelly",
+                "email": "johnmkelly86@gmail.com",
+                "role": "Maintainer"
+            },
+            {
+                "name": "Raúl Araya",
+                "email": "nubeiro@gmail.com",
+                "role": "Maintainer"
+            }
+        ],
+        "description": "Formerly videlalvaro/php-amqplib.  This library is a pure PHP implementation of the AMQP protocol. It's been tested against RabbitMQ.",
+        "homepage": "https://github.com/php-amqplib/php-amqplib/",
+        "keywords": [
+            "message",
+            "queue",
+            "rabbitmq"
+        ]
+    },
+    {
+        "name": "psr/log",
+        "version": "1.1.0",
+        "version_normalized": "1.1.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/php-fig/log.git",
+            "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/php-fig/log/zipball/6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
+            "reference": "6c001f1daafa3a3ac1d8ff69ee4db8e799a654dd",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2018-11-20T15:27:04+00:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Psr\\Log\\": "Psr/Log/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "PHP-FIG",
+                "homepage": "http://www.php-fig.org/"
+            }
+        ],
+        "description": "Common interface for logging libraries",
+        "homepage": "https://github.com/php-fig/log",
+        "keywords": [
+            "log",
+            "psr",
+            "psr-3"
         ]
     },
     {
@@ -235,74 +465,63 @@
         ]
     },
     {
-        "name": "phalcon/incubator",
-        "version": "v3.4.3",
-        "version_normalized": "3.4.3.0",
+        "name": "symfony/polyfill-ctype",
+        "version": "v1.10.0",
+        "version_normalized": "1.10.0.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/phalcon/incubator.git",
-            "reference": "2ab139c977577dbcb42e0f766cb7631966abe278"
+            "url": "https://github.com/symfony/polyfill-ctype.git",
+            "reference": "e3d826245268269cd66f8326bd8bc066687b4a19"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/phalcon/incubator/zipball/2ab139c977577dbcb42e0f766cb7631966abe278",
-            "reference": "2ab139c977577dbcb42e0f766cb7631966abe278",
+            "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/e3d826245268269cd66f8326bd8bc066687b4a19",
+            "reference": "e3d826245268269cd66f8326bd8bc066687b4a19",
             "shasum": ""
         },
         "require": {
-            "ext-phalcon": "~3.3",
-            "php": ">=5.5"
-        },
-        "require-dev": {
-            "codeception/aerospike-module": "^1.0",
-            "codeception/codeception": "2.3.6",
-            "codeception/mockery-module": "0.2.2",
-            "codeception/specify": "^0.4",
-            "codeception/verify": "^0.3",
-            "doctrine/instantiator": "1.0.5",
-            "phalcon/dd": "^1.1",
-            "phpdocumentor/reflection-docblock": "2.0.4",
-            "phpunit/phpunit": "^4.8",
-            "squizlabs/php_codesniffer": "^2.9",
-            "vlucas/phpdotenv": "^2.4"
+            "php": ">=5.3.3"
         },
         "suggest": {
-            "duncan3dc/fork-helper": "To use extended class to access the beanstalk queue service",
-            "ext-aerospike": "*",
-            "phalcon/ide-stubs": "Phalcon IDE Stubs",
-            "sergeyklay/aerospike-php-stubs": "The most complete Aerospike PHP stubs which allows autocomplete in modern IDEs",
-            "swiftmailer/swiftmailer": "~5.2",
-            "twig/twig": "~1.35|~2.0"
+            "ext-ctype": "For best performance"
         },
-        "time": "2018-11-19T09:30:11+00:00",
+        "time": "2018-08-06T14:22:27+00:00",
         "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.9-dev"
+            }
+        },
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
-                "Phalcon\\": "Library/Phalcon/"
-            }
+                "Symfony\\Polyfill\\Ctype\\": ""
+            },
+            "files": [
+                "bootstrap.php"
+            ]
         },
         "notification-url": "https://packagist.org/downloads/",
         "license": [
-            "BSD-3-Clause"
+            "MIT"
         ],
         "authors": [
             {
-                "name": "Phalcon Team",
-                "email": "team@phalconphp.com",
-                "homepage": "https://phalconphp.com/en/team"
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
             },
             {
-                "name": "Contributors",
-                "homepage": "https://github.com/phalcon/incubator/graphs/contributors"
+                "name": "Gert de Pagter",
+                "email": "BackEndTea@gmail.com"
             }
         ],
-        "description": "Adapters, prototypes or functionality that can be potentially incorporated to the C-framework.",
-        "homepage": "https://phalconphp.com",
+        "description": "Symfony polyfill for ctype functions",
+        "homepage": "https://symfony.com",
         "keywords": [
-            "framework",
-            "incubator",
-            "phalcon"
+            "compatibility",
+            "ctype",
+            "polyfill",
+            "portable"
         ]
     }
 ]
