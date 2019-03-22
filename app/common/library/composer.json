@@ -1,5 +1,9 @@
 {
   "require": {
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-redis": "*",
+    "ext-mongodb": "*",
     "netresearch/jsonmapper": "^1.4",
     "ramsey/uuid": "^3.8",
     "phalcon/incubator": "^3.4",
@@ -7,5 +11,6 @@
     "ethanhann/redisearch-php": "^1.4"
   },
   "require-dev": {
+    "phpunit/phpunit": "^7.3"
   }
 }
