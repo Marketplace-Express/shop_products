@@ -14,7 +14,7 @@ use Shop_products\Utils\DigitalUnitsConverterUtil;
 
 class DownloadableProduct extends Product
 {
-    const DOWNLOADABLE_PRODUCT_WHITE_LIST = [
+    const WHITE_LIST = [
         'productDigitalSize'
     ];
 
@@ -30,7 +30,7 @@ class DownloadableProduct extends Product
 
     public static function getWhiteList()
     {
-        return array_merge(parent::getWhiteList(), self::DOWNLOADABLE_PRODUCT_WHITE_LIST);
+        return array_merge(parent::getWhiteList(), self::WHITE_LIST);
     }
 
     /**
@@ -40,7 +40,6 @@ class DownloadableProduct extends Product
     public function toArray($columns = null)
     {
         return array_merge(parent::toArray($columns), [
-            'productType' => $this->productType,
             'productDigitalSize' => $this->productDigitalSize
         ]);
     }

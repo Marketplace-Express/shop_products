@@ -83,7 +83,7 @@ class IndexController extends BaseController
         try {
             $requestBody = $this->request->getJsonRawBody();
             /** @var ProductRequestResolver $resolver */
-            $resolver= $this->getJsonMapper()->map($requestBody, new ProductRequestResolver());
+            $resolver = $this->getJsonMapper()->map($requestBody, new ProductRequestResolver());
             /** @var AbstractCreateRequestHandler $request */
             $request = $this->getJsonMapper()->map($requestBody, $resolver->resolve());
             if (!$request->isValid()) {
@@ -127,13 +127,5 @@ class IndexController extends BaseController
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
-    }
-
-    /**
-     * @Get('/test')
-     */
-    public function testAction()
-    {
-        $this->getService()->sendSync(['Hello World!']);
     }
 }

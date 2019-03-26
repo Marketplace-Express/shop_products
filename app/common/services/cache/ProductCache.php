@@ -177,8 +177,7 @@ class ProductCache implements DataSourceInterface
             throw new \Exception('Missing vendorId or categoryId');
         }
         if (!$product = self::hGet($this->getKey($vendorId, $categoryId), $productId)) {
-            $repository = ProductRepository::getInstance();
-            if (count($product = $repository->getById($productId))) {
+            if ($product = ProductRepository::getInstance()->getById($productId, false, true)) {
                 $product = $product->toApiArray();
                 $this->setInCache($product['productVendorId'], $product['productCategoryId'], $product);
             }
@@ -190,7 +189,7 @@ class ProductCache implements DataSourceInterface
      * @param array $product
      * @throws \Shop_products\Exceptions\ArrayOfStringsException
      */
-    public static function indexProduct(array $product)
+    public static function indexProduct(array $product): void
     {
         if (empty($product)) {
             return;
@@ -203,6 +202,25 @@ class ProductCache implements DataSourceInterface
                 'id' => $product['productId'],
                 'title' => $product['productTitle'],
                 'linkSLug' => $product['productLinkSlug']
+            ])->sendAsync();
+    }
+
+    /**
+     * @param string $productId
+     * @throws \Shop_products\Exceptions\ArrayOfStringsException
+     */
+    public static function deleteProductIndex(string $productId): void
+    {
+        if (empty($productId)) {
+            return;
+        }
+
+        (new QueueRequestHandler(QueueNamesEnum::PRODUCT_ASYNC_QUEUE))
+            ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
+            ->setService('indexing')
+            ->setMethod('delete')
+            ->setData([
+                'id' => $productId
             ])->sendAsync();
     }
 }

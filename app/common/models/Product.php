@@ -2,6 +2,8 @@
 
 namespace Shop_products\Models;
 
+use Phalcon\Mvc\Model\Resultset;
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Validation;
 use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\Validators\UuidValidator;
@@ -27,6 +29,8 @@ class Product extends Base
         'productPrice',
         'productSalePrice',
         'productSaleEndTime',
+        'productKeywords',
+        'productSegments',
         'createdAt',
         'updatedAt',
         'deletedAt',
@@ -35,34 +39,34 @@ class Product extends Base
     ];
 
     /**
-     *
      * @var string
      */
     public $productId;
 
     /**
-     *
      * @var string
      */
     public $productCategoryId;
 
     /**
-     *
      * @var string
      */
     public $productUserId;
 
     /**
-     *
      * @var string
      */
     public $productVendorId;
 
     /**
-     *
      * @var string
      */
     public $productTitle;
+
+    /**
+     * @var string
+     */
+    public $productType;
 
     /**
      *
@@ -71,7 +75,6 @@ class Product extends Base
     public $productLinkSlug;
 
     /**
-     *
      * @var string
      */
     public $productCustomPageId;
@@ -92,19 +95,16 @@ class Product extends Base
     public $productSaleEndTime;
 
     /**
-     *
      * @var string
      */
     public $createdAt;
 
     /**
-     *
      * @var string
      */
     public $updatedAt;
 
     /**
-     *
      * @var string
      */
     public $deletedAt;
@@ -116,23 +116,15 @@ class Product extends Base
 
     /**
      * @var array
+     * This value appended from Mongo Collection
      */
-    private $keywords;
+    private $productKeywords;
 
     /**
      * @var array
+     * This value appended from Mongo Collection
      */
-    private $segments;
-
-    public function setKeywords(array $keywords)
-    {
-        $this->keywords = $keywords;
-    }
-
-    public function setSegments(array $segments)
-    {
-        $this->segments = $segments;
-    }
+    private $productSegments;
 
     /**
      *
@@ -143,6 +135,23 @@ class Product extends Base
     public function onConstruct()
     {
         self::$instance = $this;
+    }
+
+    /**
+     * @param array $data
+     * @param null $dataColumnMap
+     * @param null $whiteList
+     * @return $this|\Phalcon\Mvc\Model
+     */
+    public function assign(array $data, $dataColumnMap = null, $whiteList = null)
+    {
+        foreach ($data as $attribute => $value) {
+            if (!in_array($attribute, $whiteList)) {
+                continue;
+            }
+            $this->writeAttribute($attribute, $value);
+        }
+        return $this;
     }
 
     /**
@@ -180,6 +189,12 @@ class Product extends Base
      */
     public static function find($parameters = null)
     {
+        $operator = '';
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
+        $parameters['hydration'] = Resultset::HYDRATE_RECORDS;
         return parent::find($parameters);
     }
 
@@ -187,18 +202,41 @@ class Product extends Base
      * Allows to query the first record that match the specified conditions
      *
      * @param mixed $parameters
-     * @return Product|\Phalcon\Mvc\Model\ResultInterface
+     * @return ModelInterface
      */
     public static function findFirst($parameters = null)
     {
-        return parent::findFirst($parameters);
+        $query = self::find($parameters);
+        return $query->getFirst();
     }
 
-    public static function query(\Phalcon\DiInterface $dependencyInjector = null)
+    /**
+     * @param string $type
+     * @return Base|DownloadableProduct|PhysicalProduct|Product
+     */
+    public function detectModelType(string $type)
     {
-        $query = parent::query($dependencyInjector);
-        $query->where('isDeleted = false');
-        return $query;
+        switch ($type) {
+            case ProductTypesEnums::TYPE_PHYSICAL:
+                $model = PhysicalProduct::model(true);
+                break;
+            case ProductTypesEnums::TYPE_DOWNLOADABLE:
+                $model = DownloadableProduct::model(true);
+                break;
+            default:
+                $model = Product::model();
+        }
+        return $model;
+    }
+
+    /**
+     * Map Resultset to appropriate model
+     * @param Product $product
+     */
+    public function mapResultSet(Product &$product)
+    {
+        $model = $this->detectModelType($product->productType);
+        $product = parent::cloneResult($model, $product->toArray());
     }
 
     public static function getWhiteList()
@@ -226,8 +264,8 @@ class Product extends Base
             'product_price' => 'productPrice',
             'product_sale_price' => 'productSalePrice',
             'product_sale_end_time' => 'productSaleEndTime',
-            'product_brand_id' => 'productBrandId',
             'product_weight' => 'productWeight',
+            'product_brand_id' => 'productBrandId',
             'product_digital_size' => 'productDigitalSize',
             'created_at' => 'createdAt',
             'updated_at' => 'updatedAt',
@@ -250,8 +288,8 @@ class Product extends Base
             'productPrice' => $this->productPrice,
             'productSalePrice' => $this->productSalePrice,
             'productSaleEndTime' => $this->productSaleEndTime,
-            'productKeywords' => $this->keywords ?? null,
-            'productSegments' => $this->segments ?? null
+            'productKeywords' => $this->productKeywords ?? null,
+            'productSegments' => $this->productSegments ?? null
         ];
     }
 

@@ -48,11 +48,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
 
     private function objectToArray($object)
     {
-        $array = [];
-        foreach ($object as $property => $item) {
-            $array[$property] = $item;
-        }
-        return $array;
+        return json_decode(json_encode($object), true);
     }
 
     /**
@@ -87,6 +83,11 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
                 'allowFloat' => true,
                 'allowEmpty' => false
             ])
+        );
+
+        $validator->add(
+            'dimensions',
+            new Validation\Validator\PresenceOf()
         );
 
         $validator->add(

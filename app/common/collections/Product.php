@@ -9,7 +9,6 @@ namespace Shop_products\Collections;
 
 
 use Phalcon\Validation;
-use Shop_products\Utils\UuidUtil;
 use Shop_products\Validators\SegmentsValidator;
 use Shop_products\Validators\TypeValidator;
 use Shop_products\Validators\UuidValidator;
@@ -27,6 +26,8 @@ class Product extends BaseCollection
 
     /** @var \stdClass */
     public $segments;
+
+    private $_oldOperationMade;
 
     /** @var bool */
     public $is_deleted = false;
@@ -55,7 +56,7 @@ class Product extends BaseCollection
 
     /**
      * @param array|null $parameters
-     * @return array|Variation|bool
+     * @return Product|bool|array
      */
     public static function findFirst(array $parameters = null)
     {
@@ -89,8 +90,43 @@ class Product extends BaseCollection
         throw new \Exception('Update not supported. Use save() instead', 500);
     }
 
+    /**
+     * Over-ride operation made when deleting a document
+     * To prevent execute validation
+     *
+     * Default -> self::OP_UPDATE
+     * Update -> self::OP_DELETE
+     */
+    public function beforeValidationOnUpdate()
+    {
+        if ($this->is_deleted) {
+            $this->_oldOperationMade = $this->_operationMade;
+            $this->_operationMade = self::OP_DELETE;
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function toApiArray()
+    {
+        return [
+            'productDimensions' => $this->dimensions,
+            'productKeywords' => $this->keywords,
+            'productSegments' => $this->segments
+        ];
+    }
+
+    /**
+     * @return bool
+     */
     public function validation()
     {
+        if ($this->_operationMade == self::OP_DELETE) {
+            $this->_operationMade = $this->_oldOperationMade;
+            return true;
+        }
+
         $validation = new Validation();
 
         $validation->add(

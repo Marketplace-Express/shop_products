@@ -11,6 +11,7 @@ namespace Shop_products\RequestHandler\Product;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
+use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\RequestHandler\RequestHandlerInterface;
 use Shop_products\Validators\SegmentsValidator;
 use Shop_products\Validators\UuidValidator;

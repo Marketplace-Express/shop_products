@@ -19,6 +19,29 @@ class ProductsService
     /** @var QueueRequestHandler */
     private $queueRequestHandler;
 
+    /** @var ProductCache */
+    private static $productsCacheInstance;
+
+    /** @var ProductRepository */
+    private static $productsRepository;
+
+    /**
+     * @return ProductCache
+     * @throws \RedisException
+     */
+    private static function getProductsCacheInstance(): ProductCache
+    {
+        return self::$productsCacheInstance ?? self::$productsCacheInstance = ProductCache::getInstance();
+    }
+
+    /**
+     * @return ProductRepository
+     */
+    private static function getProductsRepository(): ProductRepository
+    {
+        return self::$productsRepository ?? self::$productsRepository = ProductRepository::getInstance();
+    }
+
     /**
      * @return ProductCache|ProductRepository
      * @throws \Exception
@@ -167,17 +190,20 @@ class ProductsService
         return true;
     }
 
-    public function sendSync($data, array $options = [])
+    /**
+     * @param string $productId
+     * @throws \Phalcon\Mvc\Collection\Exception
+     * @throws ArrayOfStringsException
+     */
+    public function deleteExtraInfo(string $productId): void
     {
-        $queueInstance = \Phalcon\Di::getDefault()->getShared('queue');
-        $queueInstance->put(['categories' => $data], $options);
-        while($job = $queueInstance->reserve()) {
-            if (key($job->getBody()) != 'products') {
-                //continue;
-            }
-            \Phalcon\Di::getDefault()->getShared('logger')->logError($job->getBody()['products']);
-            $job->delete();
-            break;
-        }
+        /** Delete product related document */
+        ProductRepository::getInstance()
+            ->getCollection()::findFirst([
+                ['product_id' => $productId]
+            ])->delete();
+
+        /** Delete product cache index */
+        ProductCache::deleteProductIndex($productId);
     }
 }
