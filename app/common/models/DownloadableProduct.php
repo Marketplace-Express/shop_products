@@ -50,7 +50,7 @@ class DownloadableProduct extends Product
     public function toApiArray()
     {
         return array_merge(parent::toApiArray(), [
-            'productDigitalSize' => $this->productDigitalSize
+            'productDigitalSize' => DigitalUnitsConverterUtil::bytesToMb($this->productDigitalSize)
         ]);
     }
 

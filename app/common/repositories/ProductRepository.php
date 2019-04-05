@@ -7,6 +7,7 @@
 
 namespace Shop_products\Repositories;
 
+use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\ModelInterface;
 use Shop_products\Enums\QueueNamesEnum;
 use Shop_products\Exceptions\ArrayOfStringsException;
@@ -161,7 +162,7 @@ class ProductRepository implements DataSourceInterface
      * @return Product
      *
      * @throws ArrayOfStringsException
-     * @throws \Phalcon\Mvc\Collection\Exception
+     * @throws Exception
      * @throws \Exception
      */
     public function create(array $data): Product

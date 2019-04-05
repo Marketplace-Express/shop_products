@@ -134,13 +134,22 @@ class ProductMigration_100 extends Migration
                         ]
                     ),
                     new Column(
+                        'product_digital_size',
+                        [
+                            'type' => Column::TYPE_INTEGER,
+                            'default' => "0",
+                            'size' => 11,
+                            'after' => 'product_weight'
+                        ]
+                    ),
+                    new Column(
                         'created_at',
                         [
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'product_weight'
+                            'after' => 'product_digital_size'
                         ]
                     ),
                     new Column(
@@ -173,7 +182,7 @@ class ProductMigration_100 extends Migration
                         'is_published',
                         [
                             'type' => Column::TYPE_INTEGER,
-                            'default' => "1",
+                            'default' => "0",
                             'notNull' => true,
                             'size' => 1,
                             'after' => 'is_deleted'

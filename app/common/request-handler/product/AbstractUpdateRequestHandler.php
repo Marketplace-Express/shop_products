@@ -8,6 +8,8 @@
 namespace Shop_products\RequestHandler\Product;
 
 
+use Exception;
+use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
@@ -250,7 +252,7 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
 
     /**
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function toArray(): array
     {
@@ -258,6 +260,7 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
 
         if (!empty($this->title)) {
             $result['productTitle'] = $this->title;
+            $result['productLinkSlug'] = (new Slug())->generate($this->title);
         }
 
         if (!empty($this->categoryId)) {
@@ -289,7 +292,7 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
         }
 
         if (empty($result)) {
-            throw new \Exception('Nothing to be updated', 400);
+            throw new Exception('Nothing to be updated', 400);
         }
 
         return $result;

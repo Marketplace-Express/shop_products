@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductRatedMigration_100
+ * Class ProductRatingMigration_100
  */
-class ProductRatedMigration_100 extends Migration
+class ProductRatingMigration_100 extends Migration
 {
     /**
      * Define the table structure
@@ -17,7 +17,7 @@ class ProductRatedMigration_100 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product_rated', [
+        $this->morphTable('product_rating', [
                 'columns' => [
                     new Column(
                         'rate_id',

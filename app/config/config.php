@@ -1,10 +1,13 @@
 <?php
+use Phalcon\Config;
 /*
  * Modified: prepend directory path of current file, because of this file own different ENV under between Apache and command line.
  * NOTE: please remove this comment.
  */
+defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
+defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
-return new \Phalcon\Config([
+return new Config([
     'version' => '1.0',
     'api' => [
         'version' => '1.0'
@@ -12,7 +15,7 @@ return new \Phalcon\Config([
 
     'database' => [
         'adapter'  => 'Mysql',
-        'host'     => '172.17.0.5',
+        'host'     => '127.0.0.1',
         'username' => 'phalcon',
         'password' => 'secret',
         'dbname'   => 'shop_products',
@@ -20,7 +23,7 @@ return new \Phalcon\Config([
     ],
 
     'mongodb' => [
-        'host' => '172.17.0.4',
+        'host' => 'localhost',
         'username' => '',
         'password' => '',
         'port' => '27017',
@@ -29,7 +32,7 @@ return new \Phalcon\Config([
 
     'cache' => [
         'products_cache' => [
-            'host' => '172.17.0.6',
+            'host' => '172.17.0.3',
             'port' => 6379,
             'persistent' => true,
             'database' => 0,
@@ -37,7 +40,7 @@ return new \Phalcon\Config([
             'auth' => ''
         ],
         'products_variation_cache' => [
-            'host' => '172.17.0.6',
+            'host' => '172.17.0.3',
             'port' => 6379,
             'persistent' => true,
             'database' => 1,
@@ -47,7 +50,7 @@ return new \Phalcon\Config([
     ],
 
     'rabbitmq' => [
-        'host' => '172.17.0.3',
+        'host' => 'localhost',
         'port' => '5672',
         'username' => 'guest',
         'password' => 'guest',

@@ -8,10 +8,11 @@
 namespace Shop_products\RequestHandler\Product;
 
 
+use Exception;
+use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
-use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\RequestHandler\RequestHandlerInterface;
 use Shop_products\Validators\SegmentsValidator;
 use Shop_products\Validators\UuidValidator;
@@ -251,7 +252,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
 
     /**
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function toArray(): array
     {
@@ -266,7 +267,8 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             'productSalePrice' => $this->salePrice,
             'productSaleEndTime' => $this->endSaleTime,
             'productKeywords' => $this->keywords,
-            'productSegments' => $this->segments
+            'productSegments' => $this->segments,
+            'productLinkSlug' => (new Slug())->generate($this->title)
         ];
     }
 }
