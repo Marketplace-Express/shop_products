@@ -140,6 +140,21 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
     {
         $validator = new Validation();
 
+        // Validate English input
+        $validator->add(
+            'name',
+            new Validation\Validator\Callback([
+                'callback' => function ($data) {
+                    $name = preg_replace('/[\d\s_]/i', '', $data['title']); // clean string
+                    if (preg_match('/[a-z]/i', $name) === false) {
+                        return false;
+                    }
+                    return true;
+                },
+                'message' => 'English language only supported'
+            ])
+        );
+
         $validator->add(
             'title',
             new Validation\Validator\AlphaNumericValidator([

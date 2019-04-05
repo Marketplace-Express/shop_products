@@ -2,6 +2,7 @@
 
 namespace Shop_products\Models;
 
+use Exception;
 use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Validation;
@@ -156,7 +157,7 @@ class Product extends Base
 
     /**
      * Initialize method for model.
-     * @throws \Exception
+     * @throws Exception
      */
     public function initialize()
     {
@@ -317,6 +318,21 @@ class Product extends Base
             ['productCustomPageId'],
             new UuidValidator([
                 'allowEmpty' => true
+            ])
+        );
+
+        // Validate English input
+        $validation->add(
+            'productTitle',
+            new Validation\Validator\Callback([
+                'callback' => function ($data) {
+                    $name = preg_replace('/[\d\s_]/i', '', $data['productTitle']); // clean string
+                    if (preg_match('/[a-z]/i', $name) == false) {
+                        return false;
+                    }
+                    return true;
+                },
+                'message' => 'English language only supported'
             ])
         );
 
