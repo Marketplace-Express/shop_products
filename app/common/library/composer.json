@@ -10,7 +10,10 @@
     "ramsey/uuid": "^3.8",
     "phalcon/incubator": "^3.4",
     "php-amqplib/php-amqplib": "^2.8",
-    "ethanhann/redisearch-php": "^1.4"
+    "ethanhann/redisearch-php": "^1.4",
+    "mechpave/imgur-client": "^0.3.0",
+    "sidroberts/phalcon-authmiddleware": "^2.0",
+    "firebase/php-jwt": "^5.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.3"

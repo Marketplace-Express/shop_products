@@ -7,13 +7,15 @@
 
 namespace Shop_products\Controllers;
 
+use JsonMapper;
 use Phalcon\Mvc\Controller;
 use Shop_products\Logger\ApplicationLogger;
 use Shop_products\Utils\UuidUtil;
+use stdClass;
 
 class BaseController extends Controller
 {
-    /** @var \JsonMapper */
+    /** @var JsonMapper */
     protected $jsonMapper;
 
     /** @var UuidUtil */
@@ -22,7 +24,7 @@ class BaseController extends Controller
     /** @var ApplicationLogger */
     protected $logger;
 
-    protected function getJsonMapper(): \JsonMapper
+    protected function getJsonMapper(): JsonMapper
     {
         return $this->jsonMapper;
     }
@@ -39,18 +41,18 @@ class BaseController extends Controller
 
     public function onConstruct()
     {
-        $this->jsonMapper = new \JsonMapper();
+        $this->jsonMapper = new JsonMapper();
         $this->uuidUtil = new UuidUtil();
         $this->logger = new ApplicationLogger();
     }
 
     /**
      * @param array $params
-     * @return \stdClass
+     * @return stdClass
      */
     protected function queryStringToObject(array $params)
     {
-        $object = new \stdClass();
+        $object = new stdClass();
         unset($params['_url']);
         foreach ($params as $key => $value) {
             $object->$key = $value;

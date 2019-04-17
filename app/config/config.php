@@ -73,6 +73,7 @@ return new Config([
         'collectionsDir' => APP_PATH . '/common/collections/',
         'migrationsDir'  => APP_PATH . '/migrations/',
         'logsDir'        => APP_PATH . '/logs/',
+        'uploadDir'      => BASE_PATH . '/public/uploads/',
 
         'validation' => [
             'productTitle' => [
@@ -82,8 +83,26 @@ return new Config([
                 'max' => 200
             ],
             'downloadable' => [
-                'maxDigitalSize' => 104857600, // bytes = 100 Mb
+                'maxDigitalSize' => 104857600, // 100 Mb
+            ],
+            'image' => [
+                'maxSize' => 1048576, // 1 Mb,
+                'allowedTypes' => [
+                    'image/jpg',
+                    'image/jpeg',
+                    'image/png'
+                ],
+                'minResolution' => '800x600'
             ]
+        ],
+        'imgur' => [
+            'apiKey' => 'fde8e22da065b65',
+            'apiSecret' => '09b2fcc7e71311b414ac5b16e37191e96f303735',
+            'accessToken' => '6b02a3b092cadf34e1b9a84c01ab896ff3a7e7d1'
+        ],
+        'token' => [
+            'saltKey' => 'abc@123456789012',
+            'allowedAlg' => 'HS512'
         ],
 
         // This allows the baseUri to be understand project paths that are not in the root directory

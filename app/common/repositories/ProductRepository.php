@@ -52,23 +52,36 @@ class ProductRepository implements DataSourceInterface
      * Get product by id
      *
      * @param string $productId
+     * @param string $vendorId
+     * @param string|null $categoryId
      * @param bool $editMode
      * @param bool|null $getExtraInfo
      * @return Product|ModelInterface
      * @throws NotFoundException
      * @throws \Exception
      */
-    public function getById(string $productId, bool $editMode = false, ?bool $getExtraInfo = false)
+    public function getById(
+        string $productId,
+        string $vendorId,
+        string $categoryId = null,
+        bool $editMode = false,
+        ?bool $getExtraInfo = true
+    )
     {
-        $conditions = 'productId = :productId:';
+        $conditions = 'productId = :productId: AND productVendorId = :vendorId:';
         if ($editMode) {
             $conditions .= ' AND isPublished IN (true, false)';
+        } else {
+            $conditions .= ' AND isPublished = true';
         }
 
         /** @var Product $product */
         $product = self::getModel()::findFirst([
             'conditions' => $conditions,
-            'bind' => ['productId' => $productId]
+            'bind' => [
+                'productId' => $productId,
+                'vendorId' => $vendorId
+            ]
         ]);
 
         if (empty($product)) {
@@ -99,10 +112,13 @@ class ProductRepository implements DataSourceInterface
      */
     public function getByCategoryId(string $categoryId, string $vendorId, bool $editMode = false): ?array
     {
-        $conditions = 'productCategoryId = :productCategoryId AND productVendorId = :productVendorId:';
+        $conditions = 'productCategoryId = :productCategoryId';
+        $conditions .= ' AND productVendorId = :productVendorId:';
 
         if ($editMode) {
             $conditions .= ' AND isPublished IN (true, false)';
+        } else {
+            $conditions .= ' AND isPublished = true';
         }
 
         $products = $this->getModel()::find([
@@ -138,6 +154,8 @@ class ProductRepository implements DataSourceInterface
 
         if ($editMode) {
             $conditions .= ' AND isPublished IN (true, false)';
+        } else {
+            $conditions .= ' AND isPublished = true';
         }
 
         $products = $this->getModel()::find([
@@ -202,14 +220,15 @@ class ProductRepository implements DataSourceInterface
      * Update product
      *
      * @param string $productId
+     * @param string $vendorId
      * @param array $data
      * @return Product
      * @throws ArrayOfStringsException
-     * @throws \Exception
+     * @throws NotFoundException
      */
-    public function update(string $productId, array $data)
+    public function update(string $productId, string $vendorId, array $data)
     {
-        $product = $this->getById($productId, true);
+        $product = $this->getById($productId, $vendorId, null, true);
         if (!$product->update($data, $product::getWhiteList())) {
             throw new ArrayOfStringsException($product->getMessages(), 400);
         }
@@ -220,18 +239,20 @@ class ProductRepository implements DataSourceInterface
      * Delete product
      *
      * @param string $productId
+     * @param string $vendorId
      * @return array
-     * @throws \Exception
+     * @throws ArrayOfStringsException
+     * @throws NotFoundException
      */
-    public function delete(string $productId)
+    public function delete(string $productId, string $vendorId)
     {
-        $product = $this->getById($productId, true);
+        $product = $this->getById($productId, $vendorId, null, true);
         if (!$product || !$product->delete()) {
             throw new \Exception('Product not found or maybe deleted', 404);
         }
         (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
             ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
-            ->setService('product')
+            ->setService('products')
             ->setMethod('deleteExtraInfo')
             ->setData([
                 'product_id' => $product->productId

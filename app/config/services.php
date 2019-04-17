@@ -1,6 +1,19 @@
 <?php
 
+use Ehann\RediSearch\Index;
+use Ehann\RediSearch\Suggestion;
+use Phalcon\Db\Adapter\MongoDB\Client;
+use Phalcon\Db\Profiler;
+use Phalcon\Events\Event;
+use Phalcon\Events\Manager;
+use Phalcon\Logger\Factory;
 use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Wire\AMQPTable;
+use Shop_products\Enums\ProductsCacheIndexesEnum;
+use Shop_products\Logger\ApplicationLogger;
+use Shop_products\Redis\Connector;
+use Shop_products\Services\User\UserService;
 
 /**
  * Shared configuration service
@@ -40,13 +53,13 @@ $di->setShared('db', function () {
     $connection = new $class($params);
 
     /**
-     * @var \Phalcon\Db\Profiler $profiler
+     * @var Profiler $profiler
      */
     $profiler = $this->getProfiler();
-    $eventsManager = new \Phalcon\Events\Manager();
+    $eventsManager = new Manager();
     $eventsManager->attach('db', function ($event, $connection) use ($profiler, $config) {
         /**
-         * @var \Phalcon\Events\Event $event
+         * @var Event $event
          * @var \Phalcon\Db\Adapter\Pdo $connection
          */
         if ($event->getType() == 'beforeQuery') {
@@ -61,7 +74,7 @@ $di->setShared('db', function () {
             }
 
             // Log last SQL statement
-            \Phalcon\Logger\Factory::load([
+            Factory::load([
                 'name' => $config->application->logsDir . 'db.log',
                 'adapter' => 'file'
             ])->info($profiler->getLastProfile()->getSqlStatement());
@@ -83,7 +96,7 @@ $di->setShared('mongo', function () {
         $connectionString .= $config->mongodb->username . ":" . $config->mongodb->password . "@";
     }
     $connectionString .= $config->mongodb->host . ":" . $config->mongodb->port;
-    $mongo = new \Phalcon\Db\Adapter\MongoDB\Client($connectionString);
+    $mongo = new Client($connectionString);
     return $mongo->selectDatabase($config->mongodb->dbname);
 });
 
@@ -96,7 +109,7 @@ $di->setShared('collectionManager', function () {
  */
 $di->setShared('cache', function (){
     $config = $this->getConfig()->cache;
-    $redisInstance = new \Shop_products\Redis\Connector();
+    $redisInstance = new Connector();
     $redisInstance->connect(
         $config->products_cache->host,
         $config->products_cache->port,
@@ -114,14 +127,14 @@ $di->setShared('productsCache', function () {
 });
 
 $di->setShared('productsCacheIndex', function (){
-    return new \Ehann\RediSearch\Index($this->getCache()['adapter'],
-        \Shop_products\Enums\ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
+    return new Index($this->getCache()['adapter'],
+        ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
 });
 
 $di->set('productsCacheSuggestion', function (){
-    return new \Ehann\RediSearch\Suggestion($this->getCache()['adapter'],
-        \Shop_products\Enums\ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
+    return new Suggestion($this->getCache()['adapter'],
+        ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
 });
 
@@ -152,13 +165,13 @@ $di->setShared('modelsMetadata', function () {
 });
 
 $di->setShared('logger', function() {
-    return new \Shop_products\Logger\ApplicationLogger();
+    return new ApplicationLogger();
 });
 
 /** RabbitMQ service */
 $di->setShared('queue', function () {
     $config = $this->getConfig();
-    $connection = new \PhpAmqpLib\Connection\AMQPStreamConnection(
+    $connection = new AMQPStreamConnection(
         $config->rabbitmq->host,
         $config->rabbitmq->port,
         $config->rabbitmq->username,
@@ -168,12 +181,17 @@ $di->setShared('queue', function () {
     $channel->queue_declare(
         $config->rabbitmq->sync_queue->queue_name,
         false, false, false, false, false,
-        new \PhpAmqpLib\Wire\AMQPTable(['x-message-ttl' => $config->rabbitmq->sync_queue->message_ttl])
+        new AMQPTable(['x-message-ttl' => $config->rabbitmq->sync_queue->message_ttl])
     );
     $channel->queue_declare(
         $config->rabbitmq->async_queue->queue_name,
         false, false, false, false, false,
-        new \PhpAmqpLib\Wire\AMQPTable(['x-message-ttl' => $config->rabbitmq->async_queue->message_ttl])
+        new AMQPTable(['x-message-ttl' => $config->rabbitmq->async_queue->message_ttl])
     );
     return $channel;
 });
+
+$di->setShared(
+    'userService',
+    UserService::class
+);

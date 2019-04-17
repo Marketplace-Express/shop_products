@@ -1,5 +1,6 @@
 <?php
 
+use Phalcon\Events\Manager;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Mvc\Router;
 use Phalcon\Mvc\Url as UrlResolver;
@@ -12,7 +13,7 @@ use Phalcon\Flash\Direct as Flash;
 $di->setShared('router', function () {
     $config = $this->getConfig();
     $router = new Router\Annotations(false);
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Index', '/api/' . $config->api->version . '/products');
+    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Products', '/api/' . $config->api->version . '/products');
     $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Variations', '/api/' . $config->api->version . '/variations');
     $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Images', '/api/' . $config->api->version . '/images');
     $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Rate', '/api/' . $config->api->version . '/rate');
@@ -59,10 +60,12 @@ $di->set('flash', function () {
 * Set the default namespace for dispatcher
 */
 $di->setShared('dispatcher', function() {
-    /**
-     * @var \Phalcon\Events\Manager $evManager
-     */
+    /** @var Manager $evManager */
     $evManager = $this->getEventsManager();
+    $evManager->attach(
+        "dispatch:beforeExecuteRoute",
+        new \Sid\Phalcon\AuthMiddleware\Event()
+    );
     $evManager->attach(
         "dispatch:beforeException",
         function ($event, $dispatcher, $exception) {

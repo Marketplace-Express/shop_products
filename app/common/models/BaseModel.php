@@ -10,7 +10,7 @@ namespace Shop_products\Models;
 use Phalcon\Mvc\Model;
 use Shop_products\Traits\ModelCollectionBehaviorTrait;
 
-abstract class Base extends Model
+abstract class BaseModel extends Model
 {
     use ModelCollectionBehaviorTrait;
 
@@ -18,7 +18,7 @@ abstract class Base extends Model
 
     /**
      * @param bool $new
-     * @return Base|Product|PhysicalProduct|DownloadableProduct
+     * @return BaseModel|Product|PhysicalProduct|DownloadableProduct
      */
     public static function model(bool $new = false)
     {

@@ -37,7 +37,7 @@ class Module implements ModuleDefinitionInterface
             return new IndexingService();
         });
 
-        $di->set('product', function () {
+        $di->set('products', function () {
             return new ProductsService();
         });
     }

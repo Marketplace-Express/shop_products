@@ -9,16 +9,18 @@ namespace Shop_products\RequestHandler\Product;
 
 
 use Exception;
+use Phalcon\Di;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
+use Shop_products\Utils\DigitalUnitsConverterUtil;
 use Shop_products\Validators\TypeValidator;
 use Shop_products\Validators\UuidValidator;
 
-abstract class AbstractUpdateRequestHandler extends BaseController implements RequestHandlerInterface
+class UpdateRequestHandler extends BaseController implements RequestHandlerInterface
 {
     private $title;
     private $categoryId;
@@ -29,6 +31,10 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
     private $endSaleTime;
     private $keywords;
     private $isPublished;
+    private $brandId;
+    private $weight;
+    private $dimensions;
+    private $digitalSize;
 
     protected $errorMessages;
 
@@ -97,6 +103,38 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
     }
 
     /**
+     * @param mixed $brandId
+     */
+    public function setBrandId($brandId): void
+    {
+        $this->brandId = $brandId;
+    }
+
+    /**
+     * @param mixed $weight
+     */
+    public function setWeight($weight): void
+    {
+        $this->weight = $weight;
+    }
+
+    /**
+     * @param mixed $dimensions
+     */
+    public function setDimensions($dimensions): void
+    {
+        $this->dimensions = $dimensions;
+    }
+
+    /**
+     * @param mixed $digitalSize
+     */
+    public function setDigitalSize($digitalSize): void
+    {
+        $this->digitalSize = $digitalSize;
+    }
+
+    /**
      * @param mixed $isPublished
      */
     public function setIsPublished($isPublished): void
@@ -106,21 +144,12 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
 
     private function getValidationConfig()
     {
-        return \Phalcon\Di::getDefault()->getConfig()->application->validation->productTitle;
+        return Di::getDefault()->getConfig()->application->validation->productTitle;
     }
 
-    protected function fields()
+    private function getDigitalProductValidationConfig()
     {
-        return [
-            'title' => $this->title,
-            'categoryId' => $this->categoryId,
-            'customPageId' => $this->customPageId,
-            'price' => $this->price,
-            'salePrice' => $this->salePrice,
-            'endSaleTime' => $this->endSaleTime,
-            'keywords' => $this->keywords,
-            'isPublished' => $this->isPublished
-        ];
+        return $this->getDI()->getConfig()->application->validation->downloadable;
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
@@ -136,7 +165,7 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
             new Validation\Validator\Callback([
                 'callback' => function ($data) {
                     $name = preg_replace('/[\d\s_]/i', '', $data['title']); // clean string
-                    if (preg_match('/[a-z]/i', $name) == false) {
+                    if (!empty($name) && preg_match('/[a-z]/i', $name) == false) {
                         return false;
                     }
                     return true;
@@ -157,15 +186,18 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
         );
 
         $validator->add(
-            ['categoryId', 'customPageId'],
-            new UuidValidator()
+            ['categoryId', 'customPageId', 'brandId'],
+            new UuidValidator([
+                'allowEmpty' => true
+            ])
         );
 
         $validator->add(
             'price',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => true,
-                'min' => 0
+                'min' => 0,
+                'allowEmpty' => true
             ])
         );
 
@@ -207,6 +239,37 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
         );
 
         $validator->add(
+            'weight',
+            new Validation\Validator\NumericValidator([
+                'allowFloat' => true,
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
+            'dimensions',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT,
+                'allowEmpty' => true,
+                'message' => 'Invalid dimensions'
+            ])
+        );
+
+        $validator->add(
+            'digitalSize',
+            new Validation\Validator\NumericValidator([
+                'min' => 1,
+                'max' => $this->getDigitalProductValidationConfig()->maxDigitalSize,
+                'messageMaximum' => 'Digital size exceeds the max limit ' .
+                    DigitalUnitsConverterUtil::bytesToMb(
+                        $this->getDigitalProductValidationConfig()->maxDigitalSize
+                    ) . ' Mb',
+                'messageMinimum' => 'Invalid digital size',
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
             'isPublished',
             new TypeValidator([
                 'type' => TypeValidator::TYPE_BOOLEAN,
@@ -222,6 +285,10 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
             'salePrice' => $this->salePrice,
             'endSaleTime' => $this->endSaleTime,
             'keywords' => $this->keywords,
+            'brandId' => $this->brandId,
+            'weight' => $this->weight,
+            'dimensions' => $this->dimensions,
+            'digitalSize' => $this->digitalSize,
             'isPublished' => $this->isPublished
         ]);
     }
@@ -300,6 +367,22 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
 
         if (!empty($this->keywords)) {
             $result['productKeywords'] = implode(',', $this->keywords);
+        }
+
+        if (!empty($this->brandId)) {
+            $result['productBrandId'] = $this->brandId;
+        }
+
+        if (!empty($this->weight)) {
+            $result['productWeight'] = $this->weight;
+        }
+
+        if (!empty($this->dimensions)) {
+            $result['productDimensions'] = $this->dimensions;
+        }
+
+        if (!empty($this->digitalSize)) {
+            $result['productDigitalSize'] = $this->digitalSize;
         }
 
         if (!empty($this->isPublished)) {

@@ -14,5 +14,5 @@ interface DataSourceInterface
 
     public function getByVendorId(string $vendorId): ?array;
 
-    public function getById(string $productId);
+    public function getById(string $productId, string $vendorId);
 }

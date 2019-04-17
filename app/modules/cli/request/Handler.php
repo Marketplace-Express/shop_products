@@ -7,6 +7,7 @@
 
 namespace Shop_products\Modules\Cli\Request;
 
+use Exception;
 use Phalcon\Di\Injectable;
 
 class Handler extends Injectable
@@ -28,13 +29,13 @@ class Handler extends Injectable
      * @param array $params
      * @param array $serviceArgs
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(string $service, array $serviceArgs, string $method, array $params = [])
     {
         $this->service = $this->getDI()->get($service, $serviceArgs);
         if (!is_callable([$this->service, $method])) {
-            throw new \Exception('Method "' . get_class($this->service) . '::' . $method . '" is not a callable method');
+            throw new Exception('Method "' . get_class($this->service) . '::' . $method . '" is not a callable method');
         }
         $this->method = $method;
         $this->params = $params;
