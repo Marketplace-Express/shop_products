@@ -2,6 +2,8 @@
 
 namespace Shop_products\Models;
 
+use Phalcon\Mvc\ModelInterface;
+
 /**
  * ProductQuestions
  * 
@@ -13,44 +15,49 @@ class ProductQuestions extends BaseModel
 {
 
     /**
-     *
      * @var string
+     * @Primary
+     * @Column(column='question_id', type='string', length=36, nullable=false)
      */
     public $questionId;
 
     /**
-     *
      * @var string
+     * @Column(column='product_id', type='string', length=36, nullable=false)
      */
-    public $questionProductId;
+    public $productId;
 
     /**
      *
      * @var string
+     * @Column(column='question_user_id', type='string', length=36, nullable=false)
      */
     public $questionUserId;
 
     /**
      *
      * @var string
+     * @Column(column='question_text', type='text', nullable=false)
      */
     public $questionText;
 
     /**
      *
      * @var string
+     * @Column(column='created_at', type='datetime', nullable=false)
      */
     public $createdAt;
 
     /**
      *
      * @var string
+     * @Column(column='deleted_at', type='datetime', nullable=true)
      */
     public $deletedAt;
 
     /**
-     *
      * @var integer
+     * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
      */
     public $isDeleted;
 
@@ -67,7 +74,7 @@ class ProductQuestions extends BaseModel
         $this->setSchema("shop_products");
         $this->setSource("product_questions");
         $this->useDynamicUpdate(true);
-        $this->belongsTo('questionProductId', 'Shop_products\Models\Product', 'productId', ['alias' => 'Product']);
+        $this->belongsTo('questionProductId', 'Shop_products\Models\Product', 'productId', ['alias' => 'product']);
     }
 
     /**
@@ -112,12 +119,22 @@ class ProductQuestions extends BaseModel
     {
         return [
             'question_id' => 'questionId',
-            'question_product_id' => 'questionProductId',
+            'product_id' => 'productId',
             'question_user_id' => 'questionUserId',
             'question_text' => 'questionText',
             'created_at' => 'createdAt',
             'deleted_at' => 'deletedAt',
             'is_deleted' => 'isDeleted'
+        ];
+    }
+
+    public function toApiArray()
+    {
+        return [
+            'questionId' => $this->questionId,
+            'productId' => $this->productId,
+            'questionUserId' => $this->questionUserId,
+            'questionText' => $this->questionText
         ];
     }
 

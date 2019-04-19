@@ -30,7 +30,7 @@ class ImagesController extends BaseController
     {
         $albumId = $this->request->getPost('albumId');
         $productId = $this->request->getPost('productId');
-        if (!isset($albumId) || !isset($productId)) {
+        if (!isset($albumId) || !$this->getUuidUtil()->isValid($productId)) {
             throw new Exception('Invalid album Id or product Id');
         }
         $this->service = new ImageService();
@@ -46,6 +46,7 @@ class ImagesController extends BaseController
 
     /**
      * @Post('/upload')
+     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
      */
     public function uploadAction()
     {

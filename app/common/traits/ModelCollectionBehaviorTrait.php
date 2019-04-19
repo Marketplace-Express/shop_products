@@ -13,6 +13,7 @@ use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\MongoCollection;
 use Phalcon\Mvc\Model;
 use Shop_products\Collections\Behaviors\SoftDeleteBehavior;
+use Shop_products\Models\Behaviors\BooleanBehavior;
 
 trait ModelCollectionBehaviorTrait
 {
@@ -45,6 +46,8 @@ trait ModelCollectionBehaviorTrait
                     'format' => self::$dateFormat
                 ]
             ]));
+
+            $this->addBehavior(new BooleanBehavior());
 
         } elseif ($modelType === MongoCollection::class) {
 

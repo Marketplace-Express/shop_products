@@ -49,6 +49,19 @@ class ProductRepository implements DataSourceInterface
     }
 
     /**
+     * @param string $productId
+     * @return mixed
+     * @throws \Exception
+     */
+    public function isExists(string $productId)
+    {
+        return $this->getModel(true)::count([
+            'conditions' => 'productId = :productId:',
+            'bind' => ['productId' => $productId]
+        ]);
+    }
+
+    /**
      * Get product by id
      *
      * @param string $productId
@@ -112,7 +125,7 @@ class ProductRepository implements DataSourceInterface
      */
     public function getByCategoryId(string $categoryId, string $vendorId, bool $editMode = false): ?array
     {
-        $conditions = 'productCategoryId = :productCategoryId';
+        $conditions = 'productCategoryId = :productCategoryId:';
         $conditions .= ' AND productVendorId = :productVendorId:';
 
         if ($editMode) {
@@ -188,7 +201,7 @@ class ProductRepository implements DataSourceInterface
         $productCollectionData = [];
         if (!empty($data['productKeywords']) || !empty($data['productSegments'] || !empty($data['productDimensions']))) {
             $productCollectionData = [
-                'dimensions' => $data['productDimensions'] ?? null,
+                'packageDimensions' => $data['productDimensions'] ?? null,
                 'keywords' => $data['productKeywords'] ?? null,
                 'segments' => $data['productSegments'] ?? null,
                 'product_id' => $data['productId']
@@ -243,6 +256,7 @@ class ProductRepository implements DataSourceInterface
      * @return array
      * @throws ArrayOfStringsException
      * @throws NotFoundException
+     * @throws \Exception
      */
     public function delete(string $productId, string $vendorId)
     {

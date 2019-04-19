@@ -19,7 +19,7 @@ class Product extends BaseCollection
     public $product_id;
 
     /** @var array */
-    public $dimensions;
+    public $packageDimensions;
 
     /** @var array */
     public $keywords;
@@ -111,7 +111,7 @@ class Product extends BaseCollection
     public function toApiArray()
     {
         return [
-            'productDimensions' => $this->dimensions,
+            'productDimensions' => $this->packageDimensions,
             'productKeywords' => $this->keywords,
             'productSegments' => $this->segments
         ];
@@ -134,9 +134,9 @@ class Product extends BaseCollection
             new UuidValidator()
         );
 
-        if ($this->dimensions) {
+        if ($this->packageDimensions) {
             $validation->add(
-                'dimensions',
+                'packageDimensions',
                 new TypeValidator([
                     'type' => TypeValidator::TYPE_FLOAT,
                     'allowEmpty' => false,
@@ -165,7 +165,7 @@ class Product extends BaseCollection
 
         $messages = $validation->validate([
             'product_id' => $this->product_id,
-            'dimensions' => $this->dimensions,
+            'packageDimensions' => $this->packageDimensions,
             'keywords' => $this->keywords,
             'segments' => $this->segments
         ]);

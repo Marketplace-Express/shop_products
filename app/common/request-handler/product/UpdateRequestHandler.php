@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * User: Wajdi Jurry
  * Date: 13/01/19
@@ -7,8 +8,6 @@
 
 namespace Shop_products\RequestHandler\Product;
 
-
-use Exception;
 use Phalcon\Di;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
@@ -33,7 +32,7 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     private $isPublished;
     private $brandId;
     private $weight;
-    private $dimensions;
+    private $packageDimensions;
     private $digitalSize;
 
     protected $errorMessages;
@@ -119,11 +118,11 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
     }
 
     /**
-     * @param mixed $dimensions
+     * @param mixed $packageDimensions
      */
-    public function setDimensions($dimensions): void
+    public function setPackageDimensions($packageDimensions): void
     {
-        $this->dimensions = $dimensions;
+        $this->packageDimensions = $packageDimensions;
     }
 
     /**
@@ -194,6 +193,20 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
 
         $validator->add(
             'price',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT
+            ])
+        );
+
+        $validator->add(
+            'salePrice',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT
+            ])
+        );
+
+        $validator->add(
+            'price',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => true,
                 'min' => 0,
@@ -247,7 +260,7 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
         );
 
         $validator->add(
-            'dimensions',
+            'packageDimensions',
             new TypeValidator([
                 'type' => TypeValidator::TYPE_FLOAT,
                 'allowEmpty' => true,
@@ -287,7 +300,7 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
             'keywords' => $this->keywords,
             'brandId' => $this->brandId,
             'weight' => $this->weight,
-            'dimensions' => $this->dimensions,
+            'packageDimensions' => $this->packageDimensions,
             'digitalSize' => $this->digitalSize,
             'isPublished' => $this->isPublished
         ]);
@@ -334,7 +347,7 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
 
     /**
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     public function toArray(): array
     {
@@ -377,20 +390,20 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
             $result['productWeight'] = $this->weight;
         }
 
-        if (!empty($this->dimensions)) {
-            $result['productDimensions'] = $this->dimensions;
+        if (!empty($this->packageDimensions)) {
+            $result['productPackageDimensions'] = $this->packageDimensions;
         }
 
         if (!empty($this->digitalSize)) {
             $result['productDigitalSize'] = $this->digitalSize;
         }
 
-        if (!empty($this->isPublished)) {
+        if (in_array($this->isPublished, [true, false], true)) {
             $result['isPublished'] = $this->isPublished;
         }
 
         if (empty($result)) {
-            throw new Exception('Nothing to be updated', 400);
+            throw new \Exception('Nothing to be updated', 400);
         }
 
         return $result;

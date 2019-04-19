@@ -13,62 +13,60 @@ class ProductRates extends BaseModel
 {
 
     /**
-     *
      * @var string
+     * @Primary
+     * @Column(column='rate_id', type='string', length=36, nullable=false)
      */
     public $rateId;
 
     /**
-     *
      * @var string
+     * @Column(column='rate_user_id', type='string', length=36, nullable=false)
      */
     public $rateUserId;
 
     /**
-     *
      * @var string
+     * @Column(column='product_id', type='string', length=36, nullable=false)
      */
-    public $rateProductId;
+    public $productId;
 
     /**
-     *
      * @var string
+     * @Column(column='rate_text', type='text', nullable=true)
      */
     public $rateText;
 
     /**
-     *
      * @var string
+     * @Column(column='rate_stars', type='integer', length=11, nullable=false)
      */
     public $rateStars;
 
     /**
-     *
      * @var string
-     */
-    public $rateImages;
-
-    /**
-     *
-     * @var string
+     * @Column(column='created_at', type='datetime', nullable=false)
      */
     public $createdAt;
 
     /**
-     *
      * @var string
+     * @Column(column='updated_at', type='datetime', nullable=true)
      */
     public $updatedAt;
 
     /**
-     *
      * @var string
+     * @Column(column='deleted_at', type='datetime', nullable=true)
      */
     public $deletedAt;
 
+    /** @var array */
+    private $images;
+
     /**
-     *
-     * @var integer
+     * @var bool
+     * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
      */
     public $isDeleted;
 
@@ -119,6 +117,18 @@ class ProductRates extends BaseModel
         return parent::findFirst($parameters);
     }
 
+    public function afterFetch()
+    {
+        $images = [];
+        if (!empty($this->rateImages)) {
+            $this->rateImages->filter(function ($image) use(&$images) {
+                $images[] = $image->toApiArray();
+            });
+        }
+
+        $this->images = $images;
+    }
+
     /**
      * Independent Column Mapping.
      * Keys are the real names in the table and the values their names in the application
@@ -130,10 +140,9 @@ class ProductRates extends BaseModel
         return [
             'rate_id' => 'rateId',
             'rate_user_id' => 'rateUserId',
-            'rate_product_id' => 'rateProductId',
+            'product_id' => 'productId',
             'rate_text' => 'rateText',
             'rate_stars' => 'rateStars',
-            'rate_images' => 'rateImages',
             'created_at' => 'createdAt',
             'updated_at' => 'updatedAt',
             'deleted_at' => 'deletedAt',
@@ -141,4 +150,15 @@ class ProductRates extends BaseModel
         ];
     }
 
+    public function toApiArray()
+    {
+        return [
+            'rateId' => $this->rateId,
+            'rateUserId' => $this->rateUserId,
+            'productId' => $this->productId,
+            'rateText' => $this->rateText,
+            'rateStars' => $this->rateStars,
+            'rateImages' => $this->images
+        ];
+    }
 }

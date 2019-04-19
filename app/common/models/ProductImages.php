@@ -19,66 +19,78 @@ class ProductImages extends BaseModel
     /**
      *
      * @var string
+     * @Primary
+     * @Column(column='image_id', type='string', length=36, nullable=false)
      */
     public $imageId;
 
     /**
      *
      * @var string
+     * @Column(column='product_id', type='string', length=36, nullable=false)
      */
     public $productId;
 
     /**
      *
      * @var string
+     * @Column(column='image_link', type='text', nullable=false)
      */
     public $imageLink;
 
     /**
      * @var int
+     * @Column(column='image_size', type='integer', length=11, nullable=false)
      */
     public $imageSize;
 
     /**
      * @var string
+     * @Column(column='image_type', type='varchar', length=15, nullable=true)
      */
     public $imageType;
 
     /**
      * @var int
+     * @Column(column='image_width', type='integer', length=4, nullable=true)
      */
     public $imageWidth;
 
     /**
      * @var int
+     * @Column(column='image_height', type='integer', length=4, nullable=true)
      */
     public $imageHeight;
 
     /**
      * @var string
+     * @Column(column='image_delete_hash', type='varchar', length=20, nullable=false)
      */
     public $imageDeleteHash;
 
     /**
      * @var string
+     * @Column(column='image_name', type='varchar', length=100, nullable=true)
      */
     public $imageName;
 
     /**
-     *
      * @var string
+     * @Column(column='created_at', type='datetime', nullable=false)
      */
     public $createdAt;
 
     /**
      *
      * @var string
+     * @Column(column='deleted_at', type='datetime', nullable=true)
      */
     public $deletedAt;
 
     /**
      *
      * @var integer
+     * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
      */
     public $isDeleted;
 
@@ -96,7 +108,7 @@ class ProductImages extends BaseModel
         $this->defaultBehavior();
         $this->setSchema("shop_products");
         $this->setSource("product_images");
-        $this->belongsTo('productId', 'Shop_products\Models\Product', 'productId', ['alias' => 'Product']);
+        $this->belongsTo('productId', 'Shop_products\Models\Product', 'productId', ['alias' => 'product']);
     }
 
     /**

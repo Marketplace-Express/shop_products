@@ -23,16 +23,19 @@ class PhysicalProduct extends Product
     /**
      *
      * @var string
+     * @Column(column='product_type', type='string', nullable=false)
      */
     public $productType = ProductTypesEnums::TYPE_PHYSICAL;
 
     /**
      * @var string
+     * @Column(column='product_brand_id', type='string', length=36, nullable=true)
      */
     public $productBrandId;
 
     /**
      * @var float
+     * @Column(column='product_weight', type='float', nullable=true)
      */
     public $productWeight;
 
@@ -83,7 +86,7 @@ class PhysicalProduct extends Product
         $validation = new Validation();
 
         $validation->add(
-            ['productBrandId'],
+            'productBrandId',
             new UuidValidator([
                 'allowEmpty' => true
             ])

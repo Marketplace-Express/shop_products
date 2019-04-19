@@ -20,7 +20,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
 {
     private $brandId;
     private $weight;
-    private $dimensions;
+    private $packageDimensions;
 
     /**
      * @param mixed $brandId
@@ -39,11 +39,11 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
     }
 
     /**
-     * @param mixed $dimensions
+     * @param mixed $packageDimensions
      */
-    public function setDimensions($dimensions): void
+    public function setPackageDimensions($packageDimensions): void
     {
-        $this->dimensions = $dimensions;
+        $this->packageDimensions = $packageDimensions;
     }
 
     private function objectToArray($object)
@@ -59,7 +59,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
         return array_merge(parent::fields(), [
             'brandId'  => $this->brandId,
             'weight' => $this->weight,
-            'dimensions' => $this->objectToArray($this->dimensions)
+            'packageDimensions' => $this->objectToArray($this->packageDimensions)
         ]);
     }
 
@@ -86,12 +86,12 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
         );
 
         $validator->add(
-            'dimensions',
+            'packageDimensions',
             new Validation\Validator\PresenceOf()
         );
 
         $validator->add(
-            'dimensions',
+            'packageDimensions',
             new TypeValidator([
                 'type' => TypeValidator::TYPE_FLOAT,
                 'allowEmpty' => false,
@@ -162,7 +162,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
             'productBrandId' => $this->brandId,
             'productType' => ProductTypesEnums::TYPE_PHYSICAL,
             'productWeight' => $this->weight,
-            'productDimensions' => $this->objectToArray($this->dimensions)
+            'productPackageDimensions' => $this->objectToArray($this->packageDimensions)
         ]);
     }
 }

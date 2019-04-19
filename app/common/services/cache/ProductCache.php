@@ -134,7 +134,7 @@ class ProductCache implements DataSourceInterface
     {
         $cacheKey = $this->getKey($vendorId, $categoryId);
         $result = self::$instance->hGetAll($cacheKey);
-        if ($result) {
+        if (0 && $result) {
             $result = array_values(array_map(function ($product) {
                 return json_decode($product, true);
             }, $result));

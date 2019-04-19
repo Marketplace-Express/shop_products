@@ -69,7 +69,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
      */
     public function setPrice($price): void
     {
-        $this->price = $price;
+        $this->price = (float) $price;
     }
 
     /**
@@ -77,7 +77,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
      */
     public function setSalePrice($salePrice): void
     {
-        $this->salePrice = $salePrice;
+        $this->salePrice = (float) $salePrice;
     }
 
     /**

@@ -50,7 +50,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
 
 //        $this->generate();
         $this->validate($accessToken);
-        
+
         /** @var stdClass $accessToken */
         $this->token = $this->getJsonMapper()->map(
             $accessToken,
@@ -64,7 +64,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
             'user_id' => '12345',
             'vendor_id' => '54321',
             'access_level' => 2,
-            'exp' => time() + 1800,
+            'exp' => time() + 3600,
             'entropy' => mt_rand(10000, 20000)
         ], $this->saltKey, 'HS512'));
     }
@@ -93,7 +93,11 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
             }
             $accessToken = explode(' ', $accessToken)[1];
 
-            $accessToken = JWT::decode($accessToken, $this->saltKey, [$this->allowedAlg]);
+            try {
+                $accessToken = JWT::decode($accessToken, $this->saltKey, [$this->allowedAlg]);
+            } catch (\UnexpectedValueException $exception) {
+                throw new Exception('Invalid token', 400, $exception);
+            }
 
             // user is logged in, then check token structure
 

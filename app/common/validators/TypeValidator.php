@@ -62,39 +62,39 @@ class TypeValidator extends Validator implements ValidatorInterface
         foreach ($values as $value) {
             switch ($type) {
                 case self::TYPE_BOOLEAN:
-                    $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                    $filteredValue = filter_var($value, FILTER_VALIDATE_BOOLEAN);
                     break;
                 case self::TYPE_STRING:
-                    $value = filter_var($value, FILTER_SANITIZE_STRING);
+                    $filteredValue = filter_var($value, FILTER_SANITIZE_STRING);
                     break;
                 case self::TYPE_INTEGER:
-                    $value = filter_var($value, FILTER_VALIDATE_INT);
+                    $filteredValue = filter_var($value, FILTER_VALIDATE_INT);
                     break;
                 case self::TYPE_FLOAT:
                 case self::TYPE_DOUBLE:
-                    $value = filter_var($value, FILTER_VALIDATE_FLOAT);
+                    $filteredValue = filter_var($value, FILTER_VALIDATE_FLOAT);
                     break;
                 case self::TYPE_OBJECT:
                     $className = $this->getOption('className');
-                    if (empty($className)) {
-                        throw new \Exception('You have to provide a class name');
+                    if (empty($className) || !is_string($className)) {
+                        throw new \Exception('Class name must be string');
                     }
                     $class = new $className;
-                    $value = $className instanceof $class;
+                    $filteredValue = $className instanceof $class;
                     break;
                 case self::TYPE_URL:
-                    $value = filter_var($value, FILTER_VALIDATE_URL);
+                    $filteredValue = filter_var($value, FILTER_VALIDATE_URL);
                     break;
                 case self::TYPE_EMAIL:
-                    $value = filter_var($value, FILTER_VALIDATE_EMAIL);
+                    $filteredValue = filter_var($value, FILTER_VALIDATE_EMAIL);
                     break;
                 case self::TYPE_IP:
-                    $value = filter_var($value, FILTER_VALIDATE_IP);
+                    $filteredValue = filter_var($value, FILTER_VALIDATE_IP);
                     break;
                 default:
                     throw new \Exception('Unknown Type', 400);
             }
-            if (!$allowEmpty && !$value) {
+            if ($filteredValue !== $value && !$allowEmpty) {
                 $message = $this->getOption('message', 'Invalid value type');
                 $validation->appendMessage(new Message($message, $attribute));
                 return false;

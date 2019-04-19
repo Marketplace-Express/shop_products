@@ -159,9 +159,15 @@ $di->setShared('productsVariationsCache', function () {
  * If the configuration specify the use of metadata adapter use it or use memory otherwise
  */
 $di->setShared('modelsMetadata', function () {
-    return new MetaDataAdapter([
+    $metadata = new MetaDataAdapter([
         'lifetime' => 1
     ]);
+
+    $metadata->setStrategy(
+        new \Phalcon\Mvc\Model\MetaData\Strategy\Annotations()
+    );
+
+    return $metadata;
 });
 
 $di->setShared('logger', function() {

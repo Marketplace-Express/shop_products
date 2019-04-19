@@ -20,11 +20,13 @@ class DownloadableProduct extends Product
 
     /**
      * @var string
+     * @Column(column='product_type', type='string', nullable=false)
      */
     public $productType = ProductTypesEnums::TYPE_DOWNLOADABLE;
 
     /**
      * @var float
+     * @Column(column='product_digital_size', type='integer', length=11, nullable=false)
      */
     public $productDigitalSize;
 

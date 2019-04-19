@@ -90,7 +90,18 @@ class ProductsService
     }
 
     /**
+     * @param string $productId
+     * @return bool
+     * @throws Exception
+     */
+    public function checkProductExistence(string $productId): bool
+    {
+        return (bool) $this->getRepository()->isExists($productId);
+    }
+
+    /**
      * @param array $identifier
+     * @param int $accessLevel
      * @return array
      * @throws Exception
      */
@@ -102,9 +113,9 @@ class ProductsService
             $editMode = false;
         }
         if (!empty($identifier['vendorId']) && empty($identifier['categoryId'])) {
-            return $this->getDataSource()->getByVendorId($identifier['vendorId']);
+            return $this->getDataSource()->getByVendorId($identifier['vendorId'], $editMode);
         } elseif (!empty($identifier['vendorId']) && !empty($identifier['categoryId'])) {
-            return $this->getDataSource()->getByCategoryId($identifier['categoryId'], $identifier['vendorId']);
+            return $this->getDataSource()->getByCategoryId($identifier['categoryId'], $identifier['vendorId'], $editMode);
         } else {
             throw new Exception('Unknown modifier');
         }
@@ -148,11 +159,11 @@ class ProductsService
     public function create(array $data)
     {
         $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
-        $product = $this->getRepository()->create($data);
         if (!empty($album = $this->createAlbum($data['productId']))) {
             $data['productAlbumId'] = $album['albumId'];
             $data['productAlbumDeleteHash'] = $album['deleteHash'];
         }
+        $product = $this->getRepository()->create($data);
         try {
             if ($product->isPublished) {
                 ProductCache::getInstance()->setInCache($data['productVendorId'], $data['productCategoryId'], $data);
@@ -182,6 +193,7 @@ class ProductsService
         try {
             if ($product['isPublished']) {
                 ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $productId, $product);
+                ProductCache::indexProduct($product);
             } else {
                 ProductCache::getInstance()->invalidateCache($product['productVendorId'], $product['productCategoryId'], [$productId]);
             }
