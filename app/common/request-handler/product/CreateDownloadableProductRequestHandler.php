@@ -17,7 +17,6 @@ use Shop_products\Utils\DigitalUnitsConverterUtil;
 
 class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandler implements RequestHandlerInterface
 {
-    private $brandId;
     private $digitalSize;
 
     /**
@@ -34,7 +33,6 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
     protected function fields()
     {
         return array_merge(parent::fields(), [
-            'brandId'  => $this->brandId,
             'digitalSize' => $this->digitalSize
         ]);
     }
@@ -63,7 +61,9 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
             new Validation\Validator\NumericValidator([
                 'min' => 1,
                 'max' => $this->getMaxDigitalSizeValidationConfig(),
-                'messageMaximum' => 'Digital size exceeds the max limit ' . DigitalUnitsConverterUtil::bytesToMb($this->getMaxDigitalSizeValidationConfig()),
+                'messageMaximum' => 'Digital size exceeds the max limit ' .
+                    DigitalUnitsConverterUtil::bytesToMb($this->getMaxDigitalSizeValidationConfig()).
+                    ' Mb',
                 'messageMinimum' => 'Invalid digital size'
             ])
         );

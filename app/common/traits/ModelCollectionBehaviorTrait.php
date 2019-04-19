@@ -9,8 +9,11 @@ namespace Shop_products\Traits;
 
 use MongoDB\BSON\UTCDateTime;
 use Phalcon\Mvc\Collection;
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\MongoCollection;
 use Phalcon\Mvc\Model;
+use Shop_products\Collections\Behaviors\SoftDeleteBehavior;
+use Shop_products\Models\Behaviors\BooleanBehavior;
 
 trait ModelCollectionBehaviorTrait
 {
@@ -44,6 +47,8 @@ trait ModelCollectionBehaviorTrait
                 ]
             ]));
 
+            $this->addBehavior(new BooleanBehavior());
+
         } elseif ($modelType === MongoCollection::class) {
 
             $this->addBehavior(new Collection\Behavior\SoftDelete([
@@ -74,5 +79,10 @@ trait ModelCollectionBehaviorTrait
         } else {
             throw new \Exception('Use ModelCollectionBehaviorTrait only with Models and Collections');
         }
+    }
+
+    public function notify($event, ModelInterface $model)
+    {
+        $x = $event;
     }
 }

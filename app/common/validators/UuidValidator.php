@@ -8,6 +8,7 @@
 namespace Shop_products\Validators;
 
 
+use Phalcon\Validation;
 use Phalcon\Validation\Message;
 use Phalcon\Validation\Validator;
 use Phalcon\Validation\ValidatorInterface;
@@ -26,11 +27,11 @@ class UuidValidator extends Validator implements ValidatorInterface
     /**
      * Executes the validation
      *
-     * @param \Phalcon\Validation $validation
+     * @param Validation $validation
      * @param string $attribute
      * @return bool
      */
-    public function validate(\Phalcon\Validation $validation, $attribute)
+    public function validate(Validation $validation, $attribute)
     {
         $value = $validation->getValue($attribute);
         if (!$this->getUuidUtil()->isValid($value) && !$this->getOption('allowEmpty')) {

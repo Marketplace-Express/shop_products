@@ -8,6 +8,8 @@
 namespace Shop_products\RequestHandler\Product;
 
 
+use Exception;
+use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
@@ -67,7 +69,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
      */
     public function setPrice($price): void
     {
-        $this->price = $price;
+        $this->price = (float) $price;
     }
 
     /**
@@ -75,7 +77,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
      */
     public function setSalePrice($salePrice): void
     {
-        $this->salePrice = $salePrice;
+        $this->salePrice = (float) $salePrice;
     }
 
     /**
@@ -137,6 +139,21 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
     public function validate(): Group
     {
         $validator = new Validation();
+
+        // Validate English input
+        $validator->add(
+            'title',
+            new Validation\Validator\Callback([
+                'callback' => function ($data) {
+                    $name = preg_replace('/[\d\s_]/i', '', $data['title']); // clean string
+                    if (preg_match('/[a-z]/i', $name) == false) {
+                        return false;
+                    }
+                    return true;
+                },
+                'message' => 'English language only supported'
+            ])
+        );
 
         $validator->add(
             'title',
@@ -250,7 +267,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
 
     /**
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function toArray(): array
     {
@@ -265,7 +282,8 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             'productSalePrice' => $this->salePrice,
             'productSaleEndTime' => $this->endSaleTime,
             'productKeywords' => $this->keywords,
-            'productSegments' => $this->segments
+            'productSegments' => $this->segments,
+            'productLinkSlug' => (new Slug())->generate($this->title)
         ];
     }
 }

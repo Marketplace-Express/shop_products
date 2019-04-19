@@ -9,10 +9,13 @@ $loader = new Loader();
  */
 $loader->registerNamespaces([
     'Shop_products\Models' => APP_PATH . '/common/models/',
+    'Shop_products\Models\Behavior' => APP_PATH . '/common/models/behaviors/',
     'Shop_products\Collections' => APP_PATH . '/common/collections',
     'Shop_products\Controllers' => APP_PATH . '/common/controllers/',
+    'Shop_products\Events' => APP_PATH . '/common/events/',
     'Shop_products\Library' => APP_PATH . '/common/library/',
     'Shop_products\Services' => APP_PATH . '/common/services/',
+    'Shop_products\Services\User' => APP_PATH . '/common/services/user/',
     'Shop_products\RequestHandler' => APP_PATH . '/common/request-handler/',
     'Shop_products\RequestHandler\Product' => APP_PATH . '/common/request-handler/product/',
     'Shop_products\RequestHandler\Variation' => APP_PATH . '/common/request-handler/variation/',

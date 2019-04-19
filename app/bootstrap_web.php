@@ -56,7 +56,7 @@ try {
 
     echo str_replace(["\n","\r","\t"], '', $application->handle()->getContent());
 
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo $e->getMessage() . '<br>';
     echo '<pre>' . $e->getTraceAsString() . '</pre>';
 }

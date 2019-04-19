@@ -13,13 +13,15 @@ class GenderEnum
     const GENDER_MALE = 'male';
     const GENDER_FEMALE = 'female';
     const GENDER_UNKNOWN = 'unknown';
+    const GENDER_ALL = 'all';
 
     public static function getValues()
     {
         return [
             self::GENDER_MALE,
             self::GENDER_FEMALE,
-            self::GENDER_UNKNOWN
+            self::GENDER_UNKNOWN,
+            self::GENDER_ALL
         ];
     }
 }

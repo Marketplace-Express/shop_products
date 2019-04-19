@@ -12,6 +12,7 @@ use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
+use Shop_products\Services\User\UserService;
 
 class GetRequestHandler extends BaseController implements RequestHandlerInterface
 {
@@ -33,6 +34,14 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
         return $this->vendorId;
     }
 
+    /**
+     * @return int
+     */
+    public function getAccessLevel(): int
+    {
+        return $this->getUserService()->accessLevel;
+    }
+
     public function setCategoryId(string $categoryId)
     {
         $this->categoryId = $categoryId;
@@ -41,6 +50,14 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
     public function setVendorId(string $vendorId)
     {
         $this->vendorId = $vendorId;
+    }
+
+    /**
+     * @return UserService
+     */
+    private function getUserService(): UserService
+    {
+        return $this->getDI()->getUserService();
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator

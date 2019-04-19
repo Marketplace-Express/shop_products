@@ -25,6 +25,6 @@ class DigitalUnitsConverterUtil
      */
     public static function bytesToMb(?int $size)
     {
-        return $size ? $size / 1024 / 1024 : 0;
+        return $size ? round($size / 1024 / 1024, 2, PHP_ROUND_HALF_UP) : 0;
     }
 }

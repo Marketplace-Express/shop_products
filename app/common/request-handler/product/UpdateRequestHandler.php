@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * User: Wajdi Jurry
  * Date: 13/01/19
@@ -7,16 +8,18 @@
 
 namespace Shop_products\RequestHandler\Product;
 
-
+use Phalcon\Di;
+use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
+use Shop_products\Utils\DigitalUnitsConverterUtil;
 use Shop_products\Validators\TypeValidator;
 use Shop_products\Validators\UuidValidator;
 
-abstract class AbstractUpdateRequestHandler extends BaseController implements RequestHandlerInterface
+class UpdateRequestHandler extends BaseController implements RequestHandlerInterface
 {
     private $title;
     private $categoryId;
@@ -27,6 +30,10 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
     private $endSaleTime;
     private $keywords;
     private $isPublished;
+    private $brandId;
+    private $weight;
+    private $packageDimensions;
+    private $digitalSize;
 
     protected $errorMessages;
 
@@ -95,6 +102,38 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
     }
 
     /**
+     * @param mixed $brandId
+     */
+    public function setBrandId($brandId): void
+    {
+        $this->brandId = $brandId;
+    }
+
+    /**
+     * @param mixed $weight
+     */
+    public function setWeight($weight): void
+    {
+        $this->weight = $weight;
+    }
+
+    /**
+     * @param mixed $packageDimensions
+     */
+    public function setPackageDimensions($packageDimensions): void
+    {
+        $this->packageDimensions = $packageDimensions;
+    }
+
+    /**
+     * @param mixed $digitalSize
+     */
+    public function setDigitalSize($digitalSize): void
+    {
+        $this->digitalSize = $digitalSize;
+    }
+
+    /**
      * @param mixed $isPublished
      */
     public function setIsPublished($isPublished): void
@@ -104,21 +143,12 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
 
     private function getValidationConfig()
     {
-        return \Phalcon\Di::getDefault()->getConfig()->application->validation->productTitle;
+        return Di::getDefault()->getConfig()->application->validation->productTitle;
     }
 
-    protected function fields()
+    private function getDigitalProductValidationConfig()
     {
-        return [
-            'title' => $this->title,
-            'categoryId' => $this->categoryId,
-            'customPageId' => $this->customPageId,
-            'price' => $this->price,
-            'salePrice' => $this->salePrice,
-            'endSaleTime' => $this->endSaleTime,
-            'keywords' => $this->keywords,
-            'isPublished' => $this->isPublished
-        ];
+        return $this->getDI()->getConfig()->application->validation->downloadable;
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
@@ -127,6 +157,21 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
     public function validate(): Group
     {
         $validator = new Validation();
+
+        // Validate English input
+        $validator->add(
+            'name',
+            new Validation\Validator\Callback([
+                'callback' => function ($data) {
+                    $name = preg_replace('/[\d\s_]/i', '', $data['title']); // clean string
+                    if (!empty($name) && preg_match('/[a-z]/i', $name) == false) {
+                        return false;
+                    }
+                    return true;
+                },
+                'message' => 'English language only supported'
+            ])
+        );
 
         $validator->add(
             'title',
@@ -140,15 +185,32 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
         );
 
         $validator->add(
-            ['categoryId', 'customPageId'],
-            new UuidValidator()
+            ['categoryId', 'customPageId', 'brandId'],
+            new UuidValidator([
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
+            'price',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT
+            ])
+        );
+
+        $validator->add(
+            'salePrice',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT
+            ])
         );
 
         $validator->add(
             'price',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => true,
-                'min' => 0
+                'min' => 0,
+                'allowEmpty' => true
             ])
         );
 
@@ -190,6 +252,37 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
         );
 
         $validator->add(
+            'weight',
+            new Validation\Validator\NumericValidator([
+                'allowFloat' => true,
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
+            'packageDimensions',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT,
+                'allowEmpty' => true,
+                'message' => 'Invalid dimensions'
+            ])
+        );
+
+        $validator->add(
+            'digitalSize',
+            new Validation\Validator\NumericValidator([
+                'min' => 1,
+                'max' => $this->getDigitalProductValidationConfig()->maxDigitalSize,
+                'messageMaximum' => 'Digital size exceeds the max limit ' .
+                    DigitalUnitsConverterUtil::bytesToMb(
+                        $this->getDigitalProductValidationConfig()->maxDigitalSize
+                    ) . ' Mb',
+                'messageMinimum' => 'Invalid digital size',
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
             'isPublished',
             new TypeValidator([
                 'type' => TypeValidator::TYPE_BOOLEAN,
@@ -205,6 +298,10 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
             'salePrice' => $this->salePrice,
             'endSaleTime' => $this->endSaleTime,
             'keywords' => $this->keywords,
+            'brandId' => $this->brandId,
+            'weight' => $this->weight,
+            'packageDimensions' => $this->packageDimensions,
+            'digitalSize' => $this->digitalSize,
             'isPublished' => $this->isPublished
         ]);
     }
@@ -258,6 +355,7 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
 
         if (!empty($this->title)) {
             $result['productTitle'] = $this->title;
+            $result['productLinkSlug'] = (new Slug())->generate($this->title);
         }
 
         if (!empty($this->categoryId)) {
@@ -284,7 +382,23 @@ abstract class AbstractUpdateRequestHandler extends BaseController implements Re
             $result['productKeywords'] = implode(',', $this->keywords);
         }
 
-        if (!empty($this->isPublished)) {
+        if (!empty($this->brandId)) {
+            $result['productBrandId'] = $this->brandId;
+        }
+
+        if (!empty($this->weight)) {
+            $result['productWeight'] = $this->weight;
+        }
+
+        if (!empty($this->packageDimensions)) {
+            $result['productPackageDimensions'] = $this->packageDimensions;
+        }
+
+        if (!empty($this->digitalSize)) {
+            $result['productDigitalSize'] = $this->digitalSize;
+        }
+
+        if (in_array($this->isPublished, [true, false], true)) {
             $result['isPublished'] = $this->isPublished;
         }
 

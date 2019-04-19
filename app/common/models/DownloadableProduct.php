@@ -14,23 +14,25 @@ use Shop_products\Utils\DigitalUnitsConverterUtil;
 
 class DownloadableProduct extends Product
 {
-    const DOWNLOADABLE_PRODUCT_WHITE_LIST = [
+    const WHITE_LIST = [
         'productDigitalSize'
     ];
 
     /**
      * @var string
+     * @Column(column='product_type', type='string', nullable=false)
      */
     public $productType = ProductTypesEnums::TYPE_DOWNLOADABLE;
 
     /**
      * @var float
+     * @Column(column='product_digital_size', type='integer', length=11, nullable=false)
      */
     public $productDigitalSize;
 
     public static function getWhiteList()
     {
-        return array_merge(parent::getWhiteList(), self::DOWNLOADABLE_PRODUCT_WHITE_LIST);
+        return array_merge(parent::getWhiteList(), self::WHITE_LIST);
     }
 
     /**
@@ -40,7 +42,6 @@ class DownloadableProduct extends Product
     public function toArray($columns = null)
     {
         return array_merge(parent::toArray($columns), [
-            'productType' => $this->productType,
             'productDigitalSize' => $this->productDigitalSize
         ]);
     }
@@ -51,7 +52,7 @@ class DownloadableProduct extends Product
     public function toApiArray()
     {
         return array_merge(parent::toApiArray(), [
-            'productDigitalSize' => $this->productDigitalSize
+            'productDigitalSize' => DigitalUnitsConverterUtil::bytesToMb($this->productDigitalSize)
         ]);
     }
 

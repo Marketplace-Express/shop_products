@@ -14,7 +14,7 @@ use Shop_products\Validators\UuidValidator;
 
 class PhysicalProduct extends Product
 {
-    const PHYSICAL_PRODUCT_WHITE_LIST = [
+    const WHITE_LIST = [
         'productBrandId',
         'productWeight',
         'productDimensions'
@@ -23,17 +23,19 @@ class PhysicalProduct extends Product
     /**
      *
      * @var string
+     * @Column(column='product_type', type='string', nullable=false)
      */
     public $productType = ProductTypesEnums::TYPE_PHYSICAL;
 
     /**
-     *
      * @var string
+     * @Column(column='product_brand_id', type='string', length=36, nullable=true)
      */
     public $productBrandId;
 
     /**
      * @var float
+     * @Column(column='product_weight', type='float', nullable=true)
      */
     public $productWeight;
 
@@ -41,22 +43,14 @@ class PhysicalProduct extends Product
      * @var array
      * This value appended from Mongo Collection
      */
-    private $dimensions;
-
-    /**
-     * @param array $dimensions
-     */
-    public function setDimensions(array $dimensions): void
-    {
-        $this->dimensions = $dimensions;
-    }
+    private $productDimensions;
 
     /**
      * @return array
      */
     public static function getWhiteList()
     {
-        return array_merge(parent::getWhiteList(), self::PHYSICAL_PRODUCT_WHITE_LIST);
+        return array_merge(parent::getWhiteList(), self::WHITE_LIST);
     }
 
     /**
@@ -68,7 +62,7 @@ class PhysicalProduct extends Product
         return array_merge(parent::toArray(),[
             'productBrandId' => $this->productBrandId,
             'productWeight' => $this->productWeight,
-            'productDimensions' => $this->dimensions
+            'productDimensions' => $this->productDimensions
         ]);
     }
 
@@ -79,9 +73,8 @@ class PhysicalProduct extends Product
     {
         return array_merge(parent::toApiArray(), [
             'productBrandId' => $this->productBrandId,
-            'productType' => $this->productType,
             'productWeight' => $this->productWeight,
-            'productDimensions' => $this->dimensions
+            'productDimensions' => $this->productDimensions
         ]);
     }
 
@@ -93,7 +86,7 @@ class PhysicalProduct extends Product
         $validation = new Validation();
 
         $validation->add(
-            ['productBrandId'],
+            'productBrandId',
             new UuidValidator([
                 'allowEmpty' => true
             ])

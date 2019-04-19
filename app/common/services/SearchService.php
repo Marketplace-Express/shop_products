@@ -39,7 +39,7 @@ class SearchService
      */
     public function autocomplete(array $searchParams = []): array
     {
-        return ['results' => self::getDataSource()->get($searchParams['keyword'])];
+        return ['results' => self::getDataSource('suggestion')->get($searchParams['keyword'])];
     }
 
     /**

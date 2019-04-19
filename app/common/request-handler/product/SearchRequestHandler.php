@@ -105,7 +105,7 @@ class SearchRequestHandler extends BaseController implements RequestHandlerInter
     public function toArray(): array
     {
         return [
-            'keyword' => $this->keyword
+            'keyword' => $this->keyword . '*'
         ];
     }
 }
