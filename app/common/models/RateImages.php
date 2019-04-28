@@ -8,25 +8,25 @@ class RateImages extends BaseModel
     /**
      * @var string
      * @Primary
-     * @Column(column="image_id", type="string", length=36, nullable=false)
+     * @Column(column="image_id", type="string", length=36)
      */
     public $imageId;
 
     /**
      * @var string
-     * @Column(column="rate_id", type="string", length=36, nullable=false)
+     * @Column(column="rate_id", type="string", length=36)
      */
     public $rateId;
 
     /**
      * @var string
-     * @Column(column="image_link", type="string", nullable=false)
+     * @Column(column="image_link", type="string")
      */
     public $imageLink;
 
     /**
      * @var string
-     * @Column(column="created_at", type="string", nullable=false)
+     * @Column(column="created_at", type="string")
      */
     public $createdAt;
 
@@ -38,7 +38,7 @@ class RateImages extends BaseModel
 
     /**
      * @var integer
-     * @Column(column="is_deleted", type="integer", length=1, nullable=false, default=0)
+     * @Column(column="is_deleted", type="integer", length=1, default=0)
      */
     public $isDeleted;
 
@@ -47,9 +47,16 @@ class RateImages extends BaseModel
      */
     public function initialize()
     {
-        $this->setSchema("shop_products");
-        $this->setSource("rate_images");
-        $this->belongsTo('rate_id', ProductRates::class, 'rate_id', ['alias' => 'productRates']);
+        $this->setSchema('shop_products');
+        $this->setSource('rate_images');
+        $this->belongsTo(
+            'rate_id',
+            ProductRates::class,
+            'rate_id',
+            [
+                'reusable' => true
+            ]
+        );
     }
 
     /**

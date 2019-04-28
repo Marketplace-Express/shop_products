@@ -90,7 +90,8 @@ return new Config([
                 'allowedTypes' => [
                     'image/jpg',
                     'image/jpeg',
-                    'image/png'
+                    'image/png',
+                    'image/webp'
                 ],
                 'minResolution' => '800x600'
             ]

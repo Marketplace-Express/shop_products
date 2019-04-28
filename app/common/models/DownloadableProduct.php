@@ -12,7 +12,11 @@ use Phalcon\Validation;
 use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\Utils\DigitalUnitsConverterUtil;
 
-class DownloadableProduct extends Product
+/**
+ * Class DownloadableProduct
+ * @package Shop_products\Models
+ */
+class DownloadableProduct extends BaseModel
 {
     const WHITE_LIST = [
         'productDigitalSize'
@@ -20,9 +24,10 @@ class DownloadableProduct extends Product
 
     /**
      * @var string
-     * @Column(column='product_type', type='string', nullable=false)
+     * @PrimaryKey
+     * @Column(column='product_id', type="string", length=36)
      */
-    public $productType = ProductTypesEnums::TYPE_DOWNLOADABLE;
+    public $productId;
 
     /**
      * @var float
@@ -30,20 +35,37 @@ class DownloadableProduct extends Product
      */
     public $productDigitalSize;
 
-    public static function getWhiteList()
+    public function initialize()
     {
-        return array_merge(parent::getWhiteList(), self::WHITE_LIST);
+        $this->belongsTo(
+            'productId',
+            Product::class,
+            'productId',
+            [
+                'reusable' => true
+            ]
+        );
     }
 
     /**
-     * @param null $columns
-     * @return array
+     * @return string
      */
-    public function toArray($columns = null)
+    public function getSource()
     {
-        return array_merge(parent::toArray($columns), [
-            'productDigitalSize' => $this->productDigitalSize
-        ]);
+        return 'downloadable_products';
+    }
+
+    public static function getWhiteList()
+    {
+        return array_merge(Product::getWhiteList(), self::WHITE_LIST);
+    }
+
+    public function columnMap()
+    {
+        return [
+            'product_id' => 'productId',
+            'product_digital_size' => 'productDigitalSize'
+        ];
     }
 
     /**
@@ -51,9 +73,9 @@ class DownloadableProduct extends Product
      */
     public function toApiArray()
     {
-        return array_merge(parent::toApiArray(), [
-            'productDigitalSize' => DigitalUnitsConverterUtil::bytesToMb($this->productDigitalSize)
-        ]);
+        return [
+            'productDigitalSize' => (int) $this->productDigitalSize
+        ];
     }
 
     /**
@@ -87,6 +109,6 @@ class DownloadableProduct extends Product
 
         $this->_errorMessages = $messages;
 
-        return !$messages->count() && parent::validation();
+        return !$messages->count();
     }
 }

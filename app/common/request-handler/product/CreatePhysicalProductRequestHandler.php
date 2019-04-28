@@ -18,6 +18,7 @@ use Shop_products\Validators\UuidValidator;
 
 class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler implements RequestHandlerInterface
 {
+
     private $brandId;
     private $weight;
     private $packageDimensions;
@@ -48,7 +49,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
 
     private function objectToArray($object)
     {
-        return json_decode(json_encode($object), true);
+        return json_decode(json_encode($object, JSON_PRESERVE_ZERO_FRACTION), true);
     }
 
     /**
@@ -159,6 +160,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
+            'productId' => $this->getUuidUtil()->uuid(),
             'productBrandId' => $this->brandId,
             'productType' => ProductTypesEnums::TYPE_PHYSICAL,
             'productWeight' => $this->weight,

@@ -9,23 +9,27 @@ namespace Shop_products\Models;
 
 
 use Phalcon\Validation;
-use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\Validators\UuidValidator;
 
-class PhysicalProduct extends Product
+/**
+ * Class PhysicalProduct
+ * @package Shop_products\Models
+ * @Entity
+ */
+class PhysicalProduct extends BaseModel
 {
     const WHITE_LIST = [
         'productBrandId',
         'productWeight',
-        'productDimensions'
+        'packageDimensions'
     ];
 
     /**
-     *
      * @var string
-     * @Column(column='product_type', type='string', nullable=false)
+     * @PrimaryKey
+     * @Column(column='product_id', type="string", length=36)
      */
-    public $productType = ProductTypesEnums::TYPE_PHYSICAL;
+    public $productId;
 
     /**
      * @var string
@@ -35,35 +39,45 @@ class PhysicalProduct extends Product
 
     /**
      * @var float
-     * @Column(column='product_weight', type='float', nullable=true)
+     * @Column(column='product_weight', type='float')
      */
     public $productWeight;
 
     /**
-     * @var array
-     * This value appended from Mongo Collection
+     * @return string
      */
-    private $productDimensions;
+    public function getSource()
+    {
+        return 'physical_products';
+    }
+
+    public function initialize()
+    {
+        $this->belongsTo(
+            'productId',
+            Product::class,
+            'productId',
+            [
+                'reusable' => true
+            ]
+        );
+    }
 
     /**
      * @return array
      */
     public static function getWhiteList()
     {
-        return array_merge(parent::getWhiteList(), self::WHITE_LIST);
+        return array_merge(Product::getWhiteList(), self::WHITE_LIST);
     }
 
-    /**
-     * @param null $columns
-     * @return array
-     */
-    public function toArray($columns = null)
+    public function columnMap()
     {
-        return array_merge(parent::toArray(),[
-            'productBrandId' => $this->productBrandId,
-            'productWeight' => $this->productWeight,
-            'productDimensions' => $this->productDimensions
-        ]);
+        return [
+            'product_id' => 'productId',
+            'product_weight' => 'productWeight',
+            'product_brand_id' => 'productBrandId'
+        ];
     }
 
     /**
@@ -71,11 +85,10 @@ class PhysicalProduct extends Product
      */
     public function toApiArray()
     {
-        return array_merge(parent::toApiArray(), [
+        return [
             'productBrandId' => $this->productBrandId,
-            'productWeight' => $this->productWeight,
-            'productDimensions' => $this->productDimensions
-        ]);
+            'productWeight' => (float) $this->productWeight
+        ];
     }
 
     /**
@@ -109,6 +122,6 @@ class PhysicalProduct extends Product
 
         $this->_errorMessages = $messages;
 
-        return !$messages->count() && parent::validation();
+        return !$messages->count();
     }
 }

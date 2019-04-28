@@ -13,6 +13,10 @@ use Shop_products\Validators\SegmentsValidator;
 use Shop_products\Validators\TypeValidator;
 use Shop_products\Validators\UuidValidator;
 
+/**
+ * Class Product
+ * @package Shop_products\Collections
+ */
 class Product extends BaseCollection
 {
     /** @var string */
@@ -111,7 +115,7 @@ class Product extends BaseCollection
     public function toApiArray()
     {
         return [
-            'productDimensions' => $this->packageDimensions,
+            'packageDimensions' => $this->packageDimensions,
             'productKeywords' => $this->keywords,
             'productSegments' => $this->segments
         ];

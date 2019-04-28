@@ -67,7 +67,9 @@ class ProductsController extends BaseController
     {
         try {
             /** @var GetRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new GetRequestHandler());
+            $request = new GetRequestHandler();
+            $request->requireCategoryId = true;
+            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
@@ -104,7 +106,9 @@ class ProductsController extends BaseController
     {
         try {
             /** @var GetRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new GetRequestHandler());
+            $request = new GetRequestHandler();
+            $request->requireCategoryId = true;
+            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), $request);
             if(!$request->isValid()) {
                 $request->invalidRequest();
             }
@@ -167,8 +171,11 @@ class ProductsController extends BaseController
     {
         try {
             /** @var DeleteRequestHandler $request */
-            $request = $this->getJsonMapper()->map(new stdClass(), new DeleteRequestHandler());
-            $this->getService()->delete($id);
+            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new DeleteRequestHandler());
+            if (!$request->isValid()) {
+                $request->invalidRequest();
+            }
+            $this->getService()->delete($id, $request->getVendorId());
             $request->successRequest('Deleted');
         } catch (Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);

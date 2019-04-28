@@ -272,7 +272,6 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
     public function toArray(): array
     {
         return [
-            'productId' => $this->getUuidUtil()->uuid(),
             'productCategoryId' => $this->categoryId,
             'productUserId' => $this->userId,
             'productVendorId' => $this->vendorId,

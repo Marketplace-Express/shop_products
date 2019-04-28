@@ -17,34 +17,34 @@ class ProductQuestions extends BaseModel
     /**
      * @var string
      * @Primary
-     * @Column(column='question_id', type='string', length=36, nullable=false)
+     * @Column(column='question_id', type='string', length=36)
      */
     public $questionId;
 
     /**
      * @var string
-     * @Column(column='product_id', type='string', length=36, nullable=false)
+     * @Column(column='product_id', type='string', length=36)
      */
     public $productId;
 
     /**
      *
      * @var string
-     * @Column(column='question_user_id', type='string', length=36, nullable=false)
+     * @Column(column='question_user_id', type='string', length=36)
      */
     public $questionUserId;
 
     /**
      *
      * @var string
-     * @Column(column='question_text', type='text', nullable=false)
+     * @Column(column='question_text', type='text')
      */
     public $questionText;
 
     /**
      *
      * @var string
-     * @Column(column='created_at', type='datetime', nullable=false)
+     * @Column(column='created_at', type='datetime')
      */
     public $createdAt;
 
@@ -57,7 +57,7 @@ class ProductQuestions extends BaseModel
 
     /**
      * @var integer
-     * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
+     * @Column(column='is_deleted', type='boolean', default=0)
      */
     public $isDeleted;
 
@@ -71,10 +71,17 @@ class ProductQuestions extends BaseModel
      */
     public function initialize()
     {
-        $this->setSchema("shop_products");
-        $this->setSource("product_questions");
+        $this->setSchema('shop_products');
+        $this->setSource('product_questions');
         $this->useDynamicUpdate(true);
-        $this->belongsTo('questionProductId', 'Shop_products\Models\Product', 'productId', ['alias' => 'product']);
+        $this->belongsTo(
+            'questionProductId',
+            Product::class,
+            'productId',
+            [
+                'reusable' => true
+            ]
+        );
     }
 
     /**

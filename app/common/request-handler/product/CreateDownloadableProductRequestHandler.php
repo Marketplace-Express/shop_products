@@ -17,6 +17,7 @@ use Shop_products\Utils\DigitalUnitsConverterUtil;
 
 class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandler implements RequestHandlerInterface
 {
+
     private $digitalSize;
 
     /**
@@ -128,6 +129,7 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
+            'productId' => $this->getUuidUtil()->uuid(),
             'productType' => ProductTypesEnums::TYPE_DOWNLOADABLE,
             'productDigitalSize' => $this->digitalSize
         ]);

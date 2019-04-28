@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductMigration_100
+ * Class ProductMigration_101
  */
-class ProductMigration_100 extends Migration
+class ProductMigration_101 extends Migration
 {
     /**
      * Define the table structure
@@ -99,13 +99,31 @@ class ProductMigration_100 extends Migration
                         ]
                     ),
                     new Column(
+                        'product_album_id',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'notNull' => true,
+                            'size' => 10,
+                            'after' => 'product_brand_id'
+                        ]
+                    ),
+                    new Column(
+                        'product_album_delete_hash',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'notNull' => true,
+                            'size' => 20,
+                            'after' => 'product_album_id'
+                        ]
+                    ),
+                    new Column(
                         'product_price',
                         [
                             'type' => Column::TYPE_FLOAT,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'product_brand_id'
+                            'after' => 'product_album_delete_hash'
                         ]
                     ),
                     new Column(
@@ -190,6 +208,7 @@ class ProductMigration_100 extends Migration
                     )
                 ],
                 'indexes' => [
+                    new Index('PRIMARY', ['product_id'], 'PRIMARY'),
                     new Index('product_product_id_uindex', ['product_id'], 'UNIQUE')
                 ],
                 'options' => [

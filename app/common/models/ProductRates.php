@@ -15,19 +15,19 @@ class ProductRates extends BaseModel
     /**
      * @var string
      * @Primary
-     * @Column(column='rate_id', type='string', length=36, nullable=false)
+     * @Column(column='rate_id', type='string', length=36)
      */
     public $rateId;
 
     /**
      * @var string
-     * @Column(column='rate_user_id', type='string', length=36, nullable=false)
+     * @Column(column='rate_user_id', type='string', length=36)
      */
     public $rateUserId;
 
     /**
      * @var string
-     * @Column(column='product_id', type='string', length=36, nullable=false)
+     * @Column(column='product_id', type='string', length=36)
      */
     public $productId;
 
@@ -39,13 +39,13 @@ class ProductRates extends BaseModel
 
     /**
      * @var string
-     * @Column(column='rate_stars', type='integer', length=11, nullable=false)
+     * @Column(column='rate_stars', type='integer', length=11)
      */
     public $rateStars;
 
     /**
      * @var string
-     * @Column(column='created_at', type='datetime', nullable=false)
+     * @Column(column='created_at', type='datetime')
      */
     public $createdAt;
 
@@ -66,7 +66,7 @@ class ProductRates extends BaseModel
 
     /**
      * @var bool
-     * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
+     * @Column(column='is_deleted', type='boolean', default=0)
      */
     public $isDeleted;
 
@@ -80,9 +80,18 @@ class ProductRates extends BaseModel
      */
     public function initialize()
     {
-        $this->setSchema("shop_products");
-        $this->setSource("product_rates");
-        $this->belongsTo('rateProductId', 'Shop_products\Models\Product', 'productId', ['alias' => 'Product']);
+        $this->setSchema('shop_products');
+        $this->setSource('product_rates');
+        $this->belongsTo(
+            'rateProductId',
+            Product::class,
+            'productId',
+            [
+                'reusable' => true
+            ]
+        );
+
+        $this->hasMany('rate_id', RateImages::class, 'rate_id', ['alias' => 'rateImages']);
     }
 
     /**
