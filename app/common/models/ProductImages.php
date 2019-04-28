@@ -20,27 +20,27 @@ class ProductImages extends BaseModel
      *
      * @var string
      * @Primary
-     * @Column(column='image_id', type='string', length=36, nullable=false)
+     * @Column(column='image_id', type='string', length=36)
      */
     public $imageId;
 
     /**
      *
      * @var string
-     * @Column(column='product_id', type='string', length=36, nullable=false)
+     * @Column(column='product_id', type='string', length=36)
      */
     public $productId;
 
     /**
      *
      * @var string
-     * @Column(column='image_link', type='text', nullable=false)
+     * @Column(column='image_link', type='text')
      */
     public $imageLink;
 
     /**
      * @var int
-     * @Column(column='image_size', type='integer', length=11, nullable=false)
+     * @Column(column='image_size', type='integer', length=11)
      */
     public $imageSize;
 
@@ -64,7 +64,7 @@ class ProductImages extends BaseModel
 
     /**
      * @var string
-     * @Column(column='image_delete_hash', type='varchar', length=20, nullable=false)
+     * @Column(column='image_delete_hash', type='varchar', length=20)
      */
     public $imageDeleteHash;
 
@@ -76,7 +76,7 @@ class ProductImages extends BaseModel
 
     /**
      * @var string
-     * @Column(column='created_at', type='datetime', nullable=false)
+     * @Column(column='created_at', type='datetime')
      */
     public $createdAt;
 
@@ -90,7 +90,7 @@ class ProductImages extends BaseModel
     /**
      *
      * @var integer
-     * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
+     * @Column(column='is_deleted', type='boolean', default=0)
      */
     public $isDeleted;
 
@@ -106,9 +106,16 @@ class ProductImages extends BaseModel
     public function initialize()
     {
         $this->defaultBehavior();
-        $this->setSchema("shop_products");
-        $this->setSource("product_images");
-        $this->belongsTo('productId', 'Shop_products\Models\Product', 'productId', ['alias' => 'product']);
+        $this->setSchema('shop_products');
+        $this->setSource('product_images');
+        $this->belongsTo(
+            'productId',
+            Product::class,
+            'productId',
+            [
+                'reusable' => true
+            ]
+        );
     }
 
     /**

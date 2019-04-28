@@ -8,24 +8,66 @@
 namespace Shop_products\RequestHandler\Product;
 
 
+use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use Shop_products\Controllers\BaseController;
+use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
+use Shop_products\Validators\UuidValidator;
 
 class DeleteRequestHandler extends BaseController implements RequestHandlerInterface
 {
+
+    private $vendorId;
+
+    private $errorMessages = [];
+
+    /**
+     * @param string $vendorId
+     */
+    public function setVendorId($vendorId)
+    {
+        $this->vendorId = $vendorId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getVendorId()
+    {
+        return $this->vendorId;
+    }
 
     /** Validate request fields using \Phalcon\Validation\Validator
      * @return Group
      */
     public function validate(): Group
     {
-        // TODO: Implement validate() method.
+        $validator = new Validation();
+
+        $validator->add(
+            'vendorId',
+            new UuidValidator()
+        );
+
+        return $validator->validate([
+            'vendorId' => $this->vendorId
+        ]);
     }
 
+    /**
+     * @return bool
+     */
     public function isValid(): bool
     {
-        // TODO: Implement isValid() method.
+        $messages = $this->validate();
+        if (count($messages)) {
+            foreach ($messages as $message) {
+                $this->errorMessages[$message->getField()] = $message->getMessage();
+            }
+            return false;
+        }
+        return true;
     }
 
     public function notFound($message = 'Not Found')
@@ -33,9 +75,13 @@ class DeleteRequestHandler extends BaseController implements RequestHandlerInter
         // TODO: Implement notFound() method.
     }
 
+    /**
+     * @param null $message
+     * @throws ArrayOfStringsException
+     */
     public function invalidRequest($message = null)
     {
-        // TODO: Implement invalidRequest() method.
+        throw new ArrayOfStringsException($this->errorMessages, 400);
     }
 
     public function successRequest($message = null)

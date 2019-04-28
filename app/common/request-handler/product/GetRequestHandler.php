@@ -13,6 +13,7 @@ use Shop_products\Controllers\BaseController;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
 use Shop_products\Services\User\UserService;
+use Shop_products\Validators\UuidValidator;
 
 class GetRequestHandler extends BaseController implements RequestHandlerInterface
 {
@@ -21,6 +22,9 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
 
     /** @var string $vendorId */
     private $vendorId;
+
+    /** @var bool */
+    public $requireCategoryId = false;
 
     private $errorMessages;
 
@@ -66,29 +70,16 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
     public function validate(): Group
     {
         $validator = new Validation();
-        $validator->add(
-            'categoryId',
-            new Validation\Validator\Callback([
-                'callback' => function ($data) {
-                    if (!empty($data['categoryId']) && !$this->getUuidUtil()->isValid($data['categoryId'])) {
-                        return false;
-                    }
-                    return true;
-                },
-                'message' => 'Invalid category id'
-            ])
-        );
 
         $validator->add(
             'vendorId',
-            new Validation\Validator\Callback([
-                'callback' => function($data) {
-                    if (!$this->getUuidUtil()->isValid($data['vendorId'])) {
-                        return false;
-                    }
-                    return true;
-                },
-                'message' => 'Invalid vendor id'
+            new UuidValidator()
+        );
+
+        $validator->add(
+            'categoryId',
+            new UuidValidator([
+                'allowEmpty' => !$this->requireCategoryId
             ])
         );
 

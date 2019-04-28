@@ -34,10 +34,18 @@ class UuidValidator extends Validator implements ValidatorInterface
     public function validate(Validation $validation, $attribute)
     {
         $value = $validation->getValue($attribute);
-        if (!$this->getUuidUtil()->isValid($value) && !$this->getOption('allowEmpty')) {
-            $validation->appendMessage(new Message($this->getOption('message', 'Invalid UUID'), $attribute));
+        $allowEmpty = $this->getOption('allowEmpty', false);
+        $message = $this->getOption('message', 'Invalid UUID');
+
+        if (empty($value) && $allowEmpty) {
+            return true;
+        }
+
+        if (!$this->getUuidUtil()->isValid($value)) {
+            $validation->appendMessage(new Message($message, $attribute));
             return false;
         }
+
         return true;
     }
 }
