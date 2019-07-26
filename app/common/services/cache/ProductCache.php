@@ -9,9 +9,7 @@ namespace Shop_products\Services\Cache;
 
 use Shop_products\Enums\QueueNamesEnum;
 use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Exceptions\NotFoundException;
 use Shop_products\Interfaces\DataSourceInterface;
-use Shop_products\Repositories\ProductRepository;
 use Shop_products\RequestHandler\Queue\QueueRequestHandler;
 
 class ProductCache implements DataSourceInterface

@@ -10,7 +10,7 @@ namespace Shop_products\RequestHandler\Product;
 
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Enums\ProductTypesEnums;
+use Shop_products\Enums\ProductTypesEnum;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
 use Shop_products\Utils\DigitalUnitsConverterUtil;
@@ -130,7 +130,7 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
     {
         return array_merge(parent::toArray(), [
             'productId' => $this->getUuidUtil()->uuid(),
-            'productType' => ProductTypesEnums::TYPE_DOWNLOADABLE,
+            'productType' => ProductTypesEnum::TYPE_DOWNLOADABLE,
             'productDigitalSize' => $this->digitalSize
         ]);
     }

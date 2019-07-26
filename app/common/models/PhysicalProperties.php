@@ -12,11 +12,11 @@ use Phalcon\Validation;
 use Shop_products\Validators\UuidValidator;
 
 /**
- * Class PhysicalProduct
+ * Class PhysicalProperties
  * @package Shop_products\Models
  * @Entity
  */
-class PhysicalProduct extends BaseModel
+class PhysicalProperties extends BaseModel
 {
     const WHITE_LIST = [
         'productBrandId',
@@ -24,9 +24,18 @@ class PhysicalProduct extends BaseModel
         'packageDimensions'
     ];
 
+    const MODEL_ALIAS = 'pp';
+
+    /**
+     * @var int
+     * @Primary
+     * @Identity
+     * @Column(column='row_id', type="int", length=11)
+     */
+    public $rowId;
+
     /**
      * @var string
-     * @PrimaryKey
      * @Column(column='product_id', type="string", length=36)
      */
     public $productId;
@@ -48,7 +57,7 @@ class PhysicalProduct extends BaseModel
      */
     public function getSource()
     {
-        return 'physical_products';
+        return 'physical_properties';
     }
 
     public function initialize()
@@ -63,14 +72,6 @@ class PhysicalProduct extends BaseModel
         );
     }
 
-    /**
-     * @return array
-     */
-    public static function getWhiteList()
-    {
-        return array_merge(Product::getWhiteList(), self::WHITE_LIST);
-    }
-
     public function columnMap()
     {
         return [
@@ -78,6 +79,14 @@ class PhysicalProduct extends BaseModel
             'product_weight' => 'productWeight',
             'product_brand_id' => 'productBrandId'
         ];
+    }
+
+    public static function count($parameters = null)
+    {
+        return count(array_filter([
+            self::model()->productWeight,
+            self::model()->productBrandId
+        ]));
     }
 
     /**

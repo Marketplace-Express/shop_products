@@ -9,22 +9,30 @@ namespace Shop_products\Models;
 
 
 use Phalcon\Validation;
-use Shop_products\Enums\ProductTypesEnums;
 use Shop_products\Utils\DigitalUnitsConverterUtil;
 
 /**
- * Class DownloadableProduct
+ * Class DownloadableProperties
  * @package Shop_products\Models
  */
-class DownloadableProduct extends BaseModel
+class DownloadableProperties extends BaseModel
 {
     const WHITE_LIST = [
         'productDigitalSize'
     ];
 
+    const MODEL_ALIAS = 'dp';
+
+    /**
+     * @var int
+     * @Primary
+     * @Identity
+     * @Column(column='row_id', type="int", length=11)
+     */
+    public $rowId;
+
     /**
      * @var string
-     * @PrimaryKey
      * @Column(column='product_id', type="string", length=36)
      */
     public $productId;
@@ -52,12 +60,7 @@ class DownloadableProduct extends BaseModel
      */
     public function getSource()
     {
-        return 'downloadable_products';
-    }
-
-    public static function getWhiteList()
-    {
-        return array_merge(Product::getWhiteList(), self::WHITE_LIST);
+        return 'downloadable_properties';
     }
 
     public function columnMap()
@@ -66,6 +69,13 @@ class DownloadableProduct extends BaseModel
             'product_id' => 'productId',
             'product_digital_size' => 'productDigitalSize'
         ];
+    }
+
+    public static function count($parameters = null)
+    {
+        return count(array_filter([
+            self::model()->productDigitalSize
+        ]));
     }
 
     /**

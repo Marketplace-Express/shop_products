@@ -8,7 +8,7 @@
 namespace Shop_products\Enums;
 
 
-class ProductTypesEnums
+class ProductTypesEnum
 {
     const TYPE_PHYSICAL = 'physical';
     const TYPE_DOWNLOADABLE = 'downloadable';

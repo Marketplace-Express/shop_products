@@ -5,6 +5,8 @@ namespace Shop_products\Models;
 class RateImages extends BaseModel
 {
 
+    const MODEL_ALIAS = 'ri';
+
     /**
      * @var string
      * @Primary

@@ -12,6 +12,8 @@ use Phalcon\Di;
 use Phalcon\Http\Request\File;
 use Shop_products\Exceptions\NotFoundException;
 use Shop_products\Repositories\ImageRepository;
+use Shop_products\Repositories\ProductRepository;
+use Shop_products\Services\Cache\ProductCache;
 use Shop_products\Utils\ImgurUtil;
 
 class ImageService
@@ -47,8 +49,12 @@ class ImageService
      */
     public function upload(File $image, string $albumId, string $productId)
     {
-        if (!$this->getProductsService()->checkProductExistence($productId)) {
-            throw new NotFoundException('product not found or maybe deleted');
+        $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
+            'productCategoryId', 'productVendorId', 'productAlbumId'
+        ]);
+
+        if ($albumId != $simpleProductData['productAlbumId']) {
+            throw new \Exception('incorrect product album id', 400);
         }
 
         $config = Di::getDefault()->getConfig()->application;
@@ -77,6 +83,14 @@ class ImageService
                 $uploaded->getLink()
             );
             $data = $image->toApiArray();
+
+            $this->getRepository()->saveSizes($image->imageId, $image->imageLink);
+
+            ProductCache::getInstance()->invalidateCache(
+                $simpleProductData['productVendorId'],
+                $simpleProductData['productCategoryId'],
+                [$productId]
+            );
         }
         unlink($config->uploadDir . $newImageName);
         return $data;

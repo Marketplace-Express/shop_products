@@ -23,6 +23,12 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
     /** @var string $vendorId */
     private $vendorId;
 
+    /** @var int $limit */
+    private $limit;
+
+    /** @var int $page */
+    private $page;
+
     /** @var bool */
     public $requireCategoryId = false;
 
@@ -36,6 +42,16 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
     public function getVendorId()
     {
         return $this->vendorId;
+    }
+
+    public function getLimit()
+    {
+        return $this->limit ?? 10;
+    }
+
+    public function getPage()
+    {
+        return $this->page ?? 1;
     }
 
     /**
@@ -54,6 +70,16 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
     public function setVendorId(string $vendorId)
     {
         $this->vendorId = $vendorId;
+    }
+
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+    }
+
+    public function setPage($page)
+    {
+        $this->page = $page;
     }
 
     /**
@@ -83,9 +109,21 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
             ])
         );
 
+        $validator->add(
+            ['limit', 'page'],
+            new Validation\Validator\NumericValidator([
+                'allowFloat' => false,
+                'allowSign' => false,
+                'min' => 0,
+                'allowEmpty' => true
+            ])
+        );
+
         return $validator->validate([
             'categoryId' => $this->getCategoryId(),
-            'vendorId' => $this->getVendorId()
+            'vendorId' => $this->getVendorId(),
+            'limit' => $this->getLimit(),
+            'page' => $this->getPage()
         ]);
     }
 
@@ -132,7 +170,9 @@ class GetRequestHandler extends BaseController implements RequestHandlerInterfac
     {
         return [
             'categoryId' => $this->getCategoryId(),
-            'vendorId' => $this->getVendorId()
+            'vendorId' => $this->getVendorId(),
+            'limit' => $this->getLimit(),
+            'page' => $this->getPage()
         ];
     }
 }

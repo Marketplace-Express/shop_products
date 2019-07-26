@@ -12,6 +12,8 @@ namespace Shop_products\Models;
 class ProductRates extends BaseModel
 {
 
+    const MODEL_ALIAS = 'pr';
+
     /**
      * @var string
      * @Primary
@@ -61,7 +63,9 @@ class ProductRates extends BaseModel
      */
     public $deletedAt;
 
-    /** @var array */
+    /**
+     * @var array
+     */
     private $images;
 
     /**
@@ -91,7 +95,14 @@ class ProductRates extends BaseModel
             ]
         );
 
-        $this->hasMany('rate_id', RateImages::class, 'rate_id', ['alias' => 'rateImages']);
+        $this->hasMany(
+            'rate_id',
+            RateImages::class,
+            'rate_id',
+            [
+                'alias' => 'ri'
+            ]
+        );
     }
 
     /**
@@ -157,6 +168,16 @@ class ProductRates extends BaseModel
             'deleted_at' => 'deletedAt',
             'is_deleted' => 'isDeleted'
         ];
+    }
+
+    public static function count($parameters = null)
+    {
+        return count(array_filter([
+            self::model()->rateId,
+            self::model()->rateUserId,
+            self::model()->rateText,
+            self::model()->rateStars
+        ]));
     }
 
     public function toApiArray()

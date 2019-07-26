@@ -8,7 +8,7 @@
 namespace Shop_products\RequestHandler;
 
 
-use Shop_products\Enums\ProductTypesEnums;
+use Shop_products\Enums\ProductTypesEnum;
 use Shop_products\RequestHandler\Product\CreateDownloadableProductRequestHandler;
 use Shop_products\RequestHandler\Product\CreatePhysicalProductRequestHandler;
 
@@ -27,8 +27,8 @@ class ProductRequestResolver
     public function resolve()
     {
         $validTypes = [
-            ProductTypesEnums::TYPE_PHYSICAL => self::PHYSICAL_PRODUCT,
-            ProductTypesEnums::TYPE_DOWNLOADABLE => self::DOWNLOADABLE_PRODUCT
+            ProductTypesEnum::TYPE_PHYSICAL => self::PHYSICAL_PRODUCT,
+            ProductTypesEnum::TYPE_DOWNLOADABLE => self::DOWNLOADABLE_PRODUCT
         ];
 
         if (!array_key_exists($this->type, $validTypes)) {

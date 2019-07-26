@@ -34,6 +34,10 @@ class ExceptionhandlerController extends Controller
             $errors = $jsonError;
         }
 
+        if (!is_int($code)) {
+            $code = (int) $code;
+        }
+
         /**
          * Log Error
          * @ignore

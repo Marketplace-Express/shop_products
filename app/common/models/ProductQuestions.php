@@ -2,8 +2,6 @@
 
 namespace Shop_products\Models;
 
-use Phalcon\Mvc\ModelInterface;
-
 /**
  * ProductQuestions
  * 
@@ -13,6 +11,8 @@ use Phalcon\Mvc\ModelInterface;
  */
 class ProductQuestions extends BaseModel
 {
+
+    const MODEL_ALIAS = 'pq';
 
     /**
      * @var string
@@ -133,6 +133,15 @@ class ProductQuestions extends BaseModel
             'deleted_at' => 'deletedAt',
             'is_deleted' => 'isDeleted'
         ];
+    }
+
+    public static function count($parameters = null)
+    {
+        return count(array_filter([
+            self::model()->questionId,
+            self::model()->questionUserId,
+            self::model()->questionText
+        ]));
     }
 
     public function toApiArray()

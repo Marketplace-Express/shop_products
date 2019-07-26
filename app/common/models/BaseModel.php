@@ -16,9 +16,11 @@ abstract class BaseModel extends Model
 
     protected static $instance;
 
+    public $exposedFields = [];
+
     /**
      * @param bool $new
-     * @return BaseModel|Product|PhysicalProduct|DownloadableProduct
+     * @return BaseModel|Product|PhysicalProperties|DownloadableProperties
      */
     public static function model(bool $new = false)
     {
@@ -55,5 +57,29 @@ abstract class BaseModel extends Model
     public static function getType()
     {
         return Model::class;
+    }
+
+    /**
+     * Assign attributes to the model
+     * @param array $data
+     * @param null $dataColumnMap
+     * @param null|array $whiteList
+     * @return $this|Model
+     *
+     * @throws \Exception
+     */
+    public function assign($data, $dataColumnMap = null, $whiteList = null)
+    {
+        if (in_array($this->_operationMade, [self::OP_CREATE, self::OP_UPDATE]) && empty($whiteList)) {
+            throw new \Exception('You should provide a whitelist', 400);
+        }
+        foreach ($data as $attribute => $value) {
+            if (!empty($whiteList) && !in_array($attribute, $whiteList)) {
+                continue;
+            }
+            $this->writeAttribute($attribute, $value);
+            $this->exposedFields[$attribute] = $value;
+        }
+        return $this;
     }
 }

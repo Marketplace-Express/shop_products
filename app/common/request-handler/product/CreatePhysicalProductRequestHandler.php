@@ -10,7 +10,7 @@ namespace Shop_products\RequestHandler\Product;
 
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Enums\ProductTypesEnums;
+use Shop_products\Enums\ProductTypesEnum;
 use Shop_products\Exceptions\ArrayOfStringsException;
 use Shop_products\RequestHandler\RequestHandlerInterface;
 use Shop_products\Validators\TypeValidator;
@@ -162,7 +162,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
         return array_merge(parent::toArray(), [
             'productId' => $this->getUuidUtil()->uuid(),
             'productBrandId' => $this->brandId,
-            'productType' => ProductTypesEnums::TYPE_PHYSICAL,
+            'productType' => ProductTypesEnum::TYPE_PHYSICAL,
             'productWeight' => $this->weight,
             'productPackageDimensions' => $this->objectToArray($this->packageDimensions)
         ]);
