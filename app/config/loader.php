@@ -12,7 +12,7 @@ $loader->registerNamespaces([
     'app\common\models\Behavior' => APP_PATH . '/common/models/behaviors/',
     'app\common\collections' => APP_PATH . '/common/collections',
     'app\common\controllers' => APP_PATH . '/common/controllers/',
-    'app\common\events\middleware' => APP_PATH . '/common/events/',
+    'app\common\events\middleware' => APP_PATH . '/common/events/middleware/',
     'app\common\services' => APP_PATH . '/common/services/',
     'app\common\services\user' => APP_PATH . '/common/services/user/',
     'app\common\services\cache' => APP_PATH . '/common/services/cache/',

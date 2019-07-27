@@ -7,6 +7,7 @@
 
 namespace app\common\models;
 
+use Phalcon\Mvc\Model\Resultset;
 
 class ProductImagesSizes extends BaseModel
 {
@@ -62,6 +63,18 @@ class ProductImagesSizes extends BaseModel
     public $huge;
 
     /**
+     * @var bool
+     * @Column(column='is_deleted', type='boolean')
+     */
+    public $isDeleted = false;
+
+    /**
+     * @var string
+     * @Column(column='deleted_at', type='datetime', nullable=true)
+     */
+    public $deletedAt;
+
+    /**
      * @return string
      */
     public function getSource()
@@ -69,8 +82,13 @@ class ProductImagesSizes extends BaseModel
         return 'product_images_sizes';
     }
 
+    /**
+     * @throws \Exception
+     */
     public function initialize()
     {
+        $this->defaultBehavior();
+
         $this->belongsTo(
             'imageId',
             ProductImages::class,
@@ -90,6 +108,39 @@ class ProductImagesSizes extends BaseModel
         return parent::model($new);
     }
 
+    /**
+     * @param null $parameters
+     * @return \Phalcon\Mvc\Model\ResultsetInterface|ProductImagesSizes[]
+     */
+    static public function find($parameters = null)
+    {
+        $operator = '';
+        if (!array_key_exists('conditions', $parameters)) {
+            $parameters['conditions'] = '';
+        }
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
+        $parameters['hydration'] = Resultset::HYDRATE_RECORDS;
+        return parent::find($parameters);
+    }
+
+    /**
+     * Allows to query the first record that match the specified conditions
+     *
+     * @param mixed $parameters
+     * @return ProductImagesSizes
+     */
+    public static function findFirst($parameters = null)
+    {
+        $query = self::find($parameters);
+        return $query->getFirst();
+    }
+
+    /**
+     * @return array
+     */
     public function toApiArray()
     {
         return [

@@ -15,9 +15,6 @@ use app\common\requestHandler\product\{AbstractCreateRequestHandler,
     UpdateRequestHandler};
 use app\common\requestHandler\ProductRequestResolver;
 use app\common\services\ProductsService;
-use app\common\utils\UuidUtil;
-use stdClass;
-use Throwable;
 
 /**
  * Class IndexController
@@ -26,20 +23,12 @@ use Throwable;
  */
 class ProductsController extends BaseController
 {
-    /** @var ProductsService $service */
-    private $service;
-
-    public function initialize()
-    {
-        $this->service = new ProductsService();
-    }
-
     /**
      * @return ProductsService
      */
     private function getService(): ProductsService
     {
-        return $this->service;
+        return new ProductsService();
     }
 
     /**
@@ -54,7 +43,7 @@ class ProductsController extends BaseController
                 $request->invalidRequest();
             }
             $request->successRequest($this->getService()->getAll($request->toArray()));
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }
@@ -74,7 +63,7 @@ class ProductsController extends BaseController
                 $request->invalidRequest();
             }
             $request->successRequest($this->getService()->getProduct($request->getVendorId(), $request->getCategoryId(), $id));
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }
@@ -92,7 +81,7 @@ class ProductsController extends BaseController
                 $request->invalidRequest();
             }
             $request->successRequest($this->getService()->getAll($request->toArray(), $request->getAccessLevel()));
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }
@@ -112,8 +101,8 @@ class ProductsController extends BaseController
             if(!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->getService()->getProduct($request->getVendorId(), $request->getCategoryId(), $id, $request->getAccessLevel()));
-        } catch (Throwable $exception) {
+            $request->successRequest($this->getService()->getProduct($request->getVendorId(), $request->getCategoryId(), $id));
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }
@@ -134,7 +123,7 @@ class ProductsController extends BaseController
                 $request->invalidRequest();
             }
             $request->successRequest($this->getService()->create($request->toArray()));
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }
@@ -157,7 +146,7 @@ class ProductsController extends BaseController
                 $request->invalidRequest();
             }
             $request->successRequest($this->getService()->update($id, $request->toArray(), $vendorId));
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }
@@ -177,7 +166,7 @@ class ProductsController extends BaseController
             }
             $this->getService()->delete($id, $request->getVendorId());
             $request->successRequest('Deleted');
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
     }

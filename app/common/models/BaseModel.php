@@ -20,7 +20,7 @@ abstract class BaseModel extends Model
 
     /**
      * @param bool $new
-     * @return BaseModel|Product|PhysicalProperties|DownloadableProperties
+     * @return mixed
      */
     public static function model(bool $new = false)
     {
@@ -37,6 +37,9 @@ abstract class BaseModel extends Model
         $messages = [];
         $multiErrorFields = [];
         foreach (parent::getMessages() as $message) {
+            if (is_string($message)) {
+                return [$message];
+            }
             $multiErrorFields[] = $message->getField();
         }
         $multiErrorFields = array_diff_assoc($multiErrorFields, array_unique($multiErrorFields));

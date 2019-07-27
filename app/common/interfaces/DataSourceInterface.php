@@ -12,9 +12,7 @@ use app\common\exceptions\NotFoundException;
 
 interface DataSourceInterface
 {
-    public function getByCategoryId(string $categoryId, string $vendorId): ?array;
-
-    public function getByVendorId(string $vendorId): ?array;
+    public function getByIdentifier(string $categoryId, string $vendorId): ?array;
 
     /**
      * @param string $productId

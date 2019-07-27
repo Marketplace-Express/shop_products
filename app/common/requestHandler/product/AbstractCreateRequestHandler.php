@@ -8,6 +8,7 @@
 namespace app\common\requestHandler\product;
 
 
+use app\common\validators\TypeValidator;
 use Exception;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
@@ -29,6 +30,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
     protected $customPageId;
     protected $keywords;
     protected $segments;
+    protected $isPublished = false;
 
     protected $errorMessages;
 
@@ -112,6 +114,11 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
         $this->segments = $segments;
     }
 
+    public function setIsPublished($isPublished)
+    {
+        $this->isPublished = $isPublished;
+    }
+
     private function getTitleValidationConfig()
     {
         return $this->getDI()->getConfig()->application->validation->productTitle;
@@ -132,7 +139,8 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             'endSaleTime' => $this->endSaleTime,
             'customPageId' => $this->customPageId,
             'keywords' => $this->keywords,
-            'segments' => $this->segments
+            'segments' => $this->segments,
+            'isPublished' => $this->isPublished
         ];
     }
 
@@ -239,6 +247,13 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             new SegmentsValidator()
         );
 
+        $validator->add(
+            'isPublished',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_BOOLEAN
+            ])
+        );
+
         return $validator->validate($this->fields());
     }
 
@@ -282,7 +297,8 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             'productSaleEndTime' => $this->endSaleTime,
             'productKeywords' => $this->keywords,
             'productSegments' => $this->segments,
-            'productLinkSlug' => (new Slug())->generate($this->title)
+            'productLinkSlug' => (new Slug())->generate($this->title),
+            'isPublished' => $this->isPublished
         ];
     }
 }

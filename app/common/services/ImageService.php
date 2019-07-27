@@ -8,13 +8,17 @@
 namespace app\common\services;
 
 
+use app\common\enums\AccessLevelsEnum;
+use app\common\exceptions\OperationNotPermittedException;
+use Mechpave\ImgurClient\Entity\ImageInterface;
 use Phalcon\Di;
 use Phalcon\Http\Request\File;
-use app\common\exceptions\NotFoundException;
 use app\common\repositories\ImageRepository;
 use app\common\repositories\ProductRepository;
 use app\common\services\cache\ProductCache;
 use app\common\utils\ImgurUtil;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\NotFoundException;
 
 class ImageService
 {
@@ -44,7 +48,7 @@ class ImageService
      * @param string $productId
      * @return array
      * @throws NotFoundException
-     * @throws \app\common\exceptions\ArrayOfStringsException
+     * @throws ArrayOfStringsException
      * @throws \Exception
      */
     public function upload(File $image, string $albumId, string $productId)
@@ -62,6 +66,8 @@ class ImageService
         $image->moveTo(
             $config->uploadDir . $newImageName
         );
+
+        /** @var ImageInterface $uploaded */
         $uploaded = (new ImgurUtil())
             ->uploadImage(
                 $config->uploadDir . $newImageName,
@@ -74,6 +80,7 @@ class ImageService
             $image = $this->getRepository()->create(
                 $productId,
                 $uploaded->getImageId(),
+                $albumId,
                 $uploaded->getType(),
                 $uploaded->getWidth(),
                 $uploaded->getHeight(),
@@ -94,5 +101,29 @@ class ImageService
         }
         unlink($config->uploadDir . $newImageName);
         return $data;
+    }
+
+    /**
+     * @param string $productId
+     * @param string $imageId
+     * @param string $albumId
+     * @param int $accessLevel
+     * @throws ArrayOfStringsException
+     * @throws NotFoundException
+     * @throws OperationNotPermittedException
+     * @throws \RedisException
+     * @throws \Exception
+     */
+    public function delete(string $productId, string $imageId, string $albumId, int $accessLevel = AccessLevelsEnum::NORMAL_USER): void
+    {
+        if ($accessLevel < 1) {
+            throw new OperationNotPermittedException('Not allowed action');
+        }
+        if ($this->getRepository()->delete($imageId, $albumId, $productId)) {
+            $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
+                'productCategoryId', 'productVendorId', 'productAlbumId'
+            ]);
+            ProductCache::getInstance()->invalidateCache($simpleProductData['productVendorId'], $simpleProductData['productCategoryId'], [$productId]);
+        }
     }
 }

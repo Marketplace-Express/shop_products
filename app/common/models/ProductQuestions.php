@@ -2,6 +2,7 @@
 
 namespace app\common\models;
 
+
 /**
  * ProductQuestions
  * 
@@ -68,9 +69,12 @@ class ProductQuestions extends BaseModel
 
     /**
      * Initialize method for model.
+     * @throws \Exception
      */
     public function initialize()
     {
+        $this->defaultBehavior();
+
         $this->setSchema('shop_products');
         $this->setSource('product_questions');
         $this->useDynamicUpdate(true);
@@ -98,7 +102,7 @@ class ProductQuestions extends BaseModel
      * Allows to query a set of records that match the specified conditions
      *
      * @param mixed $parameters
-     * @return ProductQuestions[]|ProductQuestions|\Phalcon\Mvc\Model\ResultSetInterface
+     * @return ProductQuestions[]|\Phalcon\Mvc\Model\ResultSetInterface
      */
     public static function find($parameters = null)
     {

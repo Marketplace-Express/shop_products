@@ -46,8 +46,6 @@ class Product extends BaseModel
 
     const MODEL_ALIAS = 'p';
 
-    const DEFAULT_LIMIT = 10;
-
     /**
      * @var string
      * @Primary
@@ -272,7 +270,7 @@ class Product extends BaseModel
      * @param mixed $parameters
      * @return Model\ResultsetInterface|Product[]
      */
-    public static function find($parameters = null)
+    static public function find($parameters = null)
     {
         return parent::find($parameters);
     }

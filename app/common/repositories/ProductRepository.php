@@ -11,7 +11,6 @@ use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
 use app\common\enums\MongoQueryOperatorsEnum;
 use app\common\enums\ProductTypesEnum;
-use app\common\enums\QueueNamesEnum;
 use app\common\exceptions\ArrayOfStringsException;
 use app\common\exceptions\NotFoundException;
 use app\common\interfaces\DataSourceInterface;
@@ -19,10 +18,6 @@ use app\common\collections\Product as ProductCollection;
 use app\common\models\DownloadableProperties;
 use app\common\models\PhysicalProperties;
 use app\common\models\Product;
-use app\common\models\ProductImages;
-use app\common\models\ProductQuestions;
-use app\common\models\ProductRates;
-use app\common\requestHandler\queue\QueueRequestHandler;
 
 class ProductRepository implements DataSourceInterface
 {
@@ -65,74 +60,6 @@ class ProductRepository implements DataSourceInterface
             'conditions' => 'productId = :productId:',
             'bind' => ['productId' => $productId]
         ]);
-    }
-
-    /**
-     * @param array $result
-     * @param bool $attachRelations
-     * @param bool $returnModels
-     * @return array
-     */
-    private function manipulateRecords(array $result, bool $attachRelations = true, bool $returnModels = false)
-    {
-        $products = [];
-        if (!$returnModels) {
-            foreach ($result as $product) {
-                $basicInfo = $product->toApiArray();
-
-                if ($attachRelations) {
-                    $productArray = array_merge(
-                        $basicInfo,
-                        ['productImages' => ($product->productImages->productId) ? [$product->productImages->toApiArray()] : []],
-                        ['productQuestions' => ($product->productQuestions->productId) ? [$product->productQuestions->toApiArray()] : []],
-                        ['productRates' => ($product->productRates->productId) ? [$product->productRates->toApiArray()] : []]
-                    );
-
-                    if (array_key_exists($basicInfo['productId'], $products)) {
-                        if (!empty($productArray['productImages'])) {
-                            array_push($products[$basicInfo['productId']]['productImages'], array_shift($productArray['productImages']));
-                        }
-                        if (!empty($productArray['productQuestions'])) {
-                            array_push($products[$basicInfo['productId']]['productQuestions'], array_shift($productArray['productQuestions']));
-                        }
-                        if (!empty($productArray['productRates'])) {
-                            array_push($products[$basicInfo['productId']]['productRates'], array_shift($productArray['productRates']));
-                        }
-                    } else {
-                        $products[$basicInfo['productId']] = $productArray;
-                    }
-                }
-            }
-        } else {
-            foreach ($result as $product) {
-
-                if (!array_key_exists($product->productId, $products)) {
-                    $products[$product->productId] = $product;
-                }
-
-                $productImages = $product->productImages;
-                $productQuestions = $product->productQuestions;
-                $productRates = $product->productRates;
-
-                $product->productImages = [];
-                $product->productQuestions = [];
-                $product->productRates = [];
-
-                if ($attachRelations) {
-
-                    if (!empty($productImages->productId)) {
-                        $products[$product->productId]->productImages[] = $productImages;
-                    }
-                    if (!empty($productQuestions->productId)) {
-                        $products[$product->productId]->productQuestions[] = $productQuestions;
-                    }
-                    if (!empty($productRates->productId)) {
-                        $products[$product->productId]->productRates[] = $productRates;
-                    }
-                }
-            }
-        }
-        return array_values($products);
     }
 
     /**
@@ -230,23 +157,27 @@ class ProductRepository implements DataSourceInterface
      * @param bool $editMode
      * @param bool $attachRelations
      * @param bool $getExtraInfo
-     * @param bool $returnModels
      * @return array|null
      *
      * @throws \Exception
      */
-    public function getByCategoryId(
-        string $categoryId,
+    public function getByIdentifier(
         string $vendorId,
-        int $limit = Product::DEFAULT_LIMIT,
+        ?string $categoryId = null,
+        int $limit = 30,
         int $page = 1,
         bool $editMode = false,
         bool $attachRelations = true,
-        bool $getExtraInfo = false,
-        bool $returnModels = false): ?array
+        bool $getExtraInfo = false): ?array
     {
-        $conditions = 'productCategoryId = :productCategoryId:';
-        $conditions .= ' AND productVendorId = :productVendorId:';
+        $binds = [];
+
+        $conditions = 'productVendorId = :productVendorId:';
+
+        if ($categoryId) {
+            $conditions .= ' AND productCategoryId = :productCategoryId:';
+            $binds['productCategoryId'] = $categoryId;
+        }
 
         if ($editMode) {
             $conditions .= ' AND isPublished IN (TRUE, FALSE)';
@@ -260,26 +191,24 @@ class ProductRepository implements DataSourceInterface
             false, $attachRelations, $editMode
         )::find([
             'conditions' => $conditions,
-            'bind' => [
-                'productCategoryId' => $categoryId,
+            'bind' => array_merge([
                 'productVendorId' => $vendorId
-            ],
+            ], $binds),
             'limit' => $limit,
-            'offset' => ($page - 1)
+            'offset' => ($page - 1) * $limit,
+            'order' => 'createdAt DESC'
         ]);
-
-        if (!count($result)) {
-            throw new \Exception('no products found', 404);
-        }
 
         $products = [];
 
-        if ($getExtraInfo) {
+        if ($result && $getExtraInfo) {
             $productsIds = array_unique(array_map(function ($product) {
                 return $product['productId'];
             }, $result->toArray()));
             $productsExtraInfo = $this->getCollection()::find([
-                'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
+                'conditions' => [
+                    'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
+                ]
             ]);
             if (!empty($productsExtraInfo)) {
                 /** @var ProductCollection $productExtraInfo */
@@ -302,76 +231,23 @@ class ProductRepository implements DataSourceInterface
         return $result;
     }
 
-    /**
-     * Get products by vendor id
-     *
-     * @param string $vendorId
-     * @param null|int $limit
-     * @param null|int $page
-     * @param bool $editMode
-     * @param bool $attachRelations
-     * @param bool $getExtraInfo
-     * @param bool $returnModels
-     * @return array|null
-     *
-     * @throws \Exception
-     */
-    public function getByVendorId(
-        string $vendorId,
-        ?int $limit = Product::DEFAULT_LIMIT,
-        ?int $page = 1,
-        bool $editMode = false,
-        bool $attachRelations = true,
-        bool $getExtraInfo = false,
-        bool $returnModels = false): ?array
+    private function getProductCollectionData(array &$data)
     {
-        $conditions = 'productVendorId = :productVendorId:';
+        $productCollectionData = [];
+        if (!empty($data['productKeywords']) || !empty($data['productSegments'] || !empty($data['productPackageDimensions']))) {
+            $productCollectionData = [
+                'packageDimensions' => $data['productPackageDimensions'] ?? null,
+                'keywords' => $data['productKeywords'] ?? null,
+                'segments' => $data['productSegments'] ?? null,
+                'product_id' => $data['productId']
+            ];
+            unset($data['productKeywords'], $data['productSegments'], $data['productPackageDimensions']);
 
-        if ($editMode) {
-            $conditions .= ' AND isPublished IN (true, false)';
-        } else {
-            $conditions .= ' AND isPublished = true';
-        }
-
-        if ($editMode) {
-            $conditions .= ' AND isPublished IN (true, false)';
-        } else {
-            $conditions .= ' AND isPublished = true';
-        }
-
-        $products = $this->getModel(false, $attachRelations, $editMode)::find([
-            'conditions' => $conditions,
-            'bind' => [
-                'productVendorId' => $vendorId
-            ],
-            'limit' => $limit,
-            'page' => $page
-        ]);
-
-        if (!$products->count()) {
-            throw new \Exception('no products found', 404);
-        }
-
-        $products = $products->toArray();
-
-        if ($getExtraInfo) {
-            $productsIds = array_unique(array_map(function ($product) {
-                return $product->{Product::MODEL_ALIAS}->productId;
-            }, $products));
-            $productsExtraInfo = $this->getCollection()::find([
-                'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
-            ]);
-            if (!empty($productsExtraInfo)) {
-                /** @var ProductCollection $productExtraInfo */
-                foreach ($productsExtraInfo as $productExtraInfo) {
-                    $productIndex = array_search($productExtraInfo->product_id, $productsIds);
-                    $products[$productIndex]->{Product::MODEL_ALIAS}->assign($productExtraInfo->toApiArray());
-                }
+            if($data['productType'] == ProductTypesEnum::TYPE_DOWNLOADABLE) {
+                unset($productCollectionData['productPackageDimensions']);
             }
         }
-
-        $result = $this->manipulateRecords($products, $attachRelations, $returnModels);
-        return $result;
+        return $productCollectionData;
     }
 
     /**
@@ -386,17 +262,7 @@ class ProductRepository implements DataSourceInterface
      */
     public function create(array $data): array
     {
-        $productCollectionData = [];
-        if (!empty($data['productKeywords']) || !empty($data['productSegments'] || !empty($data['productPackageDimensions']))) {
-            $productCollectionData = [
-                'packageDimensions' => $data['productPackageDimensions'] ?? null,
-                'keywords' => $data['productKeywords'] ?? null,
-                'segments' => $data['productSegments'] ?? null,
-                'product_id' => $data['productId']
-            ];
-            unset($data['productKeywords'], $data['productSegments'], $data['productPackageDimensions']);
-        }
-
+        $productCollectionData = $this->getProductCollectionData($data);
         $productModel = $this->getModel(true, true, true);
 
         if ($data['productType'] == ProductTypesEnum::TYPE_PHYSICAL) {
@@ -491,14 +357,6 @@ class ProductRepository implements DataSourceInterface
         if (!$product || !$product->delete()) {
             throw new \Exception('Product not found or maybe deleted', 404);
         }
-
-        (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
-            ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
-            ->setService('products')
-            ->setMethod('deleteExtraInfo')
-            ->setData([
-                'product_id' => $product->productId
-            ])->sendAsync();
 
         return $product->toApiArray();
     }

@@ -8,6 +8,7 @@
 namespace app\modules\api\controllers;
 
 
+use app\common\requestHandler\image\DeleteRequestHandler;
 use Exception;
 use app\common\controllers\BaseController;
 use app\common\requestHandler\image\UploadRequestHandler;
@@ -21,19 +22,16 @@ use Throwable;
  */
 class ImagesController extends BaseController
 {
-    private $service;
-
     /**
      * @throws Exception
      */
     public function initialize()
     {
-        $albumId = $this->request->getPost('albumId');
-        $productId = $this->request->getPost('productId');
+        $albumId = $this->request->get('albumId');
+        $productId = $this->request->get('productId');
         if (!isset($albumId) || !$this->getUuidUtil()->isValid($productId)) {
             throw new Exception('Invalid album Id or product Id');
         }
-        $this->service = new ImageService();
     }
 
     /**
@@ -41,7 +39,7 @@ class ImagesController extends BaseController
      */
     public function getService(): ImageService
     {
-        return $this->service;
+        return new ImageService();
     }
 
     /**
@@ -63,6 +61,26 @@ class ImagesController extends BaseController
             $request->successRequest($image);
         } catch (Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
+        }
+    }
+
+    /**
+     * @Delete('/{id:[0-9a-zA-Z]{7}}')
+     * @param $id
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
+     */
+    public function deleteAction($id)
+    {
+        try {
+            /** @var DeleteRequestHandler $request */
+            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new DeleteRequestHandler());
+            if (!$request->isValid()) {
+                $request->invalidRequest();
+            }
+            $this->getService()->delete($request->getProductId(), $id, $request->getAlbumId(), $request->getAccessLevel());
+            $request->successRequest();
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
         }
     }
 }

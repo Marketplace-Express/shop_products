@@ -54,7 +54,7 @@ class Product extends BaseCollection
      */
     public static function find(array $parameters = null)
     {
-        $parameters[0]['is_deleted'] = false;
+        $parameters['conditions']['is_deleted'] = false;
         return parent::find($parameters);
     }
 
@@ -91,7 +91,7 @@ class Product extends BaseCollection
      */
     public function update()
     {
-        throw new \Exception('Update not supported. Use save() instead', 500);
+        throw new \Exception('Update not supported. Use save() instead', 503);
     }
 
     /**
@@ -114,11 +114,18 @@ class Product extends BaseCollection
      */
     public function toApiArray()
     {
-        return [
+        $data = [
             'packageDimensions' => $this->packageDimensions,
             'productKeywords' => $this->keywords,
             'productSegments' => $this->segments
         ];
+
+        if ($data['packageDimensions'] == null) {
+            // for downloadable products
+            unset($data['packageDimensions']);
+        }
+
+        return $data;
     }
 
     /**

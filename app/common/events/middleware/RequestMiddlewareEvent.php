@@ -63,7 +63,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
             'user_id' => '12345',
             'vendor_id' => '54321',
             'access_level' => 2,
-            'exp' => time() + 3600,
+            'exp' => time() + 3600 * 10,
             'entropy' => mt_rand(10000, 20000)
         ], $this->saltKey, 'HS512'));
     }

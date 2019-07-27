@@ -2,6 +2,7 @@
 
 namespace app\common\models;
 
+
 /**
  * ProductRate
  * 
@@ -81,9 +82,12 @@ class ProductRates extends BaseModel
 
     /**
      * Initialize method for model.
+     * @throws \Exception
      */
     public function initialize()
     {
+        $this->defaultBehavior();
+
         $this->setSchema('shop_products');
         $this->setSource('product_rates');
         $this->belongsTo(
@@ -119,7 +123,7 @@ class ProductRates extends BaseModel
      * Allows to query a set of records that match the specified conditions
      *
      * @param mixed $parameters
-     * @return ProductRates[]|ProductRates|\Phalcon\Mvc\Model\ResultSetInterface
+     * @return ProductRates[]|\Phalcon\Mvc\Model\ResultSetInterface
      */
     public static function find($parameters = null)
     {

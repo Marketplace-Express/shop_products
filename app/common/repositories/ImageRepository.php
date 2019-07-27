@@ -9,6 +9,7 @@ namespace app\common\repositories;
 
 
 use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\NotFoundException;
 use app\common\models\ProductImages;
 use app\common\models\ProductImagesSizes;
 
@@ -27,8 +28,17 @@ class ImageRepository
     }
 
     /**
+     * @return ImageRepository
+     */
+    static public function getInstance(): ImageRepository
+    {
+        return new self;
+    }
+
+    /**
      * @param string $productId
      * @param string $imageId
+     * @param string $albumId
      * @param string $type
      * @param string $width
      * @param string $height
@@ -42,6 +52,7 @@ class ImageRepository
     public function create(
         string $productId,
         string $imageId,
+        string $albumId,
         string $type,
         string $width,
         string $height,
@@ -54,6 +65,7 @@ class ImageRepository
         $model = $this->getModel(true);
         $data = [
             'imageId' => $imageId,
+            'imageAlbumId' => $albumId,
             'productId' => $productId,
             'imageLink' => $link,
             'imageType' => $type,
@@ -102,23 +114,79 @@ class ImageRepository
 
     /**
      * @param string $imageId
+     * @param string $albumId
      * @param string $productId
      * @return bool
      * @throws ArrayOfStringsException
+     * @throws NotFoundException
      */
-    public function delete(string $imageId, string $productId): bool
+    public function delete(string $imageId, string $albumId, string $productId): bool
     {
         $image = $this->getModel()::findFirst([
-            'conditions' => 'imageId = :imageId: AND productId = :productId:',
+            'conditions' => 'imageId = :imageId: AND imageAlbumId = :albumId: AND productId = :productId:',
             'bind' => [
                 'productId' => $productId,
+                'imageId' => $imageId,
+                'albumId' => $albumId
+            ]
+        ]);
+
+        if (!$image) {
+            throw new NotFoundException('Image not found or maybe deleted');
+        }
+
+        if (!$image->delete()) {
+            throw new ArrayOfStringsException($image->getMessages());
+        }
+
+        $imageSizes = new ProductImagesSizes();
+        $imageVersions = $imageSizes::findFirst([
+            'conditions' => 'imageId = :imageId:',
+            'bind' => [
                 'imageId' => $imageId
             ]
         ]);
 
-        if (!$image->delete()) {
-            throw new ArrayOfStringsException($image->getMessages(), 500);
+        if ($imageVersions) {
+            $imageVersions->delete();
         }
+
         return true;
+    }
+
+    /**
+     * @param string $productId
+     * @return bool
+     */
+    public function deleteProductImages(string $productId)
+    {
+        $allDeleted = false;
+        $allProductImages = $this->getModel()->find([
+            'conditions' => 'productId = :productId:',
+            'bind' => [
+                'productId' => $productId
+            ]
+        ]);
+        if ($allProductImages) {
+            foreach ($allProductImages as $productImage) {
+                $allDeleted = $productImage->delete();
+            }
+        }
+
+        $imagesIds = array_column($allProductImages->toArray(), 'imageId');
+        $imageSizeModel = new ProductImagesSizes();
+        $allImagesVersions = $imageSizeModel::find([
+            'conditions' => 'imageId IN  ({imagesIds:array})',
+            'bind' => [
+                'imagesIds' => $imagesIds
+            ]
+        ]);
+
+        if ($allImagesVersions) {
+            foreach ($allImagesVersions as $imageVersion) {
+                $allDeleted = $imageVersion->delete();
+            }
+        }
+        return $allDeleted;
     }
 }

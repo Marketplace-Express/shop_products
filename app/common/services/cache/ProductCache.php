@@ -94,10 +94,10 @@ class ProductCache implements DataSourceInterface
      * @param array $products
      * @throws \Exception
      */
-    public function setInCacheByVendorId(string $vendorId, array $products): void
+    public function bulkCacheUpdate(string $vendorId, array $products): void
     {
         foreach ($products as $product) {
-            $this->setInCache($vendorId, $product['productCategoryId'], $product);
+            $this->updateCache($vendorId, $product['productCategoryId'], $product['productId'], $product);
         }
     }
 
@@ -143,7 +143,7 @@ class ProductCache implements DataSourceInterface
      * @return array
      * @throws \Exception
      */
-    public function getByCategoryId(string $categoryId, string $vendorId): ?array
+    public function getByIdentifier(string $categoryId, string $vendorId): ?array
     {
         $cacheKey = $this->getKey($vendorId, $categoryId);
         $result = self::$redisInstance->hGetAll($cacheKey);
@@ -152,30 +152,6 @@ class ProductCache implements DataSourceInterface
                 return json_decode($product, true);
             }, $result));
         }
-        return $result;
-    }
-
-    /**
-     * Get products by vendor id
-     *
-     * @param string $vendorId
-     * @param bool $editMode
-     * @param int $cursor
-     * @return array
-     * @throws \Exception
-     */
-    public function getByVendorId(string $vendorId, bool $editMode = false, int $cursor = 0): ?array
-    {
-        $result = [];
-        $hKeys = self::$redisInstance->keys($this->getKey($vendorId));
-        if ($hKeys) {
-            foreach ($hKeys as $hKey) {
-                foreach (self::$redisInstance->hGetAll($hKey) as $product) {
-                    $result[] = json_decode($product, true);
-                }
-            }
-        }
-
         return $result;
     }
 
@@ -193,9 +169,7 @@ class ProductCache implements DataSourceInterface
     public function getById(
         string $productId,
         string $vendorId,
-        string $categoryId = null,
-        bool $editMode = false,
-        ?bool $getExtraInfo = true
+        string $categoryId = null
     )
     {
         if (empty($vendorId) || empty($categoryId)) {

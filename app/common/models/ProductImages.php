@@ -29,6 +29,12 @@ class ProductImages extends BaseModel
     public $imageId;
 
     /**
+     * @var string
+     * @Column(column='image_album_id', type='string', length=7)
+     */
+    public $imageAlbumId;
+
+    /**
      *
      * @var string
      * @Column(column='product_id', type='string', length=36)
@@ -146,7 +152,7 @@ class ProductImages extends BaseModel
      * Allows to query a set of records that match the specified conditions
      *
      * @param mixed $parameters
-     * @return ProductImages[]|ProductImages|ResultSetInterface
+     * @return ProductImages[]|ResultSetInterface
      */
     public static function find($parameters = null)
     {
@@ -184,6 +190,7 @@ class ProductImages extends BaseModel
     {
         return [
             'image_id' => 'imageId',
+            'image_album_id' => 'imageAlbumId',
             'product_id' => 'productId',
             'image_link' => 'imageLink',
             'image_size' => 'imageSize',
@@ -202,6 +209,7 @@ class ProductImages extends BaseModel
     {
         return count(array_filter([
             self::model()->imageId,
+            self::model()->imageAlbumId,
             self::model()->imageName,
             self::model()->imageLink,
             self::model()->imageType,
@@ -219,6 +227,7 @@ class ProductImages extends BaseModel
     {
         return [
             'imageId' => $this->imageId,
+            'imageAlbumId' => $this->imageAlbumId,
             'imageLink' => $this->imageLink,
             'productId' => $this->productId,
             'imageWidth' => $this->imageWidth,
