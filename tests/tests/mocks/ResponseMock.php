@@ -5,7 +5,7 @@
  * Time: 10:38 م
  */
 
-namespace Shop_categories\Tests\Mocks;
+namespace tests\mocks;
 
 
 use Phalcon\Http\Response;

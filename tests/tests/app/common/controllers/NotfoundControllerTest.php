@@ -5,11 +5,11 @@
  * Time: 11:25 م
  */
 
-namespace Shop_categories\Tests\Controllers;
+namespace tests\app\common\controllers;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Shop_categories\Controllers\NotfoundController;
-use Shop_categories\Tests\Mocks\ResponseMock;
+use app\common\controllers\NotfoundController;
+use tests\mocks\ResponseMock;
 
 class NotfoundControllerTest extends \UnitTestCase
 {

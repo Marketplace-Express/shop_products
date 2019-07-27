@@ -6,18 +6,18 @@ declare(strict_types=1);
  * Time: 07:04 م
  */
 
-namespace Shop_products\RequestHandler\Product;
+namespace app\common\requestHandler\product;
 
 use Phalcon\Di;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Controllers\BaseController;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\RequestHandler\RequestHandlerInterface;
-use Shop_products\Utils\DigitalUnitsConverterUtil;
-use Shop_products\Validators\TypeValidator;
-use Shop_products\Validators\UuidValidator;
+use app\common\controllers\BaseController;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\requestHandler\RequestHandlerInterface;
+use app\common\utils\DigitalUnitsConverterUtil;
+use app\common\validators\TypeValidator;
+use app\common\validators\UuidValidator;
 
 class UpdateRequestHandler extends BaseController implements RequestHandlerInterface
 {

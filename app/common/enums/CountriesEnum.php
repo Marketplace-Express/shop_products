@@ -5,7 +5,7 @@
  * Time: 04:01 م
  */
 
-namespace Shop_products\Enums;
+namespace app\common\enums;
 
 
 class CountriesEnum

@@ -5,7 +5,7 @@
  * Time: 04:18 م
  */
 
-namespace Shop_products\Modules\Api;
+namespace app\modules\api;
 
 use Phalcon\DiInterface;
 use Phalcon\Loader;
@@ -23,7 +23,7 @@ class Module implements ModuleDefinitionInterface
         $config = $dependencyInjector->getConfig();
         $loader = new Loader();
         $loader->registerNamespaces([
-            'Shop_products\Modules\Api\Controllers' => __DIR__ . '/' . $config->api->version . '/controllers/'
+            'app\modules\api\controllers' => __DIR__ . '/' . $config->api->version . '/controllers/'
         ]);
         $loader->register();
     }

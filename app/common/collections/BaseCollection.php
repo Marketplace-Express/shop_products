@@ -5,11 +5,10 @@
  * Time: 11:14 م
  */
 
-namespace Shop_products\Collections;
-
+namespace app\common\collections;
 
 use Phalcon\Mvc\MongoCollection as Collection;
-use Shop_products\Traits\ModelCollectionBehaviorTrait;
+use app\common\traits\ModelCollectionBehaviorTrait;
 
 abstract class BaseCollection extends Collection
 {

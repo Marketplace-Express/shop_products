@@ -5,17 +5,17 @@
  * Time: 09:33 م
  */
 
-namespace Shop_products\Collections;
+namespace app\common\collections;
 
 
 use Phalcon\Validation;
-use Shop_products\Validators\SegmentsValidator;
-use Shop_products\Validators\TypeValidator;
-use Shop_products\Validators\UuidValidator;
+use app\common\validators\SegmentsValidator;
+use app\common\validators\TypeValidator;
+use app\common\validators\UuidValidator;
 
 /**
  * Class Product
- * @package Shop_products\Collections
+ * @package app\common\collections
  */
 class Product extends BaseCollection
 {

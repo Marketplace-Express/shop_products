@@ -5,14 +5,14 @@
  * Time: 01:11 م
  */
 
-namespace Shop_products\Modules\Cli\Tasks;
+namespace app\modules\cli\tasks;
 
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Logger\ApplicationLogger;
-use Shop_products\Modules\Cli\Request\Handler as RequestHandler;
+use app\common\enums\QueueNamesEnum;
+use app\common\logger\ApplicationLogger;
+use app\modules\cli\request\Handler as RequestHandler;
 
 class ConsumerTask extends MainTask
 {

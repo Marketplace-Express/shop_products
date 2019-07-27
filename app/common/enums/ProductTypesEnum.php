@@ -5,7 +5,7 @@
  * Time: 11:08 ص
  */
 
-namespace Shop_products\Enums;
+namespace app\common\enums;
 
 
 class ProductTypesEnum

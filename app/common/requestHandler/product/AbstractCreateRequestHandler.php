@@ -5,17 +5,17 @@
  * Time: 11:19 ص
  */
 
-namespace Shop_products\RequestHandler\Product;
+namespace app\common\requestHandler\product;
 
 
 use Exception;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Controllers\BaseController;
-use Shop_products\RequestHandler\RequestHandlerInterface;
-use Shop_products\Validators\SegmentsValidator;
-use Shop_products\Validators\UuidValidator;
+use app\common\controllers\BaseController;
+use app\common\requestHandler\RequestHandlerInterface;
+use app\common\validators\SegmentsValidator;
+use app\common\validators\UuidValidator;
 
 abstract class AbstractCreateRequestHandler extends BaseController implements RequestHandlerInterface
 {

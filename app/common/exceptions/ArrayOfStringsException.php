@@ -5,7 +5,7 @@
  * Time: 04:49 م
  */
 
-namespace Shop_products\Exceptions;
+namespace app\common\exceptions;
 
 class ArrayOfStringsException extends \Exception
 {

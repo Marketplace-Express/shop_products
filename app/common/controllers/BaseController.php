@@ -5,12 +5,12 @@
  * Time: 06:44 م
  */
 
-namespace Shop_products\Controllers;
+namespace app\common\controllers;
 
 use JsonMapper;
 use Phalcon\Mvc\Controller;
-use Shop_products\Logger\ApplicationLogger;
-use Shop_products\Utils\UuidUtil;
+use app\common\logger\ApplicationLogger;
+use app\common\utils\UuidUtil;
 use stdClass;
 
 class BaseController extends Controller
@@ -63,7 +63,7 @@ class BaseController extends Controller
     public function handleError(string $message, $code = 500)
     {
         $this->dispatcher->forward([
-            'namespace' => 'Shop_products\Controllers',
+            'namespace' => 'app\common\controllers',
             'controller' => 'exceptionHandler',
             'action' => 'raiseError',
             'params' => [$message, $code]

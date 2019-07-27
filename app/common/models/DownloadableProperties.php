@@ -5,15 +5,15 @@
  * Time: 10:35 م
  */
 
-namespace Shop_products\Models;
+namespace app\common\models;
 
 
 use Phalcon\Validation;
-use Shop_products\Utils\DigitalUnitsConverterUtil;
+use app\common\utils\DigitalUnitsConverterUtil;
 
 /**
  * Class DownloadableProperties
- * @package Shop_products\Models
+ * @package app\common\models
  */
 class DownloadableProperties extends BaseModel
 {

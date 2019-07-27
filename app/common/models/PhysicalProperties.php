@@ -5,15 +5,15 @@
  * Time: 10:34 م
  */
 
-namespace Shop_products\Models;
+namespace app\common\models;
 
 
 use Phalcon\Validation;
-use Shop_products\Validators\UuidValidator;
+use app\common\validators\UuidValidator;
 
 /**
  * Class PhysicalProperties
- * @package Shop_products\Models
+ * @package app\common\models
  * @Entity
  */
 class PhysicalProperties extends BaseModel

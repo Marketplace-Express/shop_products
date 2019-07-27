@@ -5,16 +5,16 @@
  * Time: 02:46 م
  */
 
-namespace Shop_products\Services;
+namespace app\common\services;
 
 
 use Phalcon\Di;
 use Phalcon\Http\Request\File;
-use Shop_products\Exceptions\NotFoundException;
-use Shop_products\Repositories\ImageRepository;
-use Shop_products\Repositories\ProductRepository;
-use Shop_products\Services\Cache\ProductCache;
-use Shop_products\Utils\ImgurUtil;
+use app\common\exceptions\NotFoundException;
+use app\common\repositories\ImageRepository;
+use app\common\repositories\ProductRepository;
+use app\common\services\cache\ProductCache;
+use app\common\utils\ImgurUtil;
 
 class ImageService
 {
@@ -44,7 +44,7 @@ class ImageService
      * @param string $productId
      * @return array
      * @throws NotFoundException
-     * @throws \Shop_products\Exceptions\ArrayOfStringsException
+     * @throws \app\common\exceptions\ArrayOfStringsException
      * @throws \Exception
      */
     public function upload(File $image, string $albumId, string $productId)

@@ -1,11 +1,11 @@
 <?php
-namespace Shop_products\Modules\Cli;
+namespace app\modules\cli;
 
 use Phalcon\DiInterface;
 use Phalcon\Loader;
 use Phalcon\Mvc\ModuleDefinitionInterface;
-use Shop_products\Modules\Cli\Services\IndexingService;
-use Shop_products\Services\ProductsService;
+use app\modules\cli\services\IndexingService;
+use app\common\services\ProductsService;
 
 class Module implements ModuleDefinitionInterface
 {
@@ -19,7 +19,7 @@ class Module implements ModuleDefinitionInterface
         $loader = new Loader();
 
         $loader->registerNamespaces([
-            'Shop_products\Modules\Cli\Tasks' => __DIR__ . '/tasks/',
+            'app\modules\cli\tasks' => __DIR__ . '/tasks/',
         ]);
 
         $loader->register();

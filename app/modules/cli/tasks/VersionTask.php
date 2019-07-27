@@ -1,5 +1,5 @@
 <?php
-namespace Shop_products\Modules\Cli\Tasks;
+namespace app\modules\cli\tasks;
 
 class VersionTask extends \Phalcon\Cli\Task
 {

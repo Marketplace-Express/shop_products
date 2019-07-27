@@ -5,7 +5,7 @@
  * Time: 12:48 م
  */
 
-namespace Shop_products\Exceptions;
+namespace app\common\exceptions;
 
 
 use Throwable;

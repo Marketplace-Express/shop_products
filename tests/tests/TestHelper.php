@@ -31,25 +31,25 @@ $loader->registerDirs(
 );
 
 $loader->registerNamespaces([
-    'Shop_products\Models' => ROOT_PATH . '/../app/common/models',
-    'Shop_products\Controllers' => ROOT_PATH . '/../app/common/controllers',
-    'Shop_products\Repositories' => ROOT_PATH . '/../app/common/repositories',
-    'Shop_products\Interfaces' => ROOT_PATH . '/../app/common/interfaces/',
-    'Shop_products\Traits' => ROOT_PATH . '/../app/common/traits',
-    'Shop_products\Services' => ROOT_PATH . '/../app/common/services',
-    'Shop_products\Services\Cache' => ROOT_PATH . '/../app/common/services/cache',
-    'Shop_products\RequestHandler' => ROOT_PATH . '/../app/common/request-handler',
-    'Shop_products\RequestHandler\Product' => ROOT_PATH . '/../app/common/request-handler/product',
-    'Shop_products\Modules\Api\Controllers' => ROOT_PATH . '/../app/modules/api/1.0/controllers',
-    'Shop_products\Utils' => ROOT_PATH . '/../app/common/utils',
-    'Shop_products\Logger' => ROOT_PATH . '/common/logger/'
+    'app\common\models' => ROOT_PATH . '/../app/common/models',
+    'app\common\controllers' => ROOT_PATH . '/../app/common/controllers',
+    'app\common\repositories' => ROOT_PATH . '/../app/common/repositories',
+    'app\common\interfaces' => ROOT_PATH . '/../app/common/interfaces/',
+    'app\common\traits' => ROOT_PATH . '/../app/common/traits',
+    'app\common\services' => ROOT_PATH . '/../app/common/services',
+    'app\common\services\cache' => ROOT_PATH . '/../app/common/services/cache',
+    'app\common\requestHandler' => ROOT_PATH . '/../app/common/requestHandler',
+    'app\common\requestHandler\product' => ROOT_PATH . '/../app/common/requestHandler/product',
+    'app\modules\api\controllers' => ROOT_PATH . '/../app/modules/api/1.0/controllers',
+    'app\common\utils' => ROOT_PATH . '/../app/common/utils',
+    'app\common\logger' => ROOT_PATH . '/common/logger/'
 ]);
 
 $loader->registerClasses([
     'Shop_products\Tests\Mocks\RequestMock' => ROOT_PATH . '/mocks/RequestMock.php',
     'Shop_products\Tests\Mocks\ResponseMock' => ROOT_PATH . '/mocks/ResponseMock.php',
-    'Shop_products\Exceptions\ArrayOfStringsException' => ROOT_PATH . '/../app/common/exceptions/ArrayOfStringsException.php',
-    'Shop_products\Exceptions\NotFoundException' => ROOT_PATH . '/../app/common/exceptions/NotFoundException.php'
+    'app\common\exceptions\ArrayOfStringsException' => ROOT_PATH . '/../app/common/exceptions/ArrayOfStringsException.php',
+    'app\common\exceptions\NotFoundException' => ROOT_PATH . '/../app/common/exceptions/NotFoundException.php'
 ]);
 
 $loader->register();

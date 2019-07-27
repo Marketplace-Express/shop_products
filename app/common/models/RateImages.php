@@ -1,6 +1,6 @@
 <?php
 
-namespace Shop_products\Models;
+namespace app\common\models;
 
 class RateImages extends BaseModel
 {

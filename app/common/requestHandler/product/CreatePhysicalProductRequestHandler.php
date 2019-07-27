@@ -5,27 +5,51 @@
  * Time: 02:13 م
  */
 
-namespace Shop_products\RequestHandler\Product;
+namespace app\common\requestHandler\product;
 
 
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Enums\ProductTypesEnum;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\RequestHandler\RequestHandlerInterface;
-use Shop_products\Utils\DigitalUnitsConverterUtil;
+use app\common\enums\ProductTypesEnum;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\requestHandler\RequestHandlerInterface;
+use app\common\validators\TypeValidator;
+use app\common\validators\UuidValidator;
 
-class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandler implements RequestHandlerInterface
+class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler implements RequestHandlerInterface
 {
 
-    private $digitalSize;
+    private $brandId;
+    private $weight;
+    private $packageDimensions;
 
     /**
-     * @param mixed $digitalSize
+     * @param mixed $brandId
      */
-    public function setDigitalSize($digitalSize): void
+    public function setBrandId($brandId): void
     {
-        $this->digitalSize = $digitalSize;
+        $this->brandId = $brandId;
+    }
+
+    /**
+     * @param mixed $weight
+     */
+    public function setWeight($weight): void
+    {
+        $this->weight = $weight;
+    }
+
+    /**
+     * @param mixed $packageDimensions
+     */
+    public function setPackageDimensions($packageDimensions): void
+    {
+        $this->packageDimensions = $packageDimensions;
+    }
+
+    private function objectToArray($object)
+    {
+        return json_decode(json_encode($object, JSON_PRESERVE_ZERO_FRACTION), true);
     }
 
     /**
@@ -34,16 +58,13 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
     protected function fields()
     {
         return array_merge(parent::fields(), [
-            'digitalSize' => $this->digitalSize
+            'brandId'  => $this->brandId,
+            'weight' => $this->weight,
+            'packageDimensions' => $this->objectToArray($this->packageDimensions)
         ]);
     }
 
-    private function getMaxDigitalSizeValidationConfig()
-    {
-        return $this->getDI()->getConfig()->application->validation->downloadable->maxDigitalSize;
-    }
-
-    /** Validate request fields using \Phalcon\Validation
+    /** Validate request fields using \Phalcon\Validation\Validator
      * @return Group
      */
     public function validate(): Group
@@ -51,21 +72,31 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
         $validator = new Validation();
 
         $validator->add(
-            'digitalSize',
-            new Validation\Validator\PresenceOf([
-                'message' => 'You have to provide digital size'
+            'brandId',
+            new UuidValidator([
+                'allowEmpty' => true
             ])
         );
 
         $validator->add(
-            'digitalSize',
+            'weight',
             new Validation\Validator\NumericValidator([
-                'min' => 1,
-                'max' => $this->getMaxDigitalSizeValidationConfig(),
-                'messageMaximum' => 'Digital size exceeds the max limit ' .
-                    DigitalUnitsConverterUtil::bytesToMb($this->getMaxDigitalSizeValidationConfig()).
-                    ' Mb',
-                'messageMinimum' => 'Invalid digital size'
+                'allowFloat' => true,
+                'allowEmpty' => false
+            ])
+        );
+
+        $validator->add(
+            'packageDimensions',
+            new Validation\Validator\PresenceOf()
+        );
+
+        $validator->add(
+            'packageDimensions',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_FLOAT,
+                'allowEmpty' => false,
+                'message' => 'Invalid dimensions'
             ])
         );
 
@@ -130,8 +161,10 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
     {
         return array_merge(parent::toArray(), [
             'productId' => $this->getUuidUtil()->uuid(),
-            'productType' => ProductTypesEnum::TYPE_DOWNLOADABLE,
-            'productDigitalSize' => $this->digitalSize
+            'productBrandId' => $this->brandId,
+            'productType' => ProductTypesEnum::TYPE_PHYSICAL,
+            'productWeight' => $this->weight,
+            'productPackageDimensions' => $this->objectToArray($this->packageDimensions)
         ]);
     }
 }

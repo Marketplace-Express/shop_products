@@ -5,18 +5,18 @@
  * Time: 07:32 م
  */
 
-namespace Shop_products\Modules\Api\Controllers;
+namespace app\modules\api\controllers;
 
 
 use Exception;
-use Shop_products\Controllers\BaseController;
-use Shop_products\RequestHandler\Image\UploadRequestHandler;
-use Shop_products\Services\ImageService;
+use app\common\controllers\BaseController;
+use app\common\requestHandler\image\UploadRequestHandler;
+use app\common\services\ImageService;
 use Throwable;
 
 /**
  * Class ImagesController
- * @package Shop_products\Modules\Api\Controllers
+ * @package app\modules\api\controllers
  * @RoutePrefix('/api/1.0/images')
  */
 class ImagesController extends BaseController
@@ -46,7 +46,7 @@ class ImagesController extends BaseController
 
     /**
      * @Post('/upload')
-     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
     public function uploadAction()
     {

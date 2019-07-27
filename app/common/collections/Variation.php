@@ -5,12 +5,12 @@
  * Time: 11:17 م
  */
 
-namespace Shop_products\Collections;
+namespace app\common\collections;
 
 
 use Phalcon\Validation;
-use Shop_products\Utils\UuidUtil;
-use Shop_products\Validators\TypeValidator;
+use app\common\utils\UuidUtil;
+use app\common\validators\TypeValidator;
 
 class Variation extends BaseCollection
 {

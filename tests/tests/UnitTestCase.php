@@ -2,8 +2,8 @@
 
 use Phalcon\Di;
 use Phalcon\Test\UnitTestCase as PhalconTestCase;
-use Shop_categories\Tests\Mocks\RequestMock;
-use Shop_categories\Tests\Mocks\ResponseMock;
+use tests\mocks\RequestMock;
+use tests\mocks\ResponseMock;
 
 abstract class UnitTestCase extends PhalconTestCase
 {

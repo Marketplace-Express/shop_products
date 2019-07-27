@@ -5,7 +5,7 @@
  * Time: 04:25 م
  */
 
-namespace Shop_products\Models;
+namespace app\common\models;
 
 
 class ProductImagesSizes extends BaseModel

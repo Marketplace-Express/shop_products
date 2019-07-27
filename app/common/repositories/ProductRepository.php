@@ -5,24 +5,24 @@
  * Time: 08:58 م
  */
 
-namespace Shop_products\Repositories;
+namespace app\common\repositories;
 
 use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
-use Shop_products\Enums\MongoQueryOperatorsEnum;
-use Shop_products\Enums\ProductTypesEnum;
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Exceptions\NotFoundException;
-use Shop_products\Interfaces\DataSourceInterface;
-use Shop_products\Collections\Product as ProductCollection;
-use Shop_products\Models\DownloadableProperties;
-use Shop_products\Models\PhysicalProperties;
-use Shop_products\Models\Product;
-use Shop_products\Models\ProductImages;
-use Shop_products\Models\ProductQuestions;
-use Shop_products\Models\ProductRates;
-use Shop_products\RequestHandler\Queue\QueueRequestHandler;
+use app\common\enums\MongoQueryOperatorsEnum;
+use app\common\enums\ProductTypesEnum;
+use app\common\enums\QueueNamesEnum;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\NotFoundException;
+use app\common\interfaces\DataSourceInterface;
+use app\common\collections\Product as ProductCollection;
+use app\common\models\DownloadableProperties;
+use app\common\models\PhysicalProperties;
+use app\common\models\Product;
+use app\common\models\ProductImages;
+use app\common\models\ProductQuestions;
+use app\common\models\ProductRates;
+use app\common\requestHandler\queue\QueueRequestHandler;
 
 class ProductRepository implements DataSourceInterface
 {

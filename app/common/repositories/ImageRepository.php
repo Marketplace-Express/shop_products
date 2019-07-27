@@ -5,12 +5,12 @@
  * Time: 12:01 م
  */
 
-namespace Shop_products\Repositories;
+namespace app\common\repositories;
 
 
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Models\ProductImages;
-use Shop_products\Models\ProductImagesSizes;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\models\ProductImages;
+use app\common\models\ProductImagesSizes;
 
 class ImageRepository
 {
@@ -19,7 +19,7 @@ class ImageRepository
 
     /**
      * @param bool $new
-     * @return \Shop_products\Models\BaseModel|ProductImages
+     * @return \app\common\models\BaseModel|ProductImages
      */
     public function getModel(bool $new = false)
     {

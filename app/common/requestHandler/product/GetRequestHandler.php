@@ -5,15 +5,15 @@
  * Time: 08:23 م
  */
 
-namespace Shop_products\RequestHandler\Product;
+namespace app\common\requestHandler\product;
 
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Controllers\BaseController;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\RequestHandler\RequestHandlerInterface;
-use Shop_products\Services\User\UserService;
-use Shop_products\Validators\UuidValidator;
+use app\common\controllers\BaseController;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\requestHandler\RequestHandlerInterface;
+use app\common\services\user\UserService;
+use app\common\validators\UuidValidator;
 
 class GetRequestHandler extends BaseController implements RequestHandlerInterface
 {

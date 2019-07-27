@@ -5,7 +5,7 @@
  * Time: 04:10 م
  */
 
-namespace Shop_products\Validators;
+namespace app\common\validators;
 
 
 use Phalcon\Validation\Message;

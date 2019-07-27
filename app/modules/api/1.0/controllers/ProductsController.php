@@ -5,23 +5,23 @@
  * Time: 07:31 م
  */
 
-namespace Shop_products\Modules\Api\Controllers;
+namespace app\modules\api\controllers;
 
 use Exception;
-use Shop_products\Controllers\BaseController;
-use Shop_products\RequestHandler\Product\{AbstractCreateRequestHandler,
+use app\common\controllers\BaseController;
+use app\common\requestHandler\product\{AbstractCreateRequestHandler,
     DeleteRequestHandler,
     GetRequestHandler,
     UpdateRequestHandler};
-use Shop_products\RequestHandler\ProductRequestResolver;
-use Shop_products\Services\ProductsService;
-use Shop_products\Utils\UuidUtil;
+use app\common\requestHandler\ProductRequestResolver;
+use app\common\services\ProductsService;
+use app\common\utils\UuidUtil;
 use stdClass;
 use Throwable;
 
 /**
  * Class IndexController
- * @package Shop_products\Modules\Api\Controllers
+ * @package app\modules\api\controllers
  * @RoutePrefix('/api/1.0/products')
  */
 class ProductsController extends BaseController
@@ -81,7 +81,7 @@ class ProductsController extends BaseController
 
     /**
      * @Get('/owner')
-     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
     public function getAllForAdminsAction()
     {
@@ -99,7 +99,7 @@ class ProductsController extends BaseController
 
     /**
      * @Get('/owner/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
      */
     public function getForAdminsAction($id)
@@ -120,7 +120,7 @@ class ProductsController extends BaseController
 
     /**
      * @Post('/')
-     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
     public function createAction()
     {
@@ -141,7 +141,7 @@ class ProductsController extends BaseController
 
     /**
      * @Put('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
      */
     public function updateAction($id)
@@ -164,7 +164,7 @@ class ProductsController extends BaseController
 
     /**
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\Shop_products\Events\RequestMiddlewareEvent")
+     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
      */
     public function deleteAction($id)

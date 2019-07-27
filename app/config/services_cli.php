@@ -7,6 +7,6 @@ use Phalcon\Cli\Dispatcher;
 */
 $di->setShared('dispatcher', function() {
     $dispatcher = new Dispatcher();
-    $dispatcher->setDefaultNamespace('Shop_products\Modules\Cli\Tasks');
+    $dispatcher->setDefaultNamespace('app\modules\cli\tasks');
     return $dispatcher;
 });

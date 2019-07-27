@@ -5,12 +5,12 @@
  * Time: 11:13 ص
  */
 
-namespace Shop_products\Services\Cache;
+namespace app\common\services\cache;
 
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Interfaces\DataSourceInterface;
-use Shop_products\RequestHandler\Queue\QueueRequestHandler;
+use app\common\enums\QueueNamesEnum;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\interfaces\DataSourceInterface;
+use app\common\requestHandler\queue\QueueRequestHandler;
 
 class ProductCache implements DataSourceInterface
 {
@@ -31,8 +31,13 @@ class ProductCache implements DataSourceInterface
      */
     public static function getInstance()
     {
-        self::$redisInstance = \Phalcon\Di::getDefault()->getShared('productsCache');
+        self::establishConnection();
         return self::$instance ?? self::$instance = new self;
+    }
+
+    static public function establishConnection()
+    {
+        self::$redisInstance = \Phalcon\Di::getDefault()->getShared('productsCache');
     }
 
     public static function hDelete($key, ...$hashKeys)

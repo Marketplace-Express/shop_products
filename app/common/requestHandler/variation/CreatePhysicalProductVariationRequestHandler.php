@@ -5,13 +5,13 @@
  * Time: 05:17 م
  */
 
-namespace Shop_products\RequestHandler\Product;
+namespace app\common\requestHandler\variation;
 
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Controllers\BaseController;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\RequestHandler\RequestHandlerInterface;
+use app\common\controllers\BaseController;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\requestHandler\RequestHandlerInterface;
 
 class CreatePhysicalProductVariationRequestHandler extends BaseController implements RequestHandlerInterface
 {

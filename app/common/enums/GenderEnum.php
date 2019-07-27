@@ -5,7 +5,7 @@
  * Time: 04:17 م
  */
 
-namespace Shop_products\Enums;
+namespace app\common\enums;
 
 
 class GenderEnum

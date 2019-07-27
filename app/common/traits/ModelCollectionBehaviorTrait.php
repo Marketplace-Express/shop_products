@@ -5,7 +5,7 @@
  * Time: 09:37 م
  */
 
-namespace Shop_products\Traits;
+namespace app\common\traits;
 
 use MongoDB\BSON\UTCDateTime;
 use Phalcon\Mvc\Collection;

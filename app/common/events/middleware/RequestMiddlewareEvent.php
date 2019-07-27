@@ -5,20 +5,19 @@
  * Time: 07:59 م
  */
 
-namespace Shop_products\Events;
+namespace app\common\events\middleware;
 
 use Firebase\JWT\JWT;
-use Shop_products\Controllers\BaseController;
-use Shop_products\Services\User\Token;
-use Shop_products\Services\User\UserService;
+use app\common\controllers\BaseController;
+use app\common\services\user\Token;
+use app\common\services\user\UserService;
 use Sid\Phalcon\AuthMiddleware\MiddlewareInterface;
-use Exception;
-use stdClass;
-use Throwable;
 
 class RequestMiddlewareEvent extends BaseController implements MiddlewareInterface
 {
-    /** @var Token $token */
+    /**
+     * @var Token $token
+     */
     private $token;
 
     private $saltKey;
@@ -37,7 +36,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
 
     /**
      * RequestMiddlewareEvent constructor.
-     * @throws Exception
+     * @throws \Exception
      */
     public function onConstruct()
     {
@@ -51,7 +50,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
 //        $this->generate();
         $this->validate($accessToken);
 
-        /** @var stdClass $accessToken */
+        /** @var \stdClass $accessToken */
         $this->token = $this->getJsonMapper()->map(
             $accessToken,
             new Token()
@@ -71,7 +70,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
 
     /**
      * @return bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function authenticate(): bool
     {
@@ -82,37 +81,37 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
 
     /**
      * @param $accessToken
-     * @throws Exception
+     * @throws \Exception
      */
     private function validate(&$accessToken)
     {
         try {
 
             if (empty($accessToken)) {
-                throw new Exception('Unauthorized action', 400);
+                throw new \Exception('Unauthorized action', 400);
             }
             $accessToken = explode(' ', $accessToken)[1];
 
             try {
                 $accessToken = JWT::decode($accessToken, $this->saltKey, [$this->allowedAlg]);
             } catch (\UnexpectedValueException $exception) {
-                throw new Exception('Invalid token', 400, $exception);
+                throw new \Exception('Invalid token', 400, $exception);
             }
 
             // user is logged in, then check token structure
 
             if (!property_exists($accessToken, 'user_id')) {
-                throw new Exception('Invalid user id', 400);
+                throw new \Exception('Invalid user id', 400);
             }
 
             if (!property_exists($accessToken, 'access_level')) {
-                throw new Exception('Invalid token arguments', 400);
+                throw new \Exception('Invalid token arguments', 400);
             }
 
             if (!property_exists($accessToken, 'vendor_id')) {
-                throw new Exception('Invalid vendor Id', 400);
+                throw new \Exception('Invalid vendor Id', 400);
             }
-        } catch (Throwable $exception) {
+        } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 400);
         }
     }

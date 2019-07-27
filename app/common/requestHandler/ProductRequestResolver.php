@@ -5,12 +5,12 @@
  * Time: 12:24 م
  */
 
-namespace Shop_products\RequestHandler;
+namespace app\common\requestHandler;
 
 
-use Shop_products\Enums\ProductTypesEnum;
-use Shop_products\RequestHandler\Product\CreateDownloadableProductRequestHandler;
-use Shop_products\RequestHandler\Product\CreatePhysicalProductRequestHandler;
+use app\common\enums\ProductTypesEnum;
+use app\common\requestHandler\product\CreateDownloadableProductRequestHandler;
+use app\common\requestHandler\product\CreatePhysicalProductRequestHandler;
 
 class ProductRequestResolver
 {

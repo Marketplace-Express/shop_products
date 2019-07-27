@@ -5,7 +5,7 @@
  * Time: 09:29 م
  */
 
-namespace Shop_products\Logger;
+namespace app\common\logger;
 
 use Phalcon\Di\Injectable;
 use Phalcon\Logger\Adapter\File;

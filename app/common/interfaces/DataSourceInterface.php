@@ -5,10 +5,10 @@
  * Time: 11:11 ص
  */
 
-namespace Shop_products\Interfaces;
+namespace app\common\interfaces;
 
 
-use Shop_products\Exceptions\NotFoundException;
+use app\common\exceptions\NotFoundException;
 
 interface DataSourceInterface
 {

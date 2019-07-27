@@ -5,10 +5,10 @@
  * Time: 11:25 ص
  */
 
-namespace Shop_products\Models;
+namespace app\common\models;
 
 use Phalcon\Mvc\Model;
-use Shop_products\Traits\ModelCollectionBehaviorTrait;
+use app\common\traits\ModelCollectionBehaviorTrait;
 
 abstract class BaseModel extends Model
 {

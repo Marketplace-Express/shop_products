@@ -5,7 +5,7 @@
  * Time: 09:24 م
  */
 
-namespace Shop_products\RequestHandler\Product;
+namespace app\common\requestHandler\product;
 
 
 use Phalcon\Validation;

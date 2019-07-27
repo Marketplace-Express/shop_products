@@ -5,19 +5,19 @@
  * Time: 08:54 م
  */
 
-namespace Shop_products\Services;
+namespace app\common\services;
 
 
 use Mechpave\ImgurClient\Entity\Album;
-use Shop_products\Enums\AccessLevelsEnum;
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Exceptions\NotFoundException;
-use Shop_products\Models\Product;
-use Shop_products\Repositories\ProductRepository;
-use Shop_products\RequestHandler\Queue\QueueRequestHandler;
-use Shop_products\Services\Cache\ProductCache;
-use Shop_products\Utils\ImgurUtil;
+use app\common\enums\AccessLevelsEnum;
+use app\common\enums\QueueNamesEnum;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\NotFoundException;
+use app\common\models\Product;
+use app\common\repositories\ProductRepository;
+use app\common\requestHandler\queue\QueueRequestHandler;
+use app\common\services\cache\ProductCache;
+use app\common\utils\ImgurUtil;
 
 class ProductsService
 {

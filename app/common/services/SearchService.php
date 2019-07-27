@@ -5,7 +5,7 @@
  * Time: 11:20 م
  */
 
-namespace Shop_products\Services;
+namespace app\common\services;
 
 
 use Ehann\RediSearch\Index;

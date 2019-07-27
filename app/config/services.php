@@ -10,10 +10,10 @@ use Phalcon\Logger\Factory;
 use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Wire\AMQPTable;
-use Shop_products\Enums\ProductsCacheIndexesEnum;
-use Shop_products\Logger\ApplicationLogger;
-use Shop_products\Redis\Connector;
-use Shop_products\Services\User\UserService;
+use app\common\enums\ProductsCacheIndexesEnum;
+use app\common\logger\ApplicationLogger;
+use app\common\redis\Connector;
+use app\common\services\user\UserService;
 
 /**
  * Shared configuration service

@@ -5,7 +5,7 @@
  * Time: 04:40 م
  */
 
-namespace Shop_products\Modules\Cli\Request;
+namespace app\modules\cli\request;
 
 use Exception;
 use Phalcon\Di\Injectable;

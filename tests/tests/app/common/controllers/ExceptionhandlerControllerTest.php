@@ -5,13 +5,13 @@
  * Time: 06:23 م
  */
 
-namespace Shop_categories\Tests\Controllers;
+namespace tests\app\common\controllers;
 
 use Phalcon\Logger\Adapter\File;
 use PHPUnit\Framework\MockObject\MockObject;
-use Shop_categories\Controllers\ExceptionhandlerController;
-use Shop_categories\Logger\ApplicationLogger;
-use Shop_categories\Tests\Mocks\ResponseMock;
+use app\common\controllers\ExceptionhandlerController;
+use app\common\logger\ApplicationLogger;
+use tests\mocks\ResponseMock;
 
 class ExceptionhandlerControllerTest extends \UnitTestCase
 {

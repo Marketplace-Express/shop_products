@@ -13,12 +13,12 @@ use Phalcon\Flash\Direct as Flash;
 $di->setShared('router', function () {
     $config = $this->getConfig();
     $router = new Router\Annotations(false);
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Products', '/api/' . $config->api->version . '/products');
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Variations', '/api/' . $config->api->version . '/variations');
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Images', '/api/' . $config->api->version . '/images');
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Rate', '/api/' . $config->api->version . '/rate');
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Questions', '/api/' . $config->api->version . '/questions');
-    $router->addModuleResource('api', 'Shop_products\Modules\Api\Controllers\Search', '/api/' . $config->api->version . '/search');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Products', '/api/' . $config->api->version . '/products');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Variations', '/api/' . $config->api->version . '/variations');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Images', '/api/' . $config->api->version . '/images');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Rate', '/api/' . $config->api->version . '/rate');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Questions', '/api/' . $config->api->version . '/questions');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Search', '/api/' . $config->api->version . '/search');
     return $router;
 });
 
@@ -77,7 +77,7 @@ $di->setShared('dispatcher', function() {
                 case Dispatcher::EXCEPTION_HANDLER_NOT_FOUND:
                 case Dispatcher::EXCEPTION_ACTION_NOT_FOUND:
                     $dispatcher->forward([
-                        'controller' => '\Shop_products\Controllers\Notfound',
+                        'controller' => '\app\common\controllers\Notfound',
                         'action'     => 'index'
                     ]);
                     return false;
@@ -88,7 +88,7 @@ $di->setShared('dispatcher', function() {
                 case $exception instanceof \Phalcon\Mvc\Model\Exception:
                 case $exception instanceof PDOException:
                     $dispatcher->forward([
-                        'controller' => '\Shop_products\Controllers\ExceptionHandler',
+                        'controller' => '\app\common\controllers\ExceptionHandler',
                         'action' => 'serverError',
                         'params' => [$exception->getMessage()]
                     ]);

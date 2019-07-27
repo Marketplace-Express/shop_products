@@ -5,10 +5,10 @@
  * Time: 07:32 م
  */
 
-namespace Shop_products\Modules\Api\Controllers;
+namespace app\modules\api\controllers;
 
 
-use Shop_products\Controllers\BaseController;
+use app\common\controllers\BaseController;
 
 class RateController extends BaseController
 {

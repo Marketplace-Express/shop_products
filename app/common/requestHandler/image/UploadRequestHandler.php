@@ -5,7 +5,7 @@
  * Time: 02:48 م
  */
 
-namespace Shop_products\RequestHandler\Image;
+namespace app\common\requestHandler\image;
 
 
 use Exception;
@@ -13,11 +13,11 @@ use Phalcon\Di;
 use Phalcon\Http\Request\File;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use Shop_products\Controllers\BaseController;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\RequestHandler\RequestHandlerInterface;
-use Shop_products\Utils\DigitalUnitsConverterUtil;
-use Shop_products\Validators\UuidValidator;
+use app\common\controllers\BaseController;
+use app\common\exceptions\ArrayOfStringsException;
+use app\common\requestHandler\RequestHandlerInterface;
+use app\common\utils\DigitalUnitsConverterUtil;
+use app\common\validators\UuidValidator;
 
 class UploadRequestHandler extends BaseController implements RequestHandlerInterface
 {

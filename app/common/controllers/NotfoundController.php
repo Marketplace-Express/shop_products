@@ -5,7 +5,7 @@
  * Time: 08:41 م
  */
 
-namespace Shop_products\Controllers;
+namespace app\common\controllers;
 
 
 class NotfoundController extends BaseController

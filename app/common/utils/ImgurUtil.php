@@ -5,7 +5,7 @@
  * Time: 11:36 م
  */
 
-namespace Shop_products\Utils;
+namespace app\common\utils;
 
 use Mechpave\ImgurClient\Entity\Token;
 use Mechpave\ImgurClient\ImgurClient;
