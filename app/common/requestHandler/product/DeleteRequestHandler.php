@@ -11,7 +11,7 @@ namespace app\common\requestHandler\product;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\controllers\BaseController;
-use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\OperationFailed;
 use app\common\requestHandler\RequestHandlerInterface;
 use app\common\validators\UuidValidator;
 
@@ -77,11 +77,11 @@ class DeleteRequestHandler extends BaseController implements RequestHandlerInter
 
     /**
      * @param null $message
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public function invalidRequest($message = null)
     {
-        throw new ArrayOfStringsException($this->errorMessages, 400);
+        throw new OperationFailed($this->errorMessages, 400);
     }
 
     public function successRequest($message = null)

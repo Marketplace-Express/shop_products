@@ -8,11 +8,9 @@
 namespace app\common\exceptions;
 
 
-use Throwable;
-
-class OperationNotPermittedException extends \Exception
+class OperationNotPermitted extends BaseException
 {
-    public function __construct($message = "", $code = 403, Throwable $previous = null)
+    public function __construct($message = "", $code = 403, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

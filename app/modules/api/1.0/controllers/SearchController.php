@@ -38,7 +38,10 @@ class SearchController extends BaseController
     {
         try {
             /** @var AutocompleteRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new AutocompleteRequestHandler());
+            $request = $this->getJsonMapper()->map(
+                $this->request->getQuery(),
+                new AutocompleteRequestHandler()
+            );
 
             if (!$request->isValid()) {
                 $request->invalidRequest();
@@ -58,7 +61,10 @@ class SearchController extends BaseController
     {
         try {
             /** @var SearchRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new SearchRequestHandler());
+            $request = $this->getJsonMapper()->map(
+                $this->request->getQuery(),
+                new SearchRequestHandler()
+            );
 
             if (!$request->isValid()) {
                 $request->invalidRequest();

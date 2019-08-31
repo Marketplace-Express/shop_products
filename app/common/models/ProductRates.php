@@ -127,6 +127,14 @@ class ProductRates extends BaseModel
      */
     public static function find($parameters = null)
     {
+        $operator = '';
+        if (!array_key_exists('conditions', $parameters)) {
+            $parameters['conditions'] = '';
+        }
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
         return parent::find($parameters);
     }
 
@@ -138,7 +146,8 @@ class ProductRates extends BaseModel
      */
     public static function findFirst($parameters = null)
     {
-        return parent::findFirst($parameters);
+        $query = self::find($parameters);
+        return $query->getFirst();
     }
 
     public function afterFetch()
@@ -172,16 +181,6 @@ class ProductRates extends BaseModel
             'deleted_at' => 'deletedAt',
             'is_deleted' => 'isDeleted'
         ];
-    }
-
-    public static function count($parameters = null)
-    {
-        return count(array_filter([
-            self::model()->rateId,
-            self::model()->rateUserId,
-            self::model()->rateText,
-            self::model()->rateStars
-        ]));
     }
 
     public function toApiArray()

@@ -10,7 +10,6 @@ namespace app\common\redis;
 
 use Ehann\RedisRaw\PhpRedisAdapter;
 use Ehann\RedisRaw\RedisRawClientInterface;
-use Redis;
 
 /**
  * Class Connector
@@ -23,7 +22,7 @@ class Connector extends PhpRedisAdapter
 {
     public function connect($hostname = '127.0.0.1', $port = 6379, $db = 0, $password = null): RedisRawClientInterface
     {
-        $this->redis = new Redis();
+        $this->redis = new \Redis();
         $this->redis->pconnect($hostname, $port);
         $this->redis->select($db);
         $this->redis->auth($password);

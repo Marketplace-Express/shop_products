@@ -51,8 +51,8 @@ class ImagesController extends BaseController
         try {
             /** @var UploadRequestHandler $request */
             $request = $this->getJsonMapper()->map(
-                $this->queryStringToObject($this->request->getPost()),
-                new UploadRequestHandler()
+                $this->request->getPost(),
+                new UploadRequestHandler($this)
             );
             if (!$request->isValid()) {
                 $request->invalidRequest();
@@ -73,12 +73,15 @@ class ImagesController extends BaseController
     {
         try {
             /** @var DeleteRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->queryStringToObject($this->request->getQuery()), new DeleteRequestHandler());
+            $request = $this->getJsonMapper()->map(
+                $this->request->getQuery(),
+                new DeleteRequestHandler($this)
+            );
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->getService()->delete($request->getProductId(), $id, $request->getAlbumId(), $request->getAccessLevel());
-            $request->successRequest();
+            $this->getService()->delete($request->productId, $id, $request->albumId, $request->getAccessLevel());
+            $request->successRequest('Deleted');
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }

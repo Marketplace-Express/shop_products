@@ -11,11 +11,13 @@ namespace app\common\services;
 use app\common\repositories\ImageRepository;
 use app\common\repositories\QuestionRepository;
 use app\common\repositories\RateRepository;
+use app\common\services\cache\ImagesCache;
+use app\common\services\cache\QuestionsCache;
 use Mechpave\ImgurClient\Entity\Album;
 use app\common\enums\AccessLevelsEnum;
 use app\common\enums\QueueNamesEnum;
-use app\common\exceptions\ArrayOfStringsException;
-use app\common\exceptions\NotFoundException;
+use app\common\exceptions\OperationFailed;
+use app\common\exceptions\NotFound;
 use app\common\models\Product;
 use app\common\repositories\ProductRepository;
 use app\common\requestHandler\queue\QueueRequestHandler;
@@ -53,9 +55,9 @@ class ProductsService
         $exists = $this->getQueueRequestHandler()
             ->setQueueName(QueueNamesEnum::CATEGORY_SYNC_QUEUE)
             ->setService('category')
-            ->setMethod('getCategory')
+            ->setMethod('getCategories')
             ->setData([
-                'categoryId' => $categoryId
+                'ids' => [$categoryId]
             ])
             ->setServiceArgs([
                 'vendorId' => $vendorId
@@ -63,18 +65,8 @@ class ProductsService
             ->sendSync();
 
         if (empty($exists)) {
-            throw new NotFoundException('Category not found or maybe deleted');
+            throw new NotFound('Category not found or maybe deleted');
         }
-    }
-
-    /**
-     * @param string $productId
-     * @return bool
-     * @throws \Exception
-     */
-    public function checkProductExistence(string $productId): bool
-    {
-        return (bool) ProductRepository::getInstance()->isExists($productId);
     }
 
     /**
@@ -121,7 +113,7 @@ class ProductsService
      * @param string $productId
      * @return array
      *
-     * @throws NotFoundException
+     * @throws NotFound
      * @throws \Exception
      */
     public function getProduct(
@@ -133,11 +125,16 @@ class ProductsService
         try {
             $product = ProductCache::getInstance()->getById($productId, $vendorId, $categoryId);
             if (empty($product)) {
-                $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true)->toApiArray();
-                ProductCache::getInstance()->updateCache($vendorId, $categoryId, $productId, $product);
+                $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true)->toApiArray();
+                ProductCache::getInstance()->updateCache($vendorId, $categoryId, $product);
             }
+            // Attach images and questions
+            $images = ImagesCache::getInstance()->getAll($productId);
+            $question = QuestionsCache::getInstance()->getAll($productId);
+            $product['productImages'] = $images;
+            $product['productQuestions'] = $question;
         } catch (\RedisException $exception) {
-            $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true);
+            $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true)->toApiArray();
         }
         return $product;
     }
@@ -148,7 +145,7 @@ class ProductsService
      * @param array $data
      * @return array
      *
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      * @throws \Exception
      */
     public function create(array $data)
@@ -180,8 +177,8 @@ class ProductsService
      * @param string $vendorId
      * @return array
      *
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
+     * @throws OperationFailed
+     * @throws NotFound
      * @throws \Exception
      */
     public function update(string $productId, array $data, string $vendorId)
@@ -190,7 +187,7 @@ class ProductsService
         try {
             if ($product['isPublished']) {
                 unset($product['isPublished']);
-                ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $productId, $product);
+                ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $product);
                 ProductCache::indexProduct($product);
             } else {
                 ProductCache::getInstance()->invalidateCache($product['productVendorId'], $product['productCategoryId'], [$productId]);
@@ -208,8 +205,8 @@ class ProductsService
      * @param string $vendorId
      * @return bool
      *
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
+     * @throws OperationFailed
+     * @throws NotFound
      * @throws \Exception
      */
     public function delete(string $productId, string $vendorId)
@@ -233,7 +230,7 @@ class ProductsService
     /**
      * @param string $productId
      * @throws \Exception
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      * @throws \Phalcon\Mvc\Collection\Exception
      */
     public function deleteExtraInfo(string $productId): void

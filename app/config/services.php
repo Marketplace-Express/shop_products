@@ -2,6 +2,7 @@
 
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
+use Phalcon\Config\Adapter\Yaml;
 use Phalcon\Db\Adapter\MongoDB\Client;
 use Phalcon\Db\Profiler;
 use Phalcon\Events\Event;
@@ -19,7 +20,15 @@ use app\common\services\user\UserService;
  * Shared configuration service
  */
 $di->setShared('config', function () {
-    return include APP_PATH . "/config/config.php";
+    $config = new Yaml(CONFIG_PATH . '/products.yml', [
+        '!appDir' => function ($value) {
+            return APP_PATH . $value ;
+        },
+        '!baseDir' => function ($value) {
+            return BASE_PATH . $value;
+        }
+    ]);
+    return $config;
 });
 
 /**
@@ -139,20 +148,48 @@ $di->set('productsCacheSuggestion', function (){
 });
 
 /**
- * Redis instance for product variation cache
+ * Redis instance for product images
  */
-$di->setShared('productsVariationsCache', function () {
+$di->setShared('imagesCache', function () {
     $config = $this->getConfig();
     $redis = new Redis();
-    if (!empty($auth = $config->cache->productsVariationsCache->auth)) {
+    if (!empty($auth = $config->cache->images_cache->auth)) {
         $redis->auth($auth);
     }
     $redis->pconnect(
-        $config->cache->productsVariationsCache->host,
-        $config->cache->productsVariationsCache->port
+        $config->cache->images_cache->host,
+        $config->cache->images_cache->port
     );
-    $redis->select($config->cache->productsVariationsCache->database);
+    $redis->select($config->cache->images_cache->database);
     return $redis;
+});
+
+/**
+ * Redis instance of product questions
+ */
+$di->setShared('questionsCache', function () {
+    $config = $this->getConfig()->cache;
+    $redisInstance = new Connector();
+    $redisInstance->connect(
+        $config->questions_cache->host,
+        $config->questions_cache->port,
+        $config->questions_cache->database,
+        $config->questions_cache->auth
+    );
+    return ['adapter' => $redisInstance, 'instance' => $redisInstance->redis];
+});
+
+$di->setShared('questionsCacheInstance', function () {
+    return $this->getQuestionsCache()['instance'];
+});
+
+/**
+ * Register questions suggestions cache
+ */
+$di->set('questionsCacheSuggestion', function (){
+    return new Suggestion($this->getQuestionsCache()['adapter'],
+        ProductsCacheIndexesEnum::QUESTIONS_INDEX_NAME
+    );
 });
 
 /**

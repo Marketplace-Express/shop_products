@@ -9,7 +9,8 @@ namespace app\common\services;
 
 
 use app\common\enums\AccessLevelsEnum;
-use app\common\exceptions\OperationNotPermittedException;
+use app\common\exceptions\OperationNotPermitted;
+use app\common\services\cache\ImagesCache;
 use Mechpave\ImgurClient\Entity\ImageInterface;
 use Phalcon\Di;
 use Phalcon\Http\Request\File;
@@ -17,8 +18,8 @@ use app\common\repositories\ImageRepository;
 use app\common\repositories\ProductRepository;
 use app\common\services\cache\ProductCache;
 use app\common\utils\ImgurUtil;
-use app\common\exceptions\ArrayOfStringsException;
-use app\common\exceptions\NotFoundException;
+use app\common\exceptions\OperationFailed;
+use app\common\exceptions\NotFound;
 
 class ImageService
 {
@@ -47,8 +48,8 @@ class ImageService
      * @param string $albumId
      * @param string $productId
      * @return array
-     * @throws NotFoundException
-     * @throws ArrayOfStringsException
+     * @throws NotFound
+     * @throws OperationFailed
      * @throws \Exception
      */
     public function upload(File $image, string $albumId, string $productId)
@@ -89,15 +90,12 @@ class ImageService
                 $uploaded->getName(),
                 $uploaded->getLink()
             );
+
+            $this->getRepository()->saveSizes($image, $image->imageLink);
+
             $data = $image->toApiArray();
 
-            $this->getRepository()->saveSizes($image->imageId, $image->imageLink);
-
-            ProductCache::getInstance()->invalidateCache(
-                $simpleProductData['productVendorId'],
-                $simpleProductData['productCategoryId'],
-                [$productId]
-            );
+            ImagesCache::getInstance()->set($productId, $data);
         }
         unlink($config->uploadDir . $newImageName);
         return $data;
@@ -108,22 +106,19 @@ class ImageService
      * @param string $imageId
      * @param string $albumId
      * @param int $accessLevel
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
-     * @throws OperationNotPermittedException
+     * @throws OperationFailed
+     * @throws NotFound
+     * @throws OperationNotPermitted
      * @throws \RedisException
      * @throws \Exception
      */
     public function delete(string $productId, string $imageId, string $albumId, int $accessLevel = AccessLevelsEnum::NORMAL_USER): void
     {
         if ($accessLevel < 1) {
-            throw new OperationNotPermittedException('Not allowed action');
+            throw new OperationNotPermitted('Not allowed action');
         }
         if ($this->getRepository()->delete($imageId, $albumId, $productId)) {
-            $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
-                'productCategoryId', 'productVendorId', 'productAlbumId'
-            ]);
-            ProductCache::getInstance()->invalidateCache($simpleProductData['productVendorId'], $simpleProductData['productCategoryId'], [$productId]);
+            ImagesCache::getInstance()->invalidate($productId, $imageId);
         }
     }
 }

@@ -3,6 +3,10 @@
 namespace app\common\models;
 
 
+use app\common\validators\rules\QuestionRules;
+use app\common\validators\UuidValidator;
+use Phalcon\Validation;
+
 /**
  * ProductQuestions
  * 
@@ -14,13 +18,18 @@ class ProductQuestions extends BaseModel
 {
 
     const MODEL_ALIAS = 'pq';
+    const WHITE_LIST = [
+        'userId',
+        'productId',
+        'text'
+    ];
 
     /**
      * @var string
      * @Primary
-     * @Column(column='question_id', type='string', length=36)
+     * @Column(column='id', type='string', length=36)
      */
-    public $questionId;
+    public $id;
 
     /**
      * @var string
@@ -31,16 +40,16 @@ class ProductQuestions extends BaseModel
     /**
      *
      * @var string
-     * @Column(column='question_user_id', type='string', length=36)
+     * @Column(column='user_id', type='string', length=36)
      */
-    public $questionUserId;
+    public $userId;
 
     /**
      *
      * @var string
-     * @Column(column='question_text', type='text')
+     * @Column(column='text', type='text')
      */
-    public $questionText;
+    public $text;
 
     /**
      *
@@ -48,6 +57,12 @@ class ProductQuestions extends BaseModel
      * @Column(column='created_at', type='datetime')
      */
     public $createdAt;
+
+    /**
+     * @var string
+     * @Column(column='updated_at', type='datetime', nullable=true)
+     */
+    public $updatedAt;
 
     /**
      *
@@ -61,6 +76,11 @@ class ProductQuestions extends BaseModel
      * @Column(column='is_deleted', type='boolean', default=0)
      */
     public $isDeleted;
+
+    /**
+     * @var QuestionRules
+     */
+    private $validationRules;
 
     public function onConstruct()
     {
@@ -79,13 +99,14 @@ class ProductQuestions extends BaseModel
         $this->setSource('product_questions');
         $this->useDynamicUpdate(true);
         $this->belongsTo(
-            'questionProductId',
+            'productId',
             Product::class,
             'productId',
             [
                 'reusable' => true
             ]
         );
+        $this->skipAttributesOnUpdate(['id', 'vendorId', 'userId']);
     }
 
     /**
@@ -106,6 +127,14 @@ class ProductQuestions extends BaseModel
      */
     public static function find($parameters = null)
     {
+        $operator = '';
+        if (!array_key_exists('conditions', $parameters)) {
+            $parameters['conditions'] = '';
+        }
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
         return parent::find($parameters);
     }
 
@@ -117,7 +146,13 @@ class ProductQuestions extends BaseModel
      */
     public static function findFirst($parameters = null)
     {
-        return parent::findFirst($parameters);
+        $query = self::find($parameters);
+        return $query->getFirst();
+    }
+
+    public function beforeValidationOnCreate()
+    {
+        $this->id = $this->getDI()->getSecurity()->getRandom()->uuid();
     }
 
     /**
@@ -129,33 +164,60 @@ class ProductQuestions extends BaseModel
     public function columnMap()
     {
         return [
-            'question_id' => 'questionId',
+            'id' => 'id',
             'product_id' => 'productId',
-            'question_user_id' => 'questionUserId',
-            'question_text' => 'questionText',
+            'user_id' => 'userId',
+            'text' => 'text',
             'created_at' => 'createdAt',
             'deleted_at' => 'deletedAt',
             'is_deleted' => 'isDeleted'
         ];
     }
 
-    public static function count($parameters = null)
-    {
-        return count(array_filter([
-            self::model()->questionId,
-            self::model()->questionUserId,
-            self::model()->questionText
-        ]));
-    }
-
     public function toApiArray()
     {
         return [
-            'questionId' => $this->questionId,
+            'id' => $this->id,
             'productId' => $this->productId,
-            'questionUserId' => $this->questionUserId,
-            'questionText' => $this->questionText
+            'userId' => $this->userId,
+            'text' => $this->text,
+            'askedAt' => $this->createdAt,
+            'editedAt' => $this->updatedAt
         ];
+    }
+
+    /**
+     * @return QuestionRules
+     */
+    private function getValidationConfig(): QuestionRules
+    {
+        return $this->validationRules ?? $this->validationRules = new QuestionRules();
+    }
+
+    public function validation()
+    {
+        $validator = new Validation();
+
+        $validator->add(
+            ['userId', 'productId'],
+            new UuidValidator()
+        );
+
+        $validator->add(
+            'text',
+            new Validation\Validator\StringLength([
+                'min' => $this->getValidationConfig()->minTextLength,
+                'max' => $this->getValidationConfig()->maxTextLength
+            ])
+        );
+
+        $this->_errorMessages = $validator->validate([
+            'userId' => $this->userId,
+            'productId' => $this->productId,
+            'text' => $this->text
+        ]);
+
+        return !$this->_errorMessages->count();
     }
 
 }

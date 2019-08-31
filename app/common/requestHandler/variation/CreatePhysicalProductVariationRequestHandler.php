@@ -10,7 +10,7 @@ namespace app\common\requestHandler\variation;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\controllers\BaseController;
-use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\OperationFailed;
 use app\common\requestHandler\RequestHandlerInterface;
 
 class CreatePhysicalProductVariationRequestHandler extends BaseController implements RequestHandlerInterface
@@ -315,12 +315,12 @@ class CreatePhysicalProductVariationRequestHandler extends BaseController implem
 
     /**
      * @param null $message
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public function invalidRequest($message = null)
     {
         $message = $message ?? $this->errorMessages;
-        throw new ArrayOfStringsException($message, 400);
+        throw new OperationFailed($message, 400);
     }
 
     public function successRequest($message = null)

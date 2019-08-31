@@ -28,6 +28,7 @@ $loader->registerNamespaces([
     'app\common\logger' => APP_PATH . '/common/logger/',
     'app\common\traits' => APP_PATH . '/common/traits/',
     'app\common\validators' => APP_PATH . '/common/validators/',
+    'app\common\validators\rules' => APP_PATH . '/common/validators/rules/',
     'app\common\interfaces' => APP_PATH . '/common/interfaces/',
     'app\common\repositories' => APP_PATH . '/common/repositories/',
     'app\common\enums' => APP_PATH . '/common/enums/',

@@ -11,8 +11,8 @@ use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
 use app\common\enums\MongoQueryOperatorsEnum;
 use app\common\enums\ProductTypesEnum;
-use app\common\exceptions\ArrayOfStringsException;
-use app\common\exceptions\NotFoundException;
+use app\common\exceptions\OperationFailed;
+use app\common\exceptions\NotFound;
 use app\common\interfaces\DataSourceInterface;
 use app\common\collections\Product as ProductCollection;
 use app\common\models\DownloadableProperties;
@@ -27,7 +27,7 @@ class ProductRepository implements DataSourceInterface
      * @param bool $editMode
      * @return Product
      */
-    public function getModel(bool $new = false, bool $attachRelations = true, bool $editMode = false, bool $attachProperties = true)
+    public function getModel(bool $new = false, bool $attachRelations = false, bool $editMode = false, bool $attachProperties = true)
     {
          return Product::model($new, $attachRelations, $editMode, $attachProperties);
     }
@@ -51,23 +51,10 @@ class ProductRepository implements DataSourceInterface
 
     /**
      * @param string $productId
-     * @return mixed
-     * @throws \Exception
-     */
-    public function isExists(string $productId)
-    {
-        return $this->getModel(true)::count([
-            'conditions' => 'productId = :productId:',
-            'bind' => ['productId' => $productId]
-        ]);
-    }
-
-    /**
-     * @param string $productId
      * @param array $columns
      * @param bool $editMode
      * @return array
-     * @throws NotFoundException
+     * @throws NotFound
      */
     public function getColumnsForProduct(string $productId, array $columns, bool $editMode = false)
     {
@@ -86,7 +73,7 @@ class ProductRepository implements DataSourceInterface
         ]);
 
         if (!$product) {
-            throw new NotFoundException('product not found or maybe deleted');
+            throw new NotFound('product not found or maybe deleted');
         }
 
         return $product;
@@ -104,14 +91,14 @@ class ProductRepository implements DataSourceInterface
      * @param bool $attachProperties
      * @return Product
      *
-     * @throws NotFoundException
+     * @throws NotFound
      */
     public function getById(
         string $productId,
         string $vendorId,
         bool $editMode = false,
         bool $getExtraInfo = true,
-        bool $attachRelations = true,
+        bool $attachRelations = false,
         bool $returnModel = false,
         bool $attachProperties = true
     )
@@ -132,7 +119,7 @@ class ProductRepository implements DataSourceInterface
         ]);
 
         if (!$product) {
-            throw new NotFoundException('product not found or maybe deleted');
+            throw new NotFound('product not found or maybe deleted');
         }
 
         if ($getExtraInfo) {
@@ -256,7 +243,7 @@ class ProductRepository implements DataSourceInterface
      * @param array $data
      * @return array
      *
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      * @throws Exception
      * @throws \Exception
      */
@@ -279,7 +266,7 @@ class ProductRepository implements DataSourceInterface
         }
 
         if (!$productModel->create($data, $productModel::getWhiteList())) {
-            throw new ArrayOfStringsException($productModel->getMessages(), 400);
+            throw new OperationFailed($productModel->getMessages(), 400);
         }
 
         $productModel->assign($properties->toApiArray(), null, Product::getWhiteList());
@@ -288,7 +275,7 @@ class ProductRepository implements DataSourceInterface
             $productCollection = $this->getCollection(true);
             $productCollection->setAttributes($productCollectionData);
             if (!$productCollection->save()) {
-                throw new ArrayOfStringsException($productCollection->getMessages(), 400);
+                throw new OperationFailed($productCollection->getMessages(), 400);
             }
             unset($productCollectionData['product_id']);
             $productModel->assign($productCollection->toApiArray(), null, Product::getWhiteList());
@@ -303,8 +290,8 @@ class ProductRepository implements DataSourceInterface
      * @param string $vendorId
      * @param array $data
      * @return array
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
+     * @throws OperationFailed
+     * @throws NotFound
      */
     public function update(string $productId, string $vendorId, array $data): array
     {
@@ -336,7 +323,7 @@ class ProductRepository implements DataSourceInterface
         }
 
         if (!$product->update($data, Product::getWhiteList())) {
-            throw new ArrayOfStringsException($product->getMessages(), 400);
+            throw new OperationFailed($product->getMessages(), 400);
         }
         return $product->toApiArray();
     }
@@ -347,8 +334,8 @@ class ProductRepository implements DataSourceInterface
      * @param string $productId
      * @param string $vendorId
      * @return array
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
+     * @throws OperationFailed
+     * @throws NotFound
      * @throws \Exception
      */
     public function delete(string $productId, string $vendorId)

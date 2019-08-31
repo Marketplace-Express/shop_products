@@ -8,7 +8,7 @@
 namespace app\common\interfaces;
 
 
-use app\common\exceptions\NotFoundException;
+use app\common\exceptions\NotFound;
 
 interface DataSourceInterface
 {
@@ -18,7 +18,7 @@ interface DataSourceInterface
      * @param string $productId
      * @param string $vendorId
      * @return mixed
-     * @throws NotFoundException
+     * @throws NotFound
      */
     public function getById(string $productId, string $vendorId);
 }

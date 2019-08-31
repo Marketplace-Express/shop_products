@@ -8,72 +8,47 @@
 namespace app\common\requestHandler\image;
 
 
-use Exception;
-use Phalcon\Di;
+use app\common\requestHandler\RequestAbstract;
+use app\common\validators\rules\ImagesRules;
 use Phalcon\Http\Request\File;
+use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use app\common\controllers\BaseController;
-use app\common\exceptions\ArrayOfStringsException;
-use app\common\requestHandler\RequestHandlerInterface;
 use app\common\utils\DigitalUnitsConverterUtil;
 use app\common\validators\UuidValidator;
 
-class UploadRequestHandler extends BaseController implements RequestHandlerInterface
+class UploadRequestHandler extends RequestAbstract
 {
-
     /** @var File $image */
-    private $image;
+    public $image;
 
     /** @var string $albumId */
-    private $albumId;
+    public $albumId;
 
     /** @var string $productId */
-    private $productId;
+    public $productId;
 
-    private $errorMessages;
+    /**
+     * @var ImagesRules
+     */
+    protected $validationRules;
 
     /**
      * Set uploaded image
+     * @param Controller $controller
      */
-    public function onConstruct()
+    public function __construct(Controller $controller)
     {
-        if (!empty($uploadedFile = $this->request->getUploadedFiles('image'))) {
-            $this->image = $uploadedFile[0];
-        }
-    }
-
-    /**
-     * @param string $albumId
-     */
-    public function setAlbumId($albumId)
-    {
-        $this->albumId = $albumId;
-    }
-
-    /**
-     * @param string $productId
-     */
-    public function setProductId($productId)
-    {
-        $this->productId = $productId;
-    }
-
-    private function getValidationConfig()
-    {
-        return Di::getDefault()->getConfig()->application->validation->image;
+        $images = $controller->request->getUploadedFiles();
+        $this->image = array_shift($images); // take only 1 image
+        parent::__construct($controller, new ImagesRules());
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
      * @return Group
-     * @throws Exception
      */
     public function validate(): Group
     {
-        if (empty($this->image)) {
-            throw new Exception('Empty image', 400);
-
-        }
         $validator = new Validation();
 
         $validator->add(
@@ -91,11 +66,11 @@ class UploadRequestHandler extends BaseController implements RequestHandlerInter
         $validator->add(
             'image',
             new Validation\Validator\File([
-                'maxSize' => $this->getValidationConfig()->maxSize,
-                'allowedTypes' => (array) $this->getValidationConfig()->allowedTypes,
-                'minResolution' => $this->getValidationConfig()->minResolution,
+                'maxSize' => $this->validationRules->maxSize,
+                'allowedTypes' => $this->validationRules->allowedTypes,
+                'minResolution' => $this->validationRules->minResolution,
                 'messageSize' => ':field exceeds ' . DigitalUnitsConverterUtil::bytesToMb(
-                    $this->getValidationConfig()->maxSize) . ' Mb',
+                    $this->validationRules->maxSize) . ' Mb',
                 'allowEmpty' => false
             ])
         );
@@ -115,38 +90,14 @@ class UploadRequestHandler extends BaseController implements RequestHandlerInter
 
     /**
      * @return bool
-     * @throws Exception
      */
     public function isValid(): bool
     {
-        $messages = $this->validate();
-        foreach ($messages as $message) {
-            $this->errorMessages[$message->getField()] = $message->getMessage();
+        if (!$this->controller->request->hasFiles()) {
+            $this->errorMessages[] = new Validation\Message('required', 'image');
+            return false;
         }
-        return !count($messages);
-    }
-
-    public function notFound($message = 'Not Found')
-    {
-        // TODO: Implement notFound() method.
-    }
-
-    /**
-     * @param null $message
-     * @throws ArrayOfStringsException
-     */
-    public function invalidRequest($message = null)
-    {
-        throw new ArrayOfStringsException($this->errorMessages, 400);
-    }
-
-    public function successRequest($message = null)
-    {
-        return $this->response
-            ->setJsonContent([
-                'status' => 200,
-                'message' => $message
-            ]);
+        return parent::isValid();
     }
 
     /**

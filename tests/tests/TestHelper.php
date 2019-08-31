@@ -48,8 +48,8 @@ $loader->registerNamespaces([
 $loader->registerClasses([
     'Shop_products\Tests\Mocks\RequestMock' => ROOT_PATH . '/mocks/RequestMock.php',
     'Shop_products\Tests\Mocks\ResponseMock' => ROOT_PATH . '/mocks/ResponseMock.php',
-    'app\common\exceptions\ArrayOfStringsException' => ROOT_PATH . '/../app/common/exceptions/ArrayOfStringsException.php',
-    'app\common\exceptions\NotFoundException' => ROOT_PATH . '/../app/common/exceptions/NotFoundException.php'
+    'app\common\exceptions\OperationFailed' => ROOT_PATH . '/../app/common/exceptions/OperationFailed.php',
+    'app\common\exceptions\NotFound' => ROOT_PATH . '/../app/common/exceptions/NotFound.php'
 ]);
 
 $loader->register();

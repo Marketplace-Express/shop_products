@@ -24,16 +24,25 @@ class BaseController extends Controller
     /** @var ApplicationLogger */
     protected $logger;
 
+    /**
+     * @return JsonMapper
+     */
     protected function getJsonMapper(): JsonMapper
     {
         return $this->jsonMapper;
     }
 
+    /**
+     * @return UuidUtil
+     */
     protected function getUuidUtil(): UuidUtil
     {
         return $this->uuidUtil;
     }
 
+    /**
+     * @return ApplicationLogger
+     */
     public function getLogger(): ApplicationLogger
     {
         return $this->logger;
@@ -42,22 +51,10 @@ class BaseController extends Controller
     public function onConstruct()
     {
         $this->jsonMapper = new JsonMapper();
+        $this->jsonMapper->bEnforceMapType = false;
+
         $this->uuidUtil = new UuidUtil();
         $this->logger = new ApplicationLogger();
-    }
-
-    /**
-     * @param array $params
-     * @return stdClass
-     */
-    protected function queryStringToObject(array $params)
-    {
-        $object = new stdClass();
-        unset($params['_url']);
-        foreach ($params as $key => $value) {
-            $object->$key = $value;
-        }
-        return $object;
     }
 
     public function handleError(string $message, $code = 500)

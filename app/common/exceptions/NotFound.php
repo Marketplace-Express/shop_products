@@ -8,11 +8,9 @@
 namespace app\common\exceptions;
 
 
-use Throwable;
-
-class NotFoundException extends \Exception
+class NotFound extends BaseException
 {
-    public function __construct(string $message = "Not Found", int $code = 404, Throwable $previous = null)
+    public function __construct(string $message = "entity not found", int $code = 404, \Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

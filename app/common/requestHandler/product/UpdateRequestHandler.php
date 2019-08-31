@@ -13,7 +13,7 @@ use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\controllers\BaseController;
-use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\OperationFailed;
 use app\common\requestHandler\RequestHandlerInterface;
 use app\common\utils\DigitalUnitsConverterUtil;
 use app\common\validators\TypeValidator;
@@ -325,14 +325,14 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
 
     /**
      * @param null $message
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public function invalidRequest($message = null)
     {
         if (!$message) {
             $message = $this->errorMessages;
         }
-        throw new ArrayOfStringsException($message, 400);
+        throw new OperationFailed($message, 400);
     }
 
     public function successRequest($message = null)

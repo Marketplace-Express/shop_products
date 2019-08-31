@@ -8,7 +8,7 @@
 namespace app\common\services\cache;
 
 use app\common\enums\QueueNamesEnum;
-use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\OperationFailed;
 use app\common\interfaces\DataSourceInterface;
 use app\common\requestHandler\queue\QueueRequestHandler;
 
@@ -52,7 +52,6 @@ class ProductCache implements DataSourceInterface
      * @param string $categoryId
      * @return string
      *
-     * @throws \Exception
      */
     private function getKey(string $vendorId, ?string $categoryId = null)
     {
@@ -97,7 +96,7 @@ class ProductCache implements DataSourceInterface
     public function bulkCacheUpdate(string $vendorId, array $products): void
     {
         foreach ($products as $product) {
-            $this->updateCache($vendorId, $product['productCategoryId'], $product['productId'], $product);
+            $this->updateCache($vendorId, $product['productCategoryId'], $product);
         }
     }
 
@@ -108,7 +107,6 @@ class ProductCache implements DataSourceInterface
      * @param string $categoryId
      * @param array|null $productsIds
      * @return int|mixed
-     * @throws \Exception
      */
     public function invalidateCache(string $vendorId, string $categoryId, ?array $productsIds = null)
     {
@@ -130,9 +128,9 @@ class ProductCache implements DataSourceInterface
      *
      * @throws \Exception
      */
-    public function updateCache(string $vendorId, string $categoryId, string $productId, array $data)
+    public function updateCache(string $vendorId, string $categoryId, array $data)
     {
-        return self::$redisInstance->hSet($this->getKey($vendorId, $categoryId), $productId, json_encode($data));
+        return self::$redisInstance->hSet($this->getKey($vendorId, $categoryId), $data['productId'], json_encode($data));
     }
 
     /**
@@ -183,7 +181,7 @@ class ProductCache implements DataSourceInterface
 
     /**
      * @param array $product
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public static function indexProduct(array $product): void
     {
@@ -203,7 +201,7 @@ class ProductCache implements DataSourceInterface
 
     /**
      * @param string $productId
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public static function deleteProductIndex(string $productId): void
     {

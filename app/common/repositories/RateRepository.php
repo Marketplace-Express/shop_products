@@ -61,7 +61,7 @@ class RateRepository
         foreach ($allRatesImages as $rateImages) {
             $allDeleted = $rateImages->delete();
         }
-        
+
         return $allDeleted;
     }
 }

@@ -7,13 +7,16 @@
 
 namespace app\common\events\middleware;
 
-use Firebase\JWT\JWT;
-use app\common\controllers\BaseController;
+use app\common\exceptions\OperationFailed;
 use app\common\services\user\Token;
 use app\common\services\user\UserService;
+use app\common\validators\UuidValidator;
+use Phalcon\Mvc\User\Plugin;
+use Phalcon\Validation;
 use Sid\Phalcon\AuthMiddleware\MiddlewareInterface;
+use Firebase\JWT\JWT;
 
-class RequestMiddlewareEvent extends BaseController implements MiddlewareInterface
+class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
 {
     /**
      * @var Token $token
@@ -25,6 +28,9 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
 
     /** @var UserService $userService */
     private $userService;
+
+    /** @var \JsonMapper */
+    private $jsonMapper;
 
     /**
      * @return mixed
@@ -38,9 +44,8 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
      * RequestMiddlewareEvent constructor.
      * @throws \Exception
      */
-    public function onConstruct()
+    public function __construct()
     {
-        parent::onConstruct();
         $this->saltKey = $this->getTokenConfig()->saltKey;
         $this->allowedAlg = $this->getTokenConfig()->allowedAlg;
         $this->userService = $this->getDI()->getUserService();
@@ -60,12 +65,20 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
     private function generate()
     {
         exit(JWT::encode([
-            'user_id' => '12345',
-            'vendor_id' => '54321',
+            'user_id' => 'fded67e4-9fcd-4a2d-ae2e-de15d70a8bb5',
+            'vendor_id' => '9cde9748-b010-4767-9e89-566bf98f1833',
             'access_level' => 2,
-            'exp' => time() + 3600 * 10,
+            'exp' => time() + 3600,
             'entropy' => mt_rand(10000, 20000)
-        ], $this->saltKey, 'HS512'));
+        ], $this->saltKey, $this->allowedAlg));
+    }
+
+    /**
+     * @return \JsonMapper
+     */
+    private function getJsonMapper()
+    {
+        return $this->jsonMapper ?? $this->jsonMapper = new \JsonMapper();
     }
 
     /**
@@ -75,6 +88,7 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
     public function authenticate(): bool
     {
         $this->userService->userId = $this->token->user_id;
+        $this->userService->vendorId = $this->token->vendor_id;
         $this->userService->accessLevel = $this->token->access_level;
         return true;
     }
@@ -99,20 +113,50 @@ class RequestMiddlewareEvent extends BaseController implements MiddlewareInterfa
             }
 
             // user is logged in, then check token structure
+            $validator = new Validation();
+            $validator->add(
+                ['user_id', 'vendor_id', 'access_level'],
+                new Validation\Validator\PresenceOf()
+            );
+            $validator->add(
+                ['user_id', 'vendor_id'],
+                new UuidValidator()
+            );
+            $validator->add(
+                'access_level',
+                new Validation\Validator\NumericValidator([
+                    'allowFloat' => false,
+                    'allowSign' => false
+                ])
+            );
 
-            if (!property_exists($accessToken, 'user_id')) {
-                throw new \Exception('Invalid user id', 400);
-            }
+            $errors = $validator->validate([
+                'user_id' => $accessToken->user_id,
+                'vendor_id' => $accessToken->vendor_id,
+                'access_level' => $accessToken->access_level
+            ]);
 
-            if (!property_exists($accessToken, 'access_level')) {
-                throw new \Exception('Invalid token arguments', 400);
-            }
-
-            if (!property_exists($accessToken, 'vendor_id')) {
-                throw new \Exception('Invalid vendor Id', 400);
+            if (count($errors)) {
+                throw new OperationFailed($errors);
             }
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 400);
         }
+    }
+
+    /**
+     * Forward error response to ExceptionhandlerController
+     * @param $errors
+     * @param int $code
+     * @codeCoverageIgnore
+     */
+    private function handleError($errors, $code = 500)
+    {
+        $this->dispatcher->forward([
+            'namespace' => 'app\common\controllers',
+            'controller' => 'exceptionhandler',
+            'action' => 'raiseError',
+            'params' => [$errors, $code]
+        ]);
     }
 }

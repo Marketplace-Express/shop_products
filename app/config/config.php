@@ -39,11 +39,27 @@ return new Config([
             'ttl' => -1,
             'auth' => ''
         ],
-        'products_variation_cache' => [
+        'images_cache' => [
             'host' => '172.17.0.3',
             'port' => 6379,
             'persistent' => true,
             'database' => 1,
+            'ttl' => -1,
+            'auth' => ''
+        ],
+        'questions_cache' => [
+            'host' => '172.17.0.3',
+            'port' => 6379,
+            'persistent' => true,
+            'database' => 2,
+            'ttl' => -1,
+            'auth' => ''
+        ],
+        'rates_cache' => [
+            'host' => '172.17.0.3',
+            'port' => 6379,
+            'persistent' => true,
+            'database' => 3,
             'ttl' => -1,
             'auth' => ''
         ]
@@ -94,6 +110,12 @@ return new Config([
                     'image/webp'
                 ],
                 'minResolution' => '800x600'
+            ],
+            'question' => [
+                'text' => [
+                    'min' => 10,
+                    'max' => 200
+                ]
             ]
         ],
         'imgur' => [

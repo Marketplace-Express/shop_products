@@ -12,7 +12,7 @@ use Phalcon\Di\Injectable;
 use Phalcon\Validation;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
-use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\OperationFailed;
 
 class QueueRequestHandler extends Injectable
 {
@@ -123,7 +123,7 @@ class QueueRequestHandler extends Injectable
 
     /**
      * @return bool
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      * @throws \Exception
      */
     private function validate(): bool
@@ -153,7 +153,7 @@ class QueueRequestHandler extends Injectable
         if ($this->requestType == self::REQUEST_TYPE_ASYNC) {
             \Phalcon\Di::getDefault()->get('logger')->logError($errors);
         } elseif ($this->requestType == self::REQUEST_TYPE_SYNC) {
-            throw new ArrayOfStringsException($errors, 400);
+            throw new OperationFailed($errors, 400);
         } else {
             throw new \Exception('Unknown request type', 400);
         }
@@ -238,7 +238,7 @@ class QueueRequestHandler extends Injectable
     }
 
     /**
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public function sendAsync()
     {

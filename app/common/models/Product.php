@@ -179,7 +179,7 @@ class Product extends BaseModel
      */
     public $productRates = [];
 
-    private static $attachRelations = true;
+    private static $attachRelations = false;
     private static $attachProperties = true;
     private static $editMode = false;
 
@@ -272,6 +272,14 @@ class Product extends BaseModel
      */
     static public function find($parameters = null)
     {
+        $operator = '';
+        if (!array_key_exists('conditions', $parameters)) {
+            $parameters['conditions'] = '';
+        }
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
         return parent::find($parameters);
     }
 
@@ -281,7 +289,8 @@ class Product extends BaseModel
      */
     public static function findFirst($parameters = null)
     {
-        return parent::findFirst($parameters);
+        $query = self::find($parameters);
+        return $query->getFirst();
     }
 
     /**
@@ -499,7 +508,7 @@ class Product extends BaseModel
             ])
         );
 
-        $message = $validation->validate([
+        $this->_errorMessages = $validation->validate([
             'productCategoryId' => $this->productCategoryId,
             'productVendorId' => $this->productVendorId,
             'productUserId' => $this->productUserId,
@@ -510,8 +519,6 @@ class Product extends BaseModel
             'productSaleEndTime' => $this->productSaleEndTime
         ]);
 
-        $this->_errorMessages = $message;
-
-        return !$message->count();
+        return !$this->_errorMessages->count();
     }
 }

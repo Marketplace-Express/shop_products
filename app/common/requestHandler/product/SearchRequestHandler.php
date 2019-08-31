@@ -11,7 +11,7 @@ namespace app\common\requestHandler\product;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\controllers\BaseController;
-use app\common\exceptions\ArrayOfStringsException;
+use app\common\exceptions\OperationFailed;
 use app\common\requestHandler\RequestHandlerInterface;
 
 class SearchRequestHandler extends BaseController implements RequestHandlerInterface
@@ -75,14 +75,14 @@ class SearchRequestHandler extends BaseController implements RequestHandlerInter
     /**
      * @param null $message
      * @return mixed|void
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public function invalidRequest($message = null)
     {
         if (is_null($message)) {
             $message = $this->errorMessages;
         }
-        throw new ArrayOfStringsException($message, 400);
+        throw new OperationFailed($message, 400);
     }
 
     /**

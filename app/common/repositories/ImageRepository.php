@@ -8,8 +8,8 @@
 namespace app\common\repositories;
 
 
-use app\common\exceptions\ArrayOfStringsException;
-use app\common\exceptions\NotFoundException;
+use app\common\exceptions\OperationFailed;
+use app\common\exceptions\NotFound;
 use app\common\models\ProductImages;
 use app\common\models\ProductImagesSizes;
 
@@ -47,7 +47,7 @@ class ImageRepository
      * @param string $name
      * @param string $link
      * @return ProductImages
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
     public function create(
         string $productId,
@@ -76,20 +76,20 @@ class ImageRepository
             'imageName' => $name
         ];
         if (!$model->save($data)) {
-            throw new ArrayOfStringsException($model->getMessages(), 500);
+            throw new OperationFailed($model->getMessages(), 500);
         }
         return $model;
     }
 
     /**
-     * @param string $imageId
+     * @param ProductImages $image
      * @param string $imageLink
      * @return bool
-     * @throws ArrayOfStringsException
+     * @throws OperationFailed
      */
-    public function saveSizes(string $imageId, string $imageLink)
+    public function saveSizes(ProductImages $image, string $imageLink)
     {
-        $model = ProductImagesSizes::model(true);
+        $sizes = ProductImagesSizes::model(true);
         $imageLinkArr = explode('.', $imageLink);
         $small = implode('.', [$imageLinkArr[0], $imageLinkArr[1], $imageLinkArr[2].'s', $imageLinkArr[3]]);
         $big = implode('.', [$imageLinkArr[0], $imageLinkArr[1], $imageLinkArr[2].'b', $imageLinkArr[3]]);
@@ -98,17 +98,18 @@ class ImageRepository
         $large = implode('.', [$imageLinkArr[0], $imageLinkArr[1], $imageLinkArr[2].'l', $imageLinkArr[3]]);
         $huge = implode('.', [$imageLinkArr[0], $imageLinkArr[1], $imageLinkArr[2].'h', $imageLinkArr[3]]);
 
-        $model->imageId = $imageId;
-        $model->small = $small;
-        $model->big = $big;
-        $model->thumb = $thumb;
-        $model->medium = $medium;
-        $model->large = $large;
-        $model->huge = $huge;
+        $sizes->imageId = $image->imageId;
+        $sizes->small = $small;
+        $sizes->big = $big;
+        $sizes->thumb = $thumb;
+        $sizes->medium = $medium;
+        $sizes->large = $large;
+        $sizes->huge = $huge;
 
-        if (!$model->save()) {
-            throw new ArrayOfStringsException($model->getMessages(), 400);
+        if (!$sizes->save()) {
+            throw new OperationFailed($sizes->getMessages(), 400);
         }
+        $image->imagesSizes = $sizes;
         return true;
     }
 
@@ -117,8 +118,8 @@ class ImageRepository
      * @param string $albumId
      * @param string $productId
      * @return bool
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
+     * @throws OperationFailed
+     * @throws NotFound
      */
     public function delete(string $imageId, string $albumId, string $productId): bool
     {
@@ -132,23 +133,11 @@ class ImageRepository
         ]);
 
         if (!$image) {
-            throw new NotFoundException('Image not found or maybe deleted');
+            throw new NotFound('Image not found or maybe deleted');
         }
 
         if (!$image->delete()) {
-            throw new ArrayOfStringsException($image->getMessages());
-        }
-
-        $imageSizes = new ProductImagesSizes();
-        $imageVersions = $imageSizes::findFirst([
-            'conditions' => 'imageId = :imageId:',
-            'bind' => [
-                'imageId' => $imageId
-            ]
-        ]);
-
-        if ($imageVersions) {
-            $imageVersions->delete();
+            throw new OperationFailed($image->getMessages());
         }
 
         return true;

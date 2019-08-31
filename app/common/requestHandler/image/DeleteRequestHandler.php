@@ -8,57 +8,30 @@
 namespace app\common\requestHandler\image;
 
 
-use app\common\controllers\BaseController;
-use app\common\exceptions\ArrayOfStringsException;
-use app\common\requestHandler\RequestHandlerInterface;
+use app\common\requestHandler\RequestAbstract;
 use app\common\services\user\UserService;
 use app\common\validators\UuidValidator;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 
-class DeleteRequestHandler extends BaseController implements RequestHandlerInterface
+class DeleteRequestHandler extends RequestAbstract
 {
     /**
      * @var string
      */
-    private $albumId;
+    public $albumId;
 
     /**
      * @var string
      */
-    private $productId;
-
-    /**
-     * @var array
-     */
-    private $errorMessages = [];
-
-    public function setAlbumId($albumId)
-    {
-        $this->albumId = $albumId;
-    }
-
-    public function getAlbumId()
-    {
-        return $this->albumId;
-    }
-
-    public function setProductId($productId)
-    {
-        $this->productId = $productId;
-    }
-
-    public function getProductId()
-    {
-        return $this->productId;
-    }
+    public $productId;
 
     /**
      * @return UserService
      */
     private function getUserService(): UserService
     {
-        return $this->getDI()->getUserService();
+        return $this->controller->getDI()->getUserService();
     }
 
     /**
@@ -91,47 +64,16 @@ class DeleteRequestHandler extends BaseController implements RequestHandlerInter
         );
 
         return $validator->validate([
-            'albumId' => $this->getAlbumId(),
-            'productId' => $this->getProductId()
+            'albumId' => $this->albumId,
+            'productId' => $this->productId
         ]);
     }
 
     /**
-     * @return bool
+     * @return array
      */
-    public function isValid(): bool
-    {
-        $messages = $this->validate();
-        if (count($messages)) {
-            foreach ($messages as $message) {
-                $this->errorMessages[$message->getField()] = $message->getMessage();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public function notFound($message = 'Not Found')
-    {
-        // TODO: Implement notFound() method.
-    }
-
-    /**
-     * @param null $message
-     * @throws ArrayOfStringsException
-     */
-    public function invalidRequest($message = null)
-    {
-        throw new ArrayOfStringsException($this->errorMessages, 400);
-    }
-
-    public function successRequest($message = null)
-    {
-        http_response_code(204);
-    }
-
     public function toArray(): array
     {
-        // TODO: Implement toArray() method.
+        return [];
     }
 }
