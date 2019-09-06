@@ -8,120 +8,53 @@
 namespace app\common\requestHandler\product;
 
 
+use app\common\requestHandler\RequestAbstract;
+use app\common\services\user\UserService;
+use app\common\validators\rules\AbstractProductRules;
+use app\common\validators\SpecialCharactersValidator;
 use app\common\validators\TypeValidator;
-use Exception;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use app\common\controllers\BaseController;
-use app\common\requestHandler\RequestHandlerInterface;
 use app\common\validators\SegmentsValidator;
 use app\common\validators\UuidValidator;
 
-abstract class AbstractCreateRequestHandler extends BaseController implements RequestHandlerInterface
+abstract class AbstractCreateRequestHandler extends RequestAbstract
 {
-    protected $title;
-    protected $categoryId;
-    protected $userId;
-    protected $vendorId;
-    protected $price;
-    protected $salePrice;
-    protected $endSaleTime;
-    protected $customPageId;
-    protected $keywords;
-    protected $segments;
-    protected $isPublished = false;
+    public $title;
+    public $categoryId;
+    public $price;
+    public $salePrice;
+    public $endSaleTime;
+    public $customPageId;
+    public $keywords;
+    public $segments;
+    public $isPublished = false;
 
-    protected $errorMessages;
-
-    /**
-     * @param mixed $title
-     */
-    public function setTitle($title): void
-    {
-        $this->title = $title;
-    }
+    /** @var AbstractProductRules */
+    protected $validationRules;
 
     /**
-     * @param mixed $categoryId
+     * @var \JsonMapper
      */
-    public function setCategoryId($categoryId): void
+    private $jsonMapper;
+
+    /**
+     * @return UserService
+     */
+    protected function getUserService(): UserService
     {
-        $this->categoryId = $categoryId;
+        return $this->controller->getDI()->getUserService();
     }
 
     /**
-     * @param mixed $userId
+     * @return \JsonMapper
      */
-    public function setUserId($userId): void
+    protected function getJsonMapper(): \JsonMapper
     {
-        $this->userId = $userId;
-    }
-
-    /**
-     * @param mixed $vendorId
-     */
-    public function setVendorId($vendorId): void
-    {
-        $this->vendorId = $vendorId;
-    }
-
-    /**
-     * @param mixed $price
-     */
-    public function setPrice($price): void
-    {
-        $this->price = (float) $price;
-    }
-
-    /**
-     * @param mixed $salePrice
-     */
-    public function setSalePrice($salePrice): void
-    {
-        $this->salePrice = (float) $salePrice;
-    }
-
-    /**
-     * @param mixed $endSaleTime
-     */
-    public function setEndSaleTime($endSaleTime): void
-    {
-        $this->endSaleTime = $endSaleTime;
-    }
-
-    /**
-     * @param mixed $customPageId
-     */
-    public function setCustomPageId($customPageId): void
-    {
-        $this->customPageId = $customPageId;
-    }
-
-    /**
-     * @param mixed $keywords
-     */
-    public function setKeywords($keywords): void
-    {
-        $this->keywords = $keywords;
-    }
-
-    /**
-     * @param mixed $segments
-     */
-    public function setSegments($segments): void
-    {
-        $this->segments = $segments;
-    }
-
-    public function setIsPublished($isPublished)
-    {
-        $this->isPublished = $isPublished;
-    }
-
-    private function getTitleValidationConfig()
-    {
-        return $this->getDI()->getConfig()->application->validation->productTitle;
+        $jsonMapper = $this->jsonMapper ?? new \JsonMapper();
+        $jsonMapper->bEnforceMapType = false;
+        return $jsonMapper;
     }
 
     /**
@@ -132,8 +65,6 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
         return [
             'title' => $this->title,
             'categoryId' => $this->categoryId,
-            'vendorId' => $this->vendorId,
-            'userId' => $this->userId,
             'price' => $this->price,
             'salePrice' => $this->salePrice,
             'endSaleTime' => $this->endSaleTime,
@@ -144,7 +75,7 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
         ];
     }
 
-    public function validate(): Group
+    public function mainValidator(): Validation
     {
         $validator = new Validation();
 
@@ -165,17 +96,13 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
 
         $validator->add(
             'title',
-            new Validation\Validator\AlphaNumericValidator([
-                'whiteSpace' => $this->getTitleValidationConfig()->whiteSpace,
-                'underscore' => $this->getTitleValidationConfig()->underscore,
-                'min' => $this->getTitleValidationConfig()->min,
-                'max' => $this->getTitleValidationConfig()->max,
-                'message' => 'Product title should contain only letters'
+            new SpecialCharactersValidator([
+                'allowEmpty' => false
             ])
         );
 
         $validator->add(
-            ['categoryId', 'userId', 'vendorId'],
+            'categoryId',
             new UuidValidator()
         );
 
@@ -254,42 +181,19 @@ abstract class AbstractCreateRequestHandler extends BaseController implements Re
             ])
         );
 
-        return $validator->validate($this->fields());
-    }
-
-    /**
-     * @return bool
-     */
-    public function isValid(): bool
-    {
-        // TODO: TO BE ENHANCED LATER
-        $messages = self::validate();
-        $multiErrorFields = [];
-        foreach ($messages as $message) {
-            $multiErrorFields[] = $message->getField();
-        }
-        $multiErrorFields = array_diff_assoc($multiErrorFields, array_unique($multiErrorFields));
-
-        foreach ($messages as $message) {
-            if (in_array($message->getField(), $multiErrorFields)) {
-                $this->errorMessages[$message->getField()][] = $message->getMessage();
-            } else {
-                $this->errorMessages[$message->getField()] = $message->getMessage();
-            }
-        }
-        return empty($this->errorMessages);
+        return $validator;
     }
 
     /**
      * @return array
-     * @throws Exception
      */
     public function toArray(): array
     {
         return [
+            'productId' => $this->controller->getDI()->getSecurity()->getRandom()->uuid(),
             'productCategoryId' => $this->categoryId,
-            'productUserId' => $this->userId,
-            'productVendorId' => $this->vendorId,
+            'productUserId' => $this->getUserService()->userId,
+            'productVendorId' => $this->getUserService()->vendorId,
             'productCustomPageId' => $this->customPageId,
             'productTitle' => $this->title,
             'productPrice' => $this->price,

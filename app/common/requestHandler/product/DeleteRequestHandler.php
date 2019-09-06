@@ -8,35 +8,14 @@
 namespace app\common\requestHandler\product;
 
 
+use app\common\requestHandler\RequestAbstract;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use app\common\controllers\BaseController;
-use app\common\exceptions\OperationFailed;
-use app\common\requestHandler\RequestHandlerInterface;
 use app\common\validators\UuidValidator;
 
-class DeleteRequestHandler extends BaseController implements RequestHandlerInterface
+class DeleteRequestHandler extends RequestAbstract
 {
-
-    private $vendorId;
-
-    private $errorMessages = [];
-
-    /**
-     * @param string $vendorId
-     */
-    public function setVendorId($vendorId)
-    {
-        $this->vendorId = $vendorId;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getVendorId()
-    {
-        return $this->vendorId;
-    }
+    public $vendorId;
 
     /** Validate request fields using \Phalcon\Validation\Validator
      * @return Group
@@ -56,46 +35,10 @@ class DeleteRequestHandler extends BaseController implements RequestHandlerInter
     }
 
     /**
-     * @return bool
+     * @return array
      */
-    public function isValid(): bool
-    {
-        $messages = $this->validate();
-        if (count($messages)) {
-            foreach ($messages as $message) {
-                $this->errorMessages[$message->getField()] = $message->getMessage();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public function notFound($message = 'Not Found')
-    {
-        // TODO: Implement notFound() method.
-    }
-
-    /**
-     * @param null $message
-     * @throws OperationFailed
-     */
-    public function invalidRequest($message = null)
-    {
-        throw new OperationFailed($this->errorMessages, 400);
-    }
-
-    public function successRequest($message = null)
-    {
-        http_response_code(200);
-        return $this->response
-            ->setJsonContent([
-                'status' => 200,
-                'message' => $message
-            ]);
-    }
-
     public function toArray(): array
     {
-        // TODO: Implement toArray() method.
+        return [];
     }
 }

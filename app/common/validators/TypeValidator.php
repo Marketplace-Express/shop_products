@@ -55,7 +55,7 @@ class TypeValidator extends Validator implements ValidatorInterface
             }
         }
 
-        if (!is_array($values)) {
+        if (!is_array($values) && !is_object($values)) {
             $values = [$values];
         }
 

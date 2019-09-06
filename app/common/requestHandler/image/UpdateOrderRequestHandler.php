@@ -1,21 +1,21 @@
 <?php
 /**
  * User: Wajdi Jurry
- * Date: 27/02/19
- * Time: 09:24 م
+ * Date: ٦‏/٩‏/٢٠١٩
+ * Time: ٥:٢٢ م
  */
 
-namespace app\common\requestHandler\product;
+namespace app\common\requestHandler\image;
 
 
 use app\common\requestHandler\RequestAbstract;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 
-class SearchRequestHandler extends RequestAbstract
+class UpdateOrderRequestHandler extends RequestAbstract
 {
-    /** @var string */
-    public $keyword;
+    /** @var int */
+    public $order;
 
     /** Validate request fields using \Phalcon\Validation\Validator
      * @return Group
@@ -23,14 +23,14 @@ class SearchRequestHandler extends RequestAbstract
     public function validate(): Group
     {
         $validator = new Validation();
-
         $validator->add(
-            'keyword',
-            new Validation\Validator\PresenceOf()
+            'order',
+            new Validation\Validator\NumericValidator([
+                'min' => 0
+            ])
         );
-
         return $validator->validate([
-            'keyword' => $this->keyword
+            'order' => $this->order
         ]);
     }
 
@@ -39,8 +39,6 @@ class SearchRequestHandler extends RequestAbstract
      */
     public function toArray(): array
     {
-        return [
-            'keyword' => $this->keyword . '*'
-        ];
+        return [];
     }
 }

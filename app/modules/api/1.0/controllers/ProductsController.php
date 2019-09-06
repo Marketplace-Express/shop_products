@@ -40,7 +40,7 @@ class ProductsController extends BaseController
             /** @var GetRequestHandler $request */
             $request = $this->getJsonMapper()->map(
                 $this->request->getQuery(),
-                new GetRequestHandler()
+                new GetRequestHandler($this)
             );
             if (!$request->isValid()) {
                 $request->invalidRequest();
@@ -59,13 +59,13 @@ class ProductsController extends BaseController
     {
         try {
             /** @var GetRequestHandler $request */
-            $request = new GetRequestHandler();
+            $request = new GetRequestHandler($this);
             $request->requireCategoryId = true;
             $request = $this->getJsonMapper()->map($this->request->getQuery(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->getService()->getProduct($request->getVendorId(), $request->getCategoryId(), $id));
+            $request->successRequest($this->getService()->getProduct($request->vendorId, $request->categoryId, $id));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
@@ -81,7 +81,7 @@ class ProductsController extends BaseController
             /** @var GetRequestHandler $request */
             $request = $this->getJsonMapper()->map(
                 $this->request->getQuery(),
-                new GetRequestHandler()
+                new GetRequestHandler($this)
             );
             if (!$request->isValid()) {
                 $request->invalidRequest();
@@ -101,7 +101,7 @@ class ProductsController extends BaseController
     {
         try {
             /** @var GetRequestHandler $request */
-            $request = new GetRequestHandler();
+            $request = new GetRequestHandler($this);
             $request->requireCategoryId = true;
             $request = $this->getJsonMapper()->map($this->request->getQuery(), $request);
             if(!$request->isValid()) {
@@ -122,7 +122,7 @@ class ProductsController extends BaseController
         try {
             $requestBody = $this->request->getJsonRawBody();
             /** @var ProductRequestResolver $resolver */
-            $resolver = $this->getJsonMapper()->map($requestBody, new ProductRequestResolver());
+            $resolver = $this->getJsonMapper()->map($requestBody, new ProductRequestResolver($this));
             /** @var AbstractCreateRequestHandler $request */
             $request = $this->getJsonMapper()->map($requestBody, $resolver->resolve());
             if (!$request->isValid()) {
@@ -147,7 +147,7 @@ class ProductsController extends BaseController
                 throw new Exception('Invalid vendor id', 400);
             }
             /** @var UpdateRequestHandler $request */
-            $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new UpdateRequestHandler());
+            $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new UpdateRequestHandler($this));
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
@@ -168,12 +168,12 @@ class ProductsController extends BaseController
             /** @var DeleteRequestHandler $request */
             $request = $this->getJsonMapper()->map(
                 $this->request->getQuery(),
-                new DeleteRequestHandler()
+                new DeleteRequestHandler($this)
             );
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->getService()->delete($id, $request->getVendorId());
+            $this->getService()->delete($id, $request->vendorId);
             $request->successRequest('Deleted');
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);

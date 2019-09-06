@@ -13,6 +13,9 @@ class UserService
     /** @var string */
     public $userId;
 
+    /** @var string */
+    public $vendorId;
+
     /** @var int */
     public $accessLevel = 0;
 

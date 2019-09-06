@@ -8,6 +8,7 @@
 namespace app\common\models;
 
 
+use app\common\enums\WeightUnitsEnum;
 use Phalcon\Validation;
 use app\common\validators\UuidValidator;
 
@@ -21,6 +22,7 @@ class PhysicalProperties extends BaseModel
     const WHITE_LIST = [
         'productBrandId',
         'productWeight',
+        'productWeightUnit',
         'packageDimensions'
     ];
 
@@ -53,6 +55,12 @@ class PhysicalProperties extends BaseModel
     public $productWeight;
 
     /**
+     * @var string
+     * @Column(column='product_weight_unit', type='string', length=6, nullable=false)
+     */
+    public $productWeightUnit;
+
+    /**
      * @return string
      */
     public function getSource()
@@ -81,14 +89,6 @@ class PhysicalProperties extends BaseModel
         ];
     }
 
-    public static function count($parameters = null)
-    {
-        return count(array_filter([
-            self::model()->productWeight,
-            self::model()->productBrandId
-        ]));
-    }
-
     /**
      * @return array
      */
@@ -96,7 +96,10 @@ class PhysicalProperties extends BaseModel
     {
         return [
             'productBrandId' => $this->productBrandId,
-            'productWeight' => (float) $this->productWeight
+            'productWeight' => [
+                'amount' => $this->productWeight,
+                'unit' => $this->productWeightUnit
+            ]
         ];
     }
 
@@ -124,13 +127,19 @@ class PhysicalProperties extends BaseModel
             ])
         );
 
-        $messages = $validation->validate([
+        $validation->add(
+            'productWeightUnit',
+            new Validation\Validator\InclusionIn([
+                'domain' => WeightUnitsEnum::getAll()
+            ])
+        );
+
+        $this->_errorMessages = $validation->validate([
             'productBrandId' => $this->productBrandId,
-            'productWeight' => $this->productWeight
+            'productWeight' => $this->productWeight,
+            'productWeightUnit' => $this->productWeightUnit
         ]);
 
-        $this->_errorMessages = $messages;
-
-        return !$messages->count();
+        return !$this->_errorMessages->count();
     }
 }

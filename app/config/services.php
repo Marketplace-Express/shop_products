@@ -116,33 +116,33 @@ $di->setShared('collectionManager', function () {
 /**
  * Register Redis as a service
  */
-$di->setShared('cache', function (){
+$di->set('cache', function ($instance){
     $config = $this->getConfig()->cache;
-    $redisInstance = new Connector();
-    $redisInstance->connect(
-        $config->products_cache->host,
-        $config->products_cache->port,
-        $config->products_cache->database,
-        $config->products_cache->auth
+    $connector = new Connector();
+    $connector->connect(
+        $config->$instance->host,
+        $config->$instance->port,
+        $config->$instance->database,
+        $config->$instance->auth
     );
-    return ['adapter' => $redisInstance, 'instance' => $redisInstance->redis];
+    return ['adapter' => $connector, 'instance' => $connector->redis];
 });
 
 /**
  * Redis instance for product cache
  */
 $di->setShared('productsCache', function () {
-    return $this->getCache()['instance'];
+    return $this->getCache('products_cache')['instance'];
 });
 
-$di->setShared('productsCacheIndex', function (){
-    return new Index($this->getCache()['adapter'],
+$di->set('productsCacheIndex', function (){
+    return new Index($this->getCache('products_cache')['adapter'],
         ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
 });
 
 $di->set('productsCacheSuggestion', function (){
-    return new Suggestion($this->getCache()['adapter'],
+    return new Suggestion($this->getCache('products_cache')['adapter'],
         ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
 });
@@ -150,44 +150,24 @@ $di->set('productsCacheSuggestion', function (){
 /**
  * Redis instance for product images
  */
-$di->setShared('imagesCache', function () {
-    $config = $this->getConfig();
-    $redis = new Redis();
-    if (!empty($auth = $config->cache->images_cache->auth)) {
-        $redis->auth($auth);
-    }
-    $redis->pconnect(
-        $config->cache->images_cache->host,
-        $config->cache->images_cache->port
-    );
-    $redis->select($config->cache->images_cache->database);
-    return $redis;
+$di->set('imagesCache', function () {
+    $cache = $this->getCache('images_cache');
+    return $cache['instance'];
 });
 
 /**
  * Redis instance of product questions
  */
-$di->setShared('questionsCache', function () {
-    $config = $this->getConfig()->cache;
-    $redisInstance = new Connector();
-    $redisInstance->connect(
-        $config->questions_cache->host,
-        $config->questions_cache->port,
-        $config->questions_cache->database,
-        $config->questions_cache->auth
-    );
-    return ['adapter' => $redisInstance, 'instance' => $redisInstance->redis];
-});
-
-$di->setShared('questionsCacheInstance', function () {
-    return $this->getQuestionsCache()['instance'];
+$di->set('questionsCache', function () {
+    $cache = $this->getCache('questions_cache');
+    return $cache['instance'];
 });
 
 /**
  * Register questions suggestions cache
  */
 $di->set('questionsCacheSuggestion', function (){
-    return new Suggestion($this->getQuestionsCache()['adapter'],
+    return new Suggestion($this->getCache('questions_cache')['adapter'],
         ProductsCacheIndexesEnum::QUESTIONS_INDEX_NAME
     );
 });

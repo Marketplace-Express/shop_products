@@ -40,7 +40,7 @@ class SearchController extends BaseController
             /** @var AutocompleteRequestHandler $request */
             $request = $this->getJsonMapper()->map(
                 $this->request->getQuery(),
-                new AutocompleteRequestHandler()
+                new AutocompleteRequestHandler($this)
             );
 
             if (!$request->isValid()) {
@@ -63,7 +63,7 @@ class SearchController extends BaseController
             /** @var SearchRequestHandler $request */
             $request = $this->getJsonMapper()->map(
                 $this->request->getQuery(),
-                new SearchRequestHandler()
+                new SearchRequestHandler($this)
             );
 
             if (!$request->isValid()) {

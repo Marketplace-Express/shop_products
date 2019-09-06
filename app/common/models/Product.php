@@ -2,6 +2,10 @@
 
 namespace app\common\models;
 
+use app\common\validators\rules\AbstractProductRules;
+use app\common\validators\rules\DownloadableProductRules;
+use app\common\validators\rules\PhysicalProductRules;
+use app\common\validators\SpecialCharactersValidator;
 use Phalcon\Mvc\Model;
 use Phalcon\Validation;
 use app\common\enums\ProductTypesEnum;
@@ -40,7 +44,7 @@ class Product extends BaseModel
         'productSaleEndTime',
         'productKeywords',
         'productSegments',
-        'productDimensions',
+        'packageDimensions',
         'isPublished'
     ];
 
@@ -189,6 +193,16 @@ class Product extends BaseModel
      * @Column(column='is_deleted', type='boolean', nullable=false, default=0)
      */
     public $isDeleted;
+
+    /**
+     * @var PhysicalProductRules
+     */
+    private $physicalProductRules;
+
+    /**
+     * @var DownloadableProductRules
+     */
+    private $downloadableProductRules;
 
     public static function model(bool $new = false, bool $attachRelations = true, bool $editMode = false, bool $attachProperties = true)
     {
@@ -405,10 +419,22 @@ class Product extends BaseModel
         );
     }
 
-    private function getTitleValidationConfig()
+    /**
+     * @return PhysicalProductRules
+     */
+    private function getPhysicalProductRules(): PhysicalProductRules
     {
-        /** @noinspection PhpUndefinedMethodInspection */
-        return $this->getDI()->getConfig()->application->validation->productTitle;
+        return $this->physicalProductRules ??
+            $this->physicalProductRules = new PhysicalProductRules();
+    }
+
+    /**
+     * @return DownloadableProductRules
+     */
+    private function getDownloadableProductRules(): DownloadableProductRules
+    {
+        return $this->downloadableProductRules ??
+            $this->downloadableProductRules = new DownloadableProductRules();
     }
 
     /**
@@ -448,12 +474,8 @@ class Product extends BaseModel
         /** @noinspection PhpUndefinedFieldInspection */
         $validation->add(
             'productTitle',
-            new Validation\Validator\AlphaNumericValidator([
-                'whiteSpace' => $this->getTitleValidationConfig()->whiteSpace,
-                'underscore' => $this->getTitleValidationConfig()->underscore,
-                'min' => $this->getTitleValidationConfig()->min,
-                'max' => $this->getTitleValidationConfig()->max,
-                'message' => 'Product title should contain only letters'
+            new SpecialCharactersValidator([
+                'allowEmpty' => false
             ])
         );
 
@@ -516,7 +538,8 @@ class Product extends BaseModel
             'productTitle' => $this->productTitle,
             'productPrice' => $this->productPrice,
             'productSalePrice' => $this->productSalePrice,
-            'productSaleEndTime' => $this->productSaleEndTime
+            'productSaleEndTime' => $this->productSaleEndTime,
+            'productType' => $this->productType
         ]);
 
         return !$this->_errorMessages->count();

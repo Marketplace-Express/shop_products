@@ -22,7 +22,7 @@ class ImagesRules extends RulesAbstract
     ];
     
     /** @var string */
-    public $minResolution = '800x600';
+    public $minResolution = '300x400';
 
     /**
      * @return array

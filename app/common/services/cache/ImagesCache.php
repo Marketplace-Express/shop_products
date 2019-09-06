@@ -70,4 +70,27 @@ class ImagesCache
     {
         return self::$cacheInstance->hDel(sprintf(self::$cacheKey, $productId), $imageId);
     }
+
+    /**
+     * @param string $productId
+     * @return int
+     */
+    public function invalidateProductImages(string $productId)
+    {
+        return self::$cacheInstance->delete(sprintf(self::$cacheKey, $productId));
+    }
+
+    /**
+     * @param string $productId
+     * @param array $images
+     * @return bool
+     */
+    public function bulkProductSet(string $productId, array $images)
+    {
+        $success = true;
+        foreach ($images as $image) {
+            $success = self::$cacheInstance->hSet(sprintf(self::$cacheKey, $productId), $image['imageId'], json_encode($image));
+        }
+        return $success;
+    }
 }

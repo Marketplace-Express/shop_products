@@ -18,7 +18,6 @@ use app\common\enums\AccessLevelsEnum;
 use app\common\enums\QueueNamesEnum;
 use app\common\exceptions\OperationFailed;
 use app\common\exceptions\NotFound;
-use app\common\models\Product;
 use app\common\repositories\ProductRepository;
 use app\common\requestHandler\queue\QueueRequestHandler;
 use app\common\services\cache\ProductCache;
@@ -26,8 +25,6 @@ use app\common\utils\ImgurUtil;
 
 class ProductsService
 {
-    const DEFAULT_LIMIT = 1;
-
     /** @var QueueRequestHandler */
     private $queueRequestHandler;
 
@@ -85,10 +82,6 @@ class ProductsService
         $page = $params['page'];
         $limit = $params['limit'];
 
-        if (empty($limit) && empty($page)) {
-            throw new \Exception('you must provide page or cursor', 400);
-        }
-
         $vendorId = array_key_exists('vendorId', $params) ? $params['vendorId'] : null;
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
@@ -97,8 +90,13 @@ class ProductsService
             if (!$editMode) {
                 $products = ProductCache::getInstance()->getByIdentifier($categoryId, $vendorId);
             } else {
-                $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $editMode, true, true);
+                $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, true, false, true);
             }
+            $products = array_map(function ($product) {
+                $product['productImages'] = ImagesCache::getInstance()->getAll($product['productId']);
+                $product['productQuestions'] = QuestionsCache::getInstance()->getAll($product['productId']);
+                return $product;
+            }, $products);
         } catch (\RedisException $exception) {
             $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $editMode, true, true);
         }
@@ -129,10 +127,8 @@ class ProductsService
                 ProductCache::getInstance()->updateCache($vendorId, $categoryId, $product);
             }
             // Attach images and questions
-            $images = ImagesCache::getInstance()->getAll($productId);
-            $question = QuestionsCache::getInstance()->getAll($productId);
-            $product['productImages'] = $images;
-            $product['productQuestions'] = $question;
+            $product['productImages'] = ImagesCache::getInstance()->getAll($productId);
+            $product['productQuestions'] = QuestionsCache::getInstance()->getAll($productId);
         } catch (\RedisException $exception) {
             $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true)->toApiArray();
         }

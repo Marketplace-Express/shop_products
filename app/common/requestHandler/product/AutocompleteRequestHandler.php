@@ -15,16 +15,11 @@ class AutocompleteRequestHandler extends SearchRequestHandler
 {
 
     /** @var null|string */
-    private $scope = null;
+    public $scope;
 
     /**
-     * @param string|null $scope
+     * @return Group
      */
-    public function setScope(?string $scope)
-    {
-        $this->scope = $scope;
-    }
-
     public function validate(): Group
     {
         $validator = new Validation();
@@ -39,18 +34,9 @@ class AutocompleteRequestHandler extends SearchRequestHandler
         ]);
     }
 
-    public function isValid(): bool
-    {
-        $messages = $this->validate();
-        if (count($messages)) {
-            foreach ($messages as $message) {
-                $this->errorMessages[$message->getField()] = $message->getMessage();
-            }
-            return false;
-        }
-        return parent::isValid() && !count($messages);
-    }
-
+    /**
+     * @return array
+     */
     public function toArray(): array
     {
         return [

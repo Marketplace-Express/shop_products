@@ -24,7 +24,7 @@ class QuestionsCache
 
     static private function establishConnection()
     {
-        self::$cacheInstance = \Phalcon\Di::getDefault()->getQuestionsCacheInstance();
+        self::$cacheInstance = \Phalcon\Di::getDefault()->getQuestionsCache();
     }
 
     /**

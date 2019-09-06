@@ -85,6 +85,12 @@ class ProductImages extends BaseModel
     public $imageName;
 
     /**
+     * @var int
+     * @Column(column='image_order', type='tinyint', default=0, nullable=false)
+     */
+    public $imageOrder = 0;
+
+    /**
      * @var string
      * @Column(column='created_at', type='datetime')
      */
@@ -96,6 +102,12 @@ class ProductImages extends BaseModel
      * @Column(column='deleted_at', type='datetime', nullable=true)
      */
     public $deletedAt;
+
+    /**
+     * @var bool
+     * @Column(column='is_main', type='boolean', default=false, nullable=false)
+     */
+    public $isMain = false;
 
     /**
      *
@@ -213,8 +225,10 @@ class ProductImages extends BaseModel
             'image_height' => 'imageHeight',
             'image_delete_hash' => 'imageDeleteHash',
             'image_name' => 'imageName',
+            'image_order' => 'imageOrder',
             'created_at' => 'createdAt',
             'deleted_at' => 'deletedAt',
+            'is_main' => 'isMain',
             'is_deleted' => 'isDeleted'
         ];
     }
@@ -232,7 +246,9 @@ class ProductImages extends BaseModel
             'imageHeight' => $this->imageHeight,
             'imageType' => $this->imageType,
             'imageDeleteHash' => $this->imageDeleteHash,
-            'imagesSizes' => ($this->imagesSizes) ? $this->imagesSizes->toApiArray() : []
+            'imageOrder' => (int) $this->imageOrder,
+            'imagesSizes' => ($this->imagesSizes) ? $this->imagesSizes->toApiArray() : [],
+            'isMain' => (bool) $this->isMain
         ];
     }
 

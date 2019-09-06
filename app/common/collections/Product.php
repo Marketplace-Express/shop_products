@@ -8,6 +8,7 @@
 namespace app\common\collections;
 
 
+use app\common\models\embedded\physical\PackageDimensions;
 use Phalcon\Validation;
 use app\common\validators\SegmentsValidator;
 use app\common\validators\TypeValidator;
@@ -22,7 +23,7 @@ class Product extends BaseCollection
     /** @var string */
     public $product_id;
 
-    /** @var array */
+    /** @var PackageDimensions */
     public $packageDimensions;
 
     /** @var array */
@@ -120,7 +121,7 @@ class Product extends BaseCollection
             'productSegments' => $this->segments
         ];
 
-        if ($data['packageDimensions'] == null) {
+        if ($this->packageDimensions == null) {
             // for downloadable products
             unset($data['packageDimensions']);
         }
@@ -174,17 +175,14 @@ class Product extends BaseCollection
             new SegmentsValidator()
         );
 
-        $messages = $validation->validate([
+        $this->_errorMessages = $validation->validate([
             'product_id' => $this->product_id,
-            'packageDimensions' => $this->packageDimensions,
+            'packageDimensions' => $this->packageDimensions->dimensions,
+            'packageDimensionsUnit' => $this->packageDimensions->unit,
             'keywords' => $this->keywords,
             'segments' => $this->segments
         ]);
 
-        if (count($messages)) {
-            $this->_errorMessages = $messages;
-            return false;
-        }
-        return true;
+        return !$this->_errorMessages->count();
     }
 }

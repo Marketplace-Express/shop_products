@@ -178,4 +178,59 @@ class ImageRepository
         }
         return $allDeleted;
     }
+
+    /**
+     * @param string $imageId
+     * @param string $productId
+     * @return ProductImages[]
+     * @throws OperationFailed
+     */
+    public function makeMainImage(string $imageId, string $productId): array
+    {
+        $productImages = $this->getModel()::find([
+            'conditions' => 'productId = :productId:',
+            'bind' => ['productId' => $productId]
+        ]);
+
+        if (!$productImages) {
+            throw new OperationFailed('This product has no images');
+        }
+
+        $result = [];
+        foreach ($productImages as $image) {
+            if ($image->imageId === $imageId) {
+                $image->update(['isMain' => true]);
+            } elseif($image->isMain) {
+                $image->update(['isMain' => false]);
+            }
+            $result[] = $image->toApiArray();
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $imageId
+     * @param int $order
+     * @return array
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateOrder(string $imageId, int $order = 0)
+    {
+        $image = $this->getModel()::findFirst([
+            'conditions' => 'imageId = :imageId:',
+            'bind' => ['imageId' => $imageId]
+        ]);
+
+        if (!$image) {
+            throw new NotFound('Image not found');
+        }
+
+        if (!$image->update(['imageOrder' => $order])) {
+            throw new OperationFailed($image->getMessages());
+        }
+
+        return $image->toApiArray();
+    }
 }

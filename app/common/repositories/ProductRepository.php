@@ -254,7 +254,8 @@ class ProductRepository implements DataSourceInterface
 
         if ($data['productType'] == ProductTypesEnum::TYPE_PHYSICAL) {
             $properties = PhysicalProperties::model(true);
-            $properties->productWeight = $data['productWeight'];
+            $properties->productWeight = $data['productWeight']->amount;
+            $properties->productWeightUnit = $data['productWeight']->unit;
             $properties->productBrandId = $data['productBrandId'];
             $productModel->pp = $properties;
         } elseif ($data['productType'] == ProductTypesEnum::TYPE_DOWNLOADABLE) {

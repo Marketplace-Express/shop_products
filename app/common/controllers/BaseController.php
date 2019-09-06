@@ -11,7 +11,6 @@ use JsonMapper;
 use Phalcon\Mvc\Controller;
 use app\common\logger\ApplicationLogger;
 use app\common\utils\UuidUtil;
-use stdClass;
 
 class BaseController extends Controller
 {

@@ -257,6 +257,7 @@ class CountriesEnum
         'YE' => 'Yemen',
         'ZM' => 'Zambia',
         'ZW' => 'Zimbabwe',
+        'all' => 'all'
     );
 
     public static function getKeys()

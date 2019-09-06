@@ -26,17 +26,6 @@ class ImageService
     /** @var ImageRepository */
     private $imageRepository;
 
-    /** @var ProductsService */
-    private $productsService;
-
-    /**
-     * @return ProductsService
-     */
-    public function getProductsService(): ProductsService
-    {
-        return $this->productsService ?? $this->productsService = new ProductsService();
-    }
-
     public function getRepository(): ImageRepository
     {
         return $this->imageRepository ??
@@ -120,5 +109,31 @@ class ImageService
         if ($this->getRepository()->delete($imageId, $albumId, $productId)) {
             ImagesCache::getInstance()->invalidate($productId, $imageId);
         }
+    }
+
+    /**
+     * @param string $imageId
+     * @param string $productId
+     * @return void
+     * @throws OperationFailed
+     */
+    public function makeMainImage(string $imageId, string $productId)
+    {
+        $images = $this->getRepository()->makeMainImage($imageId, $productId);
+        ImagesCache::getInstance()->invalidateProductImages($productId);
+        ImagesCache::getInstance()->bulkProductSet($productId, $images);
+    }
+
+    /**
+     * @param string $productId
+     * @param string $imageId
+     * @param int $order
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateOrder(string $productId, string $imageId, int $order = 0)
+    {
+        $image = $this->getRepository()->updateOrder($imageId, $order);
+        ImagesCache::getInstance()->set($productId, $image);
     }
 }

@@ -8,6 +8,7 @@
 namespace app\common\models;
 
 
+use app\common\validators\rules\DownloadableProductRules;
 use Phalcon\Validation;
 use app\common\utils\DigitalUnitsConverterUtil;
 
@@ -42,6 +43,11 @@ class DownloadableProperties extends BaseModel
      * @Column(column='product_digital_size', type='integer', length=11, nullable=false)
      */
     public $productDigitalSize;
+
+    /**
+     * @var DownloadableProductRules
+     */
+    private $validationRules;
 
     public function initialize()
     {
@@ -89,11 +95,11 @@ class DownloadableProperties extends BaseModel
     }
 
     /**
-     * @return mixed
+     * @return DownloadableProductRules
      */
-    private function getMaxDigitalSizeValidationConfig()
+    private function getValidationRules(): DownloadableProductRules
     {
-        return $this->getDI()->getConfig()->application->validation->downloadable->maxDigitalSize;
+        return $this->validationRules ?? $this->validationRules = new DownloadableProductRules();
     }
 
     /**
@@ -107,8 +113,10 @@ class DownloadableProperties extends BaseModel
             'productDigitalSize',
             new Validation\Validator\NumericValidator([
                 'min' => 1,
-                'max' => $this->getMaxDigitalSizeValidationConfig(),
-                'messageMaximum' => 'Digital size exceeds the max limit ' . DigitalUnitsConverterUtil::bytesToMb($this->getMaxDigitalSizeValidationConfig()),
+                'max' => $this->getValidationRules()->maxDigitalSize,
+                'messageMaximum' => 'Digital size exceeds the max limit ' . DigitalUnitsConverterUtil::bytesToMb(
+                    $this->getValidationRules()->maxDigitalSize
+                ),
                 'messageMinimum' => 'Invalid digital size'
             ])
         );

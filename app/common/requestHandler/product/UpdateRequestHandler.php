@@ -8,147 +8,53 @@ declare(strict_types=1);
 
 namespace app\common\requestHandler\product;
 
-use Phalcon\Di;
+use app\common\requestHandler\RequestAbstract;
+use app\common\validators\rules\DownloadableProductRules;
+use app\common\validators\rules\PhysicalProductRules;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use app\common\controllers\BaseController;
-use app\common\exceptions\OperationFailed;
-use app\common\requestHandler\RequestHandlerInterface;
 use app\common\utils\DigitalUnitsConverterUtil;
 use app\common\validators\TypeValidator;
 use app\common\validators\UuidValidator;
 
-class UpdateRequestHandler extends BaseController implements RequestHandlerInterface
+class UpdateRequestHandler extends RequestAbstract
 {
-    private $title;
-    private $categoryId;
-    private $linkSlug;
-    private $customPageId;
-    private $price;
-    private $salePrice;
-    private $endSaleTime;
-    private $keywords;
-    private $isPublished;
-    private $brandId;
-    private $weight;
-    private $packageDimensions;
-    private $digitalSize;
+    public $title;
+    public $categoryId;
+    public $customPageId;
+    public $price;
+    public $salePrice;
+    public $endSaleTime;
+    public $keywords;
+    public $isPublished;
+    public $brandId;
+    public $weight;
+    public $packageDimensions;
+    public $digitalSize;
 
-    protected $errorMessages;
+    /** @var PhysicalProductRules */
+    private $physicalProductRules;
 
-    /**
-     * @param mixed $title
-     */
-    public function setTitle($title): void
-    {
-        $this->title = $title;
-    }
+    /** @var DownloadableProductRules */
+    private $downloadableProductRules;
 
     /**
-     * @param mixed $categoryId
+     * @return PhysicalProductRules
      */
-    public function setCategoryId($categoryId): void
+    private function getPhysicalProductRules(): PhysicalProductRules
     {
-        $this->categoryId = $categoryId;
+        return $this->physicalProductRules ??
+            $this->physicalProductRules = new PhysicalProductRules();
     }
 
     /**
-     * @param mixed $linkSlug
+     * @return DownloadableProductRules
      */
-    public function setLinkSlug($linkSlug): void
+    private function getDownloadableRules(): DownloadableProductRules
     {
-        $this->linkSlug = $linkSlug;
-    }
-
-    /**
-     * @param mixed $customPageId
-     */
-    public function setCustomPageId($customPageId): void
-    {
-        $this->customPageId = $customPageId;
-    }
-
-    /**
-     * @param mixed $price
-     */
-    public function setPrice($price): void
-    {
-        $this->price = $price;
-    }
-
-    /**
-     * @param mixed $salePrice
-     */
-    public function setSalePrice($salePrice): void
-    {
-        $this->salePrice = $salePrice;
-    }
-
-    /**
-     * @param mixed $endSaleTime
-     */
-    public function setEndSaleTime($endSaleTime): void
-    {
-        $this->endSaleTime = $endSaleTime;
-    }
-
-    /**
-     * @param mixed $keywords
-     */
-    public function setKeywords($keywords): void
-    {
-        $this->keywords = $keywords;
-    }
-
-    /**
-     * @param mixed $brandId
-     */
-    public function setBrandId($brandId): void
-    {
-        $this->brandId = $brandId;
-    }
-
-    /**
-     * @param mixed $weight
-     */
-    public function setWeight($weight): void
-    {
-        $this->weight = $weight;
-    }
-
-    /**
-     * @param mixed $packageDimensions
-     */
-    public function setPackageDimensions($packageDimensions): void
-    {
-        $this->packageDimensions = $packageDimensions;
-    }
-
-    /**
-     * @param mixed $digitalSize
-     */
-    public function setDigitalSize($digitalSize): void
-    {
-        $this->digitalSize = $digitalSize;
-    }
-
-    /**
-     * @param mixed $isPublished
-     */
-    public function setIsPublished($isPublished): void
-    {
-        $this->isPublished = $isPublished;
-    }
-
-    private function getValidationConfig()
-    {
-        return Di::getDefault()->getConfig()->application->validation->productTitle;
-    }
-
-    private function getDigitalProductValidationConfig()
-    {
-        return $this->getDI()->getConfig()->application->validation->downloadable;
+        return $this->downloadableProductRules ??
+            $this->downloadableProductRules = new DownloadableProductRules();
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
@@ -176,10 +82,10 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
         $validator->add(
             'title',
             new Validation\Validator\AlphaNumericValidator([
-                'whiteSpace' => $this->getValidationConfig()->whiteSpace,
-                'underscore' => $this->getValidationConfig()->underscore,
-                'min' => $this->getValidationConfig()->min,
-                'max' => $this->getValidationConfig()->max,
+                'whiteSpace' => $this->getPhysicalProductRules()->productTitle->whiteSpace,
+                'underscore' => $this->getPhysicalProductRules()->productTitle->underscore,
+                'min' => $this->getPhysicalProductRules()->productTitle->min,
+                'max' => $this->getPhysicalProductRules()->productTitle->max,
                 'allowEmpty' => true
             ])
         );
@@ -272,10 +178,10 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
             'digitalSize',
             new Validation\Validator\NumericValidator([
                 'min' => 1,
-                'max' => $this->getDigitalProductValidationConfig()->maxDigitalSize,
+                'max' => $this->getDownloadableRules()->maxDigitalSize,
                 'messageMaximum' => 'Digital size exceeds the max limit ' .
                     DigitalUnitsConverterUtil::bytesToMb(
-                        $this->getDigitalProductValidationConfig()->maxDigitalSize
+                        $this->getDownloadableRules()->maxDigitalSize
                     ) . ' Mb',
                 'messageMinimum' => 'Invalid digital size',
                 'allowEmpty' => true
@@ -304,45 +210,6 @@ class UpdateRequestHandler extends BaseController implements RequestHandlerInter
             'digitalSize' => $this->digitalSize,
             'isPublished' => $this->isPublished
         ]);
-    }
-
-    public function isValid(): bool
-    {
-        $messages = $this->validate();
-        if (count($messages)) {
-            foreach ($messages as $message) {
-                $this->errorMessages[$message->getField()] = $message->getMessage();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public function notFound($message = 'Not Found')
-    {
-        // TODO: Implement notFound() method.
-    }
-
-    /**
-     * @param null $message
-     * @throws OperationFailed
-     */
-    public function invalidRequest($message = null)
-    {
-        if (!$message) {
-            $message = $this->errorMessages;
-        }
-        throw new OperationFailed($message, 400);
-    }
-
-    public function successRequest($message = null)
-    {
-        http_response_code(200);
-        return $this->response
-            ->setJsonContent([
-                'status' => 200,
-                'message' => $message
-            ]);
     }
 
     /**

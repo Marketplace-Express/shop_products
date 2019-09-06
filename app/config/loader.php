@@ -10,6 +10,8 @@ $loader = new Loader();
 $loader->registerNamespaces([
     'app\common\models' => APP_PATH . '/common/models/',
     'app\common\models\Behavior' => APP_PATH . '/common/models/behaviors/',
+    'app\common\models\embedded\physical' => APP_PATH . '/common/models/embedded/physical',
+    'app\common\models\embedded\downloadable' => APP_PATH . '/common/models/embedded/downloadable',
     'app\common\collections' => APP_PATH . '/common/collections',
     'app\common\controllers' => APP_PATH . '/common/controllers/',
     'app\common\events\middleware' => APP_PATH . '/common/events/middleware/',

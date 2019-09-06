@@ -9,6 +9,7 @@ namespace app\modules\api\controllers;
 
 
 use app\common\requestHandler\image\DeleteRequestHandler;
+use app\common\requestHandler\image\UpdateOrderRequestHandler;
 use Exception;
 use app\common\controllers\BaseController;
 use app\common\requestHandler\image\UploadRequestHandler;
@@ -22,6 +23,9 @@ use Throwable;
  */
 class ImagesController extends BaseController
 {
+    private $albumId;
+    private $productId;
+
     /**
      * @throws Exception
      */
@@ -32,6 +36,8 @@ class ImagesController extends BaseController
         if (!isset($albumId) || !$this->getUuidUtil()->isValid($productId)) {
             throw new Exception('Invalid album Id or product Id');
         }
+        $this->albumId = $albumId;
+        $this->productId = $productId;
     }
 
     /**
@@ -82,6 +88,43 @@ class ImagesController extends BaseController
             }
             $this->getService()->delete($request->productId, $id, $request->albumId, $request->getAccessLevel());
             $request->successRequest('Deleted');
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * @param $id
+     * @Put('/makeMain/{id:[0-9a-zA-Z]{7}}')
+     */
+    public function makeMainAction($id)
+    {
+        try {
+            $this->getService()->makeMainImage($id, $this->productId);
+            http_response_code(204);
+            $this->response->send();
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * @param $id
+     * @Put('/order/{id:[0-9a-zA-Z]{7}}')
+     */
+    public function updateOrderAction($id)
+    {
+        try {
+            /** @var UpdateOrderRequestHandler $request */
+            $request = $this->getJsonMapper()->map(
+                $this->request->getJsonRawBody(),
+                new UpdateOrderRequestHandler($this)
+            );
+            if (!$request->isValid()) {
+                $request->invalidRequest();
+            }
+            $this->getService()->updateOrder($this->productId, $id, $request->order);
+            $request->successRequest(null, 204);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }

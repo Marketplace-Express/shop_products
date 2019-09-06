@@ -8,48 +8,44 @@
 namespace app\common\requestHandler\product;
 
 
+use app\common\validators\PackageDimensionsValidator;
+use app\common\validators\rules\PhysicalProductRules;
+use app\common\validators\WeightValidator;
+use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\enums\ProductTypesEnum;
-use app\common\exceptions\OperationFailed;
-use app\common\requestHandler\RequestHandlerInterface;
-use app\common\validators\TypeValidator;
 use app\common\validators\UuidValidator;
 
-class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler implements RequestHandlerInterface
+class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler
 {
-
-    private $brandId;
-    private $weight;
-    private $packageDimensions;
+    /**
+     * @var string
+     */
+    public $brandId;
 
     /**
-     * @param mixed $brandId
+     * @var \app\common\models\embedded\physical\Weight
      */
-    public function setBrandId($brandId): void
-    {
-        $this->brandId = $brandId;
-    }
+    public $weight;
 
     /**
-     * @param mixed $weight
+     * @var \app\common\models\embedded\physical\PackageDimensions
      */
-    public function setWeight($weight): void
-    {
-        $this->weight = $weight;
-    }
+    public $packageDimensions;
 
     /**
-     * @param mixed $packageDimensions
+     * @var PhysicalProductRules
      */
-    public function setPackageDimensions($packageDimensions): void
-    {
-        $this->packageDimensions = $packageDimensions;
-    }
+    protected $validationRules;
 
-    private function objectToArray($object)
+    /**
+     * CreatePhysicalProductRequestHandler constructor.
+     * @param Controller $controller
+     */
+    public function __construct(Controller $controller)
     {
-        return json_decode(json_encode($object, JSON_PRESERVE_ZERO_FRACTION), true);
+        parent::__construct($controller, new PhysicalProductRules());
     }
 
     /**
@@ -60,7 +56,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
         return array_merge(parent::fields(), [
             'brandId'  => $this->brandId,
             'weight' => $this->weight,
-            'packageDimensions' => $this->objectToArray($this->packageDimensions)
+            'packageDimensions' => $this->packageDimensions
         ]);
     }
 
@@ -69,7 +65,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
      */
     public function validate(): Group
     {
-        $validator = new Validation();
+        $validator = parent::mainValidator();
 
         $validator->add(
             'brandId',
@@ -80,77 +76,15 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
 
         $validator->add(
             'weight',
-            new Validation\Validator\NumericValidator([
-                'allowFloat' => true,
-                'allowEmpty' => false
-            ])
+            new WeightValidator()
         );
 
         $validator->add(
             'packageDimensions',
-            new Validation\Validator\PresenceOf()
-        );
-
-        $validator->add(
-            'packageDimensions',
-            new TypeValidator([
-                'type' => TypeValidator::TYPE_FLOAT,
-                'allowEmpty' => false,
-                'message' => 'Invalid dimensions'
-            ])
+            new PackageDimensionsValidator()
         );
 
         return $validator->validate($this->fields());
-    }
-
-    /**
-     * @return bool
-     */
-    public function isValid(): bool
-    {
-        // TODO: TO BE ENHANCED LATER
-        $messages = $this->validate();
-        $multiErrorFields = [];
-        foreach ($messages as $message) {
-            $multiErrorFields[] = $message->getField();
-        }
-        $multiErrorFields = array_diff_assoc($multiErrorFields, array_unique($multiErrorFields));
-
-        foreach ($messages as $message) {
-            if (in_array($message->getField(), $multiErrorFields)) {
-                $this->errorMessages[$message->getField()][] = $message->getMessage();
-            } else {
-                $this->errorMessages[$message->getField()] = $message->getMessage();
-            }
-        }
-        return parent::isValid();
-    }
-
-    public function notFound($message = 'Not Found')
-    {
-        // TODO: Implement notFound() method.
-    }
-
-    /**
-     * @param null $message
-     * @throws OperationFailed
-     */
-    public function invalidRequest($message = null)
-    {
-        if (!$message) {
-            $message = $this->errorMessages;
-        }
-        throw new OperationFailed($message, 400);
-    }
-
-    public function successRequest($message = null)
-    {
-        http_response_code(200);
-        return $this->response
-            ->setJsonContent([
-                'status' => 200,
-                'message' => $message
-            ]);
     }
 
     /**
@@ -160,11 +94,10 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler i
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
-            'productId' => $this->getUuidUtil()->uuid(),
             'productBrandId' => $this->brandId,
             'productType' => ProductTypesEnum::TYPE_PHYSICAL,
             'productWeight' => $this->weight,
-            'productPackageDimensions' => $this->objectToArray($this->packageDimensions)
+            'productPackageDimensions' => $this->packageDimensions
         ]);
     }
 }
