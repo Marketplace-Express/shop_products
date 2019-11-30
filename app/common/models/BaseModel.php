@@ -81,8 +81,9 @@ abstract class BaseModel extends Model
                 continue;
             }
             $this->writeAttribute($attribute, $value);
-            $this->exposedFields[$attribute] = $value;
         }
         return $this;
     }
+
+    abstract public function toApiArray(): array;
 }

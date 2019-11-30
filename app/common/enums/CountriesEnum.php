@@ -8,7 +8,7 @@
 namespace app\common\enums;
 
 
-class CountriesEnum
+class CountriesEnum extends \SplEnum
 {
     private static $countries = array
     (
@@ -260,12 +260,18 @@ class CountriesEnum
         'all' => 'all'
     );
 
-    public static function getKeys()
+    /**
+     * @return array
+     */
+    public static function getKeys(): array
     {
         return array_keys(self::$countries);
     }
 
-    public static function getValues()
+    /**
+     * @return array
+     */
+    public static function getValues(): array
     {
         return self::$countries;
     }

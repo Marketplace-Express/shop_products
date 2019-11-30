@@ -30,7 +30,7 @@ class SegmentsValidator extends Validator implements ValidatorInterface
     {
         $segments = $validation->getValue($attribute);
 
-        if (!property_exists($segments, 'countries')
+        if (empty($segments) || !property_exists($segments, 'countries')
             || !property_exists($segments, 'age')
             || !property_exists($segments, 'gender')
         ) {

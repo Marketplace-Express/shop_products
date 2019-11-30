@@ -236,7 +236,7 @@ class ProductImages extends BaseModel
     /**
      * @return array
      */
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return [
             'imageId' => $this->imageId,

@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class RateImagesMigration_100
+ * Class PhysicalPropertiesMigration_100
  */
-class RateImagesMigration_100 extends Migration
+class PhysicalPropertiesMigration_100 extends Migration
 {
     /**
      * Define the table structure
@@ -17,77 +17,66 @@ class RateImagesMigration_100 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('rate_images', [
+        $this->morphTable('physical_properties', [
                 'columns' => [
                     new Column(
-                        'image_id',
+                        'row_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_INTEGER,
                             'notNull' => true,
-                            'size' => 36,
+                            'autoIncrement' => true,
+                            'size' => 11,
                             'first' => true
                         ]
                     ),
                     new Column(
-                        'rate_id',
+                        'product_id',
                         [
                             'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'after' => 'image_id'
+                            'after' => 'row_id'
                         ]
                     ),
                     new Column(
-                        'image_link',
+                        'product_weight',
                         [
-                            'type' => Column::TYPE_TEXT,
+                            'type' => Column::TYPE_FLOAT,
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'rate_id'
+                            'after' => 'product_id'
                         ]
                     ),
                     new Column(
-                        'created_at',
+                        'product_weight_unit',
                         [
-                            'type' => Column::TYPE_DATETIME,
-                            'default' => "CURRENT_TIMESTAMP",
+                            'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
-                            'size' => 1,
-                            'after' => 'image_link'
+                            'size' => 6,
+                            'after' => 'product_weight'
                         ]
                     ),
                     new Column(
-                        'deleted_at',
+                        'product_brand_id',
                         [
-                            'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
-                            'after' => 'created_at'
-                        ]
-                    ),
-                    new Column(
-                        'is_deleted',
-                        [
-                            'type' => Column::TYPE_INTEGER,
-                            'default' => "0",
-                            'notNull' => true,
-                            'size' => 1,
-                            'after' => 'deleted_at'
+                            'type' => Column::TYPE_VARCHAR,
+                            'size' => 36,
+                            'after' => 'product_weight_unit'
                         ]
                     )
                 ],
                 'indexes' => [
-                    new Index('PRIMARY', ['image_id'], 'PRIMARY'),
-                    new Index('rate_images_product_rates_rate_id_fk', ['rate_id'], null),
-                    new Index('rate_images_index', ['is_deleted', 'rate_id'], null)
+                    new Index('PRIMARY', ['row_id'], 'PRIMARY'),
+                    new Index('physical_properties_product_product_id_fk', ['product_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'rate_images_product_rates_rate_id_fk',
+                        'physical_properties_product_product_id_fk',
                         [
-                            'referencedTable' => 'product_rates',
+                            'referencedTable' => 'product',
                             'referencedSchema' => 'shop_products',
-                            'columns' => ['rate_id'],
-                            'referencedColumns' => ['rate_id'],
+                            'columns' => ['product_id'],
+                            'referencedColumns' => ['product_id'],
                             'onUpdate' => 'NO ACTION',
                             'onDelete' => 'CASCADE'
                         ]
@@ -95,7 +84,7 @@ class RateImagesMigration_100 extends Migration
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',
-                    'AUTO_INCREMENT' => '',
+                    'AUTO_INCREMENT' => '1',
                     'ENGINE' => 'InnoDB',
                     'TABLE_COLLATION' => 'utf8mb4_0900_ai_ci'
                 ],

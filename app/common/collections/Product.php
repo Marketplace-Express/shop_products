@@ -175,13 +175,20 @@ class Product extends BaseCollection
             new SegmentsValidator()
         );
 
-        $this->_errorMessages = $validation->validate([
+        $fields = [
             'product_id' => $this->product_id,
-            'packageDimensions' => $this->packageDimensions->dimensions,
-            'packageDimensionsUnit' => $this->packageDimensions->unit,
             'keywords' => $this->keywords,
             'segments' => $this->segments
-        ]);
+        ];
+
+        if ($this->packageDimensions) {
+            $fields = array_merge($fields, [
+                'packageDimensions' => $this->packageDimensions->dimensions,
+                'packageDimensionsUnit' => $this->packageDimensions->unit,
+            ]);
+        }
+
+        $this->_errorMessages = $validation->validate($fields);
 
         return !$this->_errorMessages->count();
     }

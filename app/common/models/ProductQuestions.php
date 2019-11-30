@@ -174,7 +174,7 @@ class ProductQuestions extends BaseModel
         ];
     }
 
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return [
             'id' => $this->id,

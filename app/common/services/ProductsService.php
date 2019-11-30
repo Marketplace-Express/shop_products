@@ -8,6 +8,7 @@
 namespace app\common\services;
 
 
+use app\common\models\Product;
 use app\common\repositories\ImageRepository;
 use app\common\repositories\QuestionRepository;
 use app\common\repositories\RateRepository;
@@ -25,6 +26,8 @@ use app\common\utils\ImgurUtil;
 
 class ProductsService
 {
+    const DEFAULT_PAGINATION_LIMIT = 10;
+
     /** @var QueueRequestHandler */
     private $queueRequestHandler;
 
@@ -81,26 +84,25 @@ class ProductsService
 
         $page = $params['page'];
         $limit = $params['limit'];
+        $sort = $params['sort'];
 
         $vendorId = array_key_exists('vendorId', $params) ? $params['vendorId'] : null;
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
         // get by category id or vendor id or both
-        try {
-            if (!$editMode) {
-                $products = ProductCache::getInstance()->getByIdentifier($categoryId, $vendorId);
-            } else {
-                $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, true, false, true);
-            }
-            $products = array_map(function ($product) {
-                $product['productImages'] = ImagesCache::getInstance()->getAll($product['productId']);
-                $product['productQuestions'] = QuestionsCache::getInstance()->getAll($product['productId']);
-                return $product;
-            }, $products);
-        } catch (\RedisException $exception) {
-            $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $editMode, true, true);
+        if (1 || $editMode) {
+            $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, true, false, false);
+        } else {
+            $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
         }
-        return $products;
+
+        $result = [];
+        /** @var Product $product */
+        foreach ($products as $product) {
+            $result[] = $product->toApiArray();
+        }
+
+        return $result;
     }
 
     /**

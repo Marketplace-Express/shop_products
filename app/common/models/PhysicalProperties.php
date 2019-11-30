@@ -92,7 +92,7 @@ class PhysicalProperties extends BaseModel
     /**
      * @return array
      */
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return [
             'productBrandId' => $this->productBrandId,

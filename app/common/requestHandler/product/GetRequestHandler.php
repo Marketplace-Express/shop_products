@@ -7,7 +7,9 @@
 
 namespace app\common\requestHandler\product;
 
+use app\common\models\sorting\SortProduct;
 use app\common\requestHandler\RequestAbstract;
+use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\services\user\UserService;
@@ -29,6 +31,42 @@ class GetRequestHandler extends RequestAbstract
 
     /** @var bool */
     public $requireCategoryId = false;
+
+    /**
+     * @var SortProduct
+     */
+    private $sort;
+
+    /**
+     * @var \JsonMapper
+     */
+    private $jsonMapper;
+
+    /**
+     * GetRequestHandler constructor.
+     * @param Controller $controller
+     * @throws \JsonMapper_Exception
+     */
+    public function __construct(Controller $controller)
+    {
+        if ($controller->request->get('sort')) {
+            $this->sort = $this->getJsonMapper()->map(
+                json_decode($controller->request->get('sort')),
+                new SortProduct()
+            );
+        }
+        parent::__construct($controller);
+    }
+
+    /**
+     * @return \JsonMapper
+     */
+    protected function getJsonMapper(): \JsonMapper
+    {
+        $jsonMapper = $this->jsonMapper ?? $this->jsonMapper = new \JsonMapper();
+        $jsonMapper->bEnforceMapType = false;
+        return $jsonMapper;
+    }
 
     /**
      * @return int
@@ -70,8 +108,7 @@ class GetRequestHandler extends RequestAbstract
             new Validation\Validator\NumericValidator([
                 'allowFloat' => false,
                 'allowSign' => false,
-                'min' => 0,
-                'allowEmpty' => true
+                'min' => 1
             ])
         );
 
@@ -92,7 +129,8 @@ class GetRequestHandler extends RequestAbstract
             'categoryId' => $this->categoryId,
             'vendorId' => $this->vendorId,
             'limit' => $this->limit,
-            'page' => $this->page
+            'page' => $this->page,
+            'sort' => $this->sort
         ];
     }
 }

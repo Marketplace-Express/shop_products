@@ -183,7 +183,7 @@ class ProductRates extends BaseModel
         ];
     }
 
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return [
             'rateId' => $this->rateId,

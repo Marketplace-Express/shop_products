@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductMigration_101
+ * Class ProductMigration_100
  */
-class ProductMigration_101 extends Migration
+class ProductMigration_100 extends Migration
 {
     /**
      * Define the table structure
@@ -91,20 +91,12 @@ class ProductMigration_101 extends Migration
                         ]
                     ),
                     new Column(
-                        'product_brand_id',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 36,
-                            'after' => 'product_custom_page_id'
-                        ]
-                    ),
-                    new Column(
                         'product_album_id',
                         [
                             'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
                             'size' => 10,
-                            'after' => 'product_brand_id'
+                            'after' => 'product_custom_page_id'
                         ]
                     ),
                     new Column(
@@ -144,30 +136,13 @@ class ProductMigration_101 extends Migration
                         ]
                     ),
                     new Column(
-                        'product_weight',
-                        [
-                            'type' => Column::TYPE_FLOAT,
-                            'size' => 1,
-                            'after' => 'product_sale_end_time'
-                        ]
-                    ),
-                    new Column(
-                        'product_digital_size',
-                        [
-                            'type' => Column::TYPE_INTEGER,
-                            'default' => "0",
-                            'size' => 11,
-                            'after' => 'product_weight'
-                        ]
-                    ),
-                    new Column(
                         'created_at',
                         [
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'product_digital_size'
+                            'after' => 'product_sale_end_time'
                         ]
                     ),
                     new Column(
@@ -209,7 +184,7 @@ class ProductMigration_101 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['product_id'], 'PRIMARY'),
-                    new Index('product_product_id_uindex', ['product_id'], 'UNIQUE')
+                    new Index('product_listing_index', ['product_category_id', 'product_vendor_id', 'is_published', 'is_deleted'], null)
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',

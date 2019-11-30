@@ -12,7 +12,6 @@ use app\common\validators\PackageDimensionsValidator;
 use app\common\validators\rules\PhysicalProductRules;
 use app\common\validators\WeightValidator;
 use Phalcon\Mvc\Controller;
-use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\enums\ProductTypesEnum;
 use app\common\validators\UuidValidator;

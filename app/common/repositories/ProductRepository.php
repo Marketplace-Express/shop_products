@@ -7,6 +7,7 @@
 
 namespace app\common\repositories;
 
+use app\common\models\sorting\SortProduct;
 use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
 use app\common\enums\MongoQueryOperatorsEnum;
@@ -137,25 +138,28 @@ class ProductRepository implements DataSourceInterface
     /**
      * Get products by category id
      *
-     * @param string $categoryId
      * @param string $vendorId
+     * @param string $categoryId
      * @param null|int $limit
      * @param null|int $page
+     * @param SortProduct $sort
      * @param bool $editMode
      * @param bool $attachRelations
      * @param bool $getExtraInfo
-     * @return array|null
+     * @return array
      *
      * @throws \Exception
      */
     public function getByIdentifier(
         string $vendorId,
-        ?string $categoryId = null,
-        int $limit = 30,
-        int $page = 1,
+        ?string $categoryId,
+        int $limit,
+        int $page,
+        SortProduct $sort,
         bool $editMode = false,
         bool $attachRelations = true,
-        bool $getExtraInfo = false): ?array
+        bool $getExtraInfo = false
+    ): array
     {
         $binds = [];
 
@@ -172,9 +176,7 @@ class ProductRepository implements DataSourceInterface
             $conditions .= ' AND isPublished = TRUE';
         }
 
-        $conditions .= ' AND isDeleted = false';
-
-        $result = $this->getModel(
+        $products = $this->getModel(
             false, $attachRelations, $editMode
         )::find([
             'conditions' => $conditions,
@@ -183,36 +185,31 @@ class ProductRepository implements DataSourceInterface
             ], $binds),
             'limit' => $limit,
             'offset' => ($page - 1) * $limit,
-            'order' => 'createdAt DESC'
+            'order' => $sort->getSqlSort()
         ]);
 
-        $products = [];
+        $result = [];
+        foreach ($products as $product) {
+            $result[] = $product;
+        }
 
         if ($result && $getExtraInfo) {
-            $productsIds = array_unique(array_map(function ($product) {
-                return $product['productId'];
-            }, $result->toArray()));
+            $productsIds = array_column($products->toArray(), 'productId');
             $productsExtraInfo = $this->getCollection()::find([
                 'conditions' => [
                     'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
                 ]
             ]);
             if (!empty($productsExtraInfo)) {
-                /** @var ProductCollection $productExtraInfo */
-                foreach ($productsExtraInfo as $productExtraInfo) {
-                    $productIndex = array_search($productExtraInfo->product_id, $productsIds);
-                    if ($productIndex === false) {
-                        continue;
+                foreach ($result as $product) {
+                    /** @var Product $product */
+                    foreach ($productsExtraInfo as $extraInfo) {
+                        if ($product->productId == $extraInfo->product_id) {
+                            $product->assign(['extraInfo' => $extraInfo]);
+                        }
                     }
-                    $products[] = $result->offsetGet($productIndex)->assign($productExtraInfo->toApiArray());
                 }
             }
-        }
-
-        $result = [];
-
-        foreach ($products as $product) {
-            $result[] = $product->toApiArray();
         }
 
         return $result;
@@ -335,7 +332,6 @@ class ProductRepository implements DataSourceInterface
      * @param string $productId
      * @param string $vendorId
      * @return array
-     * @throws OperationFailed
      * @throws NotFound
      * @throws \Exception
      */

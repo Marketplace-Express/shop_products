@@ -2,7 +2,7 @@
 
 namespace app\common\models;
 
-use app\common\validators\rules\AbstractProductRules;
+
 use app\common\validators\rules\DownloadableProductRules;
 use app\common\validators\rules\PhysicalProductRules;
 use app\common\validators\SpecialCharactersValidator;
@@ -183,6 +183,12 @@ class Product extends BaseModel
      */
     public $productRates = [];
 
+    /** @var array */
+    public $packageDimensions = [];
+
+    /** @var \app\common\collections\Product */
+    public $extraInfo;
+
     private static $attachRelations = false;
     private static $attachProperties = true;
     private static $editMode = false;
@@ -321,10 +327,6 @@ class Product extends BaseModel
      */
     public function afterFetch()
     {
-        if (self::$editMode) {
-            $this->exposedFields['isPublished'] = (bool) $this->isPublished;
-        }
-
         if (self::$attachProperties) {
             if ($this->productType == ProductTypesEnum::TYPE_PHYSICAL) {
                 $this->assign($this->pp->toApiArray(), null, PhysicalProperties::WHITE_LIST);
@@ -392,7 +394,7 @@ class Product extends BaseModel
         ];
     }
 
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return array_merge(
             [
@@ -415,7 +417,10 @@ class Product extends BaseModel
                 'productQuestions' => $this->productQuestions,
                 'productRates' => $this->productRates
             ] : [],
-            $this->exposedFields
+            $this->extraInfo ? $this->extraInfo->toApiArray() : [],
+            ['createdAt' => $this->createdAt],
+            ($this->updatedAt) ? ['updatedAt' => $this->updatedAt] : [],
+            self::$editMode ? ['isPublished' => (bool) $this->isPublished] : []
         );
     }
 

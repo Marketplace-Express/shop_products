@@ -11,6 +11,7 @@ use app\common\enums\QueueNamesEnum;
 use app\common\exceptions\OperationFailed;
 use app\common\interfaces\DataSourceInterface;
 use app\common\requestHandler\queue\QueueRequestHandler;
+use app\common\models\sorting\SortProduct;
 
 class ProductCache implements DataSourceInterface
 {
@@ -52,6 +53,7 @@ class ProductCache implements DataSourceInterface
      * @param string $categoryId
      * @return string
      *
+     * @throws \Exception
      */
     private function getKey(string $vendorId, ?string $categoryId = null)
     {
@@ -85,6 +87,7 @@ class ProductCache implements DataSourceInterface
      */
     public function setInCache(string $vendorId, string $categoryId, array $data)
     {
+//        $this->addToList($vendorId, $categoryId, $data);
         return self::$redisInstance->hSet($this->getKey($vendorId, $categoryId), $data['productId'], json_encode($data));
     }
 
@@ -107,6 +110,7 @@ class ProductCache implements DataSourceInterface
      * @param string $categoryId
      * @param array|null $productsIds
      * @return int|mixed
+     * @throws \Exception
      */
     public function invalidateCache(string $vendorId, string $categoryId, ?array $productsIds = null)
     {
@@ -138,10 +142,13 @@ class ProductCache implements DataSourceInterface
      *
      * @param string $categoryId
      * @param string $vendorId
+     * @param int $page
+     * @param int $limit
+     * @param array $sort
      * @return array
      * @throws \Exception
      */
-    public function getByIdentifier(string $categoryId, string $vendorId): ?array
+    public function getByIdentifier(string $categoryId, string $vendorId, int $page, int $limit, SortProduct $sort): array
     {
         $cacheKey = $this->getKey($vendorId, $categoryId);
         $result = self::$redisInstance->hGetAll($cacheKey);
@@ -159,8 +166,6 @@ class ProductCache implements DataSourceInterface
      * @param string $productId
      * @param string|null $vendorId
      * @param string|null $categoryId
-     * @param bool $editMode
-     * @param bool $getExtraInfo
      * @return array
      * @throws \Exception
      */
@@ -177,6 +182,20 @@ class ProductCache implements DataSourceInterface
             return $product;
         }
         return [];
+    }
+
+    /**
+     * @param string $vendorId
+     * @param string $categoryId
+     * @param array $product
+     * @throws \Exception
+     */
+    public function addToList(string $vendorId, string $categoryId, array $product): void
+    {
+        $cacheKey = $this->getKey($vendorId, $categoryId);
+        foreach (SortingCriteria::FIELD_MAPPING as $field => $attribute) {
+            self::$redisInstance->sAdd($cacheKey, $categoryId, json_encode($product));
+        }
     }
 
     /**

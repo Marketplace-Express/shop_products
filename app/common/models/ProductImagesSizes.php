@@ -141,7 +141,7 @@ class ProductImagesSizes extends BaseModel
     /**
      * @return array
      */
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return [
             'small' => $this->small,

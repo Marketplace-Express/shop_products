@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductRatingMigration_100
+ * Class ProductRatesMigration_100
  */
-class ProductRatingMigration_100 extends Migration
+class ProductRatesMigration_100 extends Migration
 {
     /**
      * Define the table structure
@@ -17,7 +17,7 @@ class ProductRatingMigration_100 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product_rating', [
+        $this->morphTable('product_rates', [
                 'columns' => [
                     new Column(
                         'rate_id',
@@ -38,7 +38,7 @@ class ProductRatingMigration_100 extends Migration
                         ]
                     ),
                     new Column(
-                        'rate_product_id',
+                        'product_id',
                         [
                             'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
@@ -51,7 +51,7 @@ class ProductRatingMigration_100 extends Migration
                         [
                             'type' => Column::TYPE_TEXT,
                             'size' => 1,
-                            'after' => 'rate_product_id'
+                            'after' => 'product_id'
                         ]
                     ),
                     new Column(
@@ -65,21 +65,13 @@ class ProductRatingMigration_100 extends Migration
                         ]
                     ),
                     new Column(
-                        'rate_images',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'size' => 1,
-                            'after' => 'rate_stars'
-                        ]
-                    ),
-                    new Column(
                         'created_at',
                         [
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'rate_images'
+                            'after' => 'rate_stars'
                         ]
                     ),
                     new Column(
@@ -112,7 +104,8 @@ class ProductRatingMigration_100 extends Migration
                 'indexes' => [
                     new Index('PRIMARY', ['rate_id'], 'PRIMARY'),
                     new Index('product_rated_rate_id_uindex', ['rate_id'], 'UNIQUE'),
-                    new Index('product_rated_product_product_id_fk', ['rate_product_id'], null)
+                    new Index('product_rated_product_product_id_fk', ['product_id'], null),
+                    new Index('product_rates_index', ['is_deleted', 'product_id'], null)
                 ],
                 'references' => [
                     new Reference(
@@ -120,10 +113,10 @@ class ProductRatingMigration_100 extends Migration
                         [
                             'referencedTable' => 'product',
                             'referencedSchema' => 'shop_products',
-                            'columns' => ['rate_product_id'],
+                            'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],
                             'onUpdate' => 'NO ACTION',
-                            'onDelete' => 'NO ACTION'
+                            'onDelete' => 'CASCADE'
                         ]
                     )
                 ],

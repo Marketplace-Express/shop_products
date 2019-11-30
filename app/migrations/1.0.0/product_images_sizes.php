@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductQuestionsMigration_100
+ * Class ProductImagesSizesMigration_100
  */
-class ProductQuestionsMigration_100 extends Migration
+class ProductImagesSizesMigration_100 extends Migration
 {
     /**
      * Define the table structure
@@ -17,60 +17,73 @@ class ProductQuestionsMigration_100 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product_questions', [
+        $this->morphTable('product_images_sizes', [
                 'columns' => [
                     new Column(
-                        'id',
+                        'row_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_INTEGER,
                             'notNull' => true,
-                            'size' => 36,
+                            'autoIncrement' => true,
+                            'size' => 11,
                             'first' => true
                         ]
                     ),
                     new Column(
-                        'product_id',
+                        'image_id',
                         [
                             'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
-                            'size' => 36,
-                            'after' => 'id'
+                            'size' => 10,
+                            'after' => 'row_id'
                         ]
                     ),
                     new Column(
-                        'user_id',
-                        [
-                            'type' => Column::TYPE_VARCHAR,
-                            'notNull' => true,
-                            'size' => 36,
-                            'after' => 'product_id'
-                        ]
-                    ),
-                    new Column(
-                        'text',
+                        'small',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'notNull' => true,
                             'size' => 1,
-                            'after' => 'user_id'
+                            'after' => 'image_id'
                         ]
                     ),
                     new Column(
-                        'created_at',
+                        'big',
                         [
-                            'type' => Column::TYPE_DATETIME,
-                            'default' => "CURRENT_TIMESTAMP",
-                            'notNull' => true,
+                            'type' => Column::TYPE_TEXT,
                             'size' => 1,
-                            'after' => 'text'
+                            'after' => 'small'
                         ]
                     ),
                     new Column(
-                        'updated_at',
+                        'thumb',
                         [
-                            'type' => Column::TYPE_DATETIME,
+                            'type' => Column::TYPE_TEXT,
                             'size' => 1,
-                            'after' => 'created_at'
+                            'after' => 'big'
+                        ]
+                    ),
+                    new Column(
+                        'medium',
+                        [
+                            'type' => Column::TYPE_TEXT,
+                            'size' => 1,
+                            'after' => 'thumb'
+                        ]
+                    ),
+                    new Column(
+                        'large',
+                        [
+                            'type' => Column::TYPE_TEXT,
+                            'size' => 1,
+                            'after' => 'medium'
+                        ]
+                    ),
+                    new Column(
+                        'huge',
+                        [
+                            'type' => Column::TYPE_TEXT,
+                            'size' => 1,
+                            'after' => 'large'
                         ]
                     ),
                     new Column(
@@ -78,7 +91,7 @@ class ProductQuestionsMigration_100 extends Migration
                         [
                             'type' => Column::TYPE_DATETIME,
                             'size' => 1,
-                            'after' => 'updated_at'
+                            'after' => 'huge'
                         ]
                     ),
                     new Column(
@@ -93,18 +106,17 @@ class ProductQuestionsMigration_100 extends Migration
                     )
                 ],
                 'indexes' => [
-                    new Index('PRIMARY', ['id'], 'PRIMARY'),
-                    new Index('product_questions_product_product_id_fk', ['product_id'], null),
-                    new Index('product_questions_index', ['is_deleted', 'product_id'], null)
+                    new Index('PRIMARY', ['row_id'], 'PRIMARY'),
+                    new Index('product_images_sizes_product_images_image_id_fk', ['image_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'product_questions_product_product_id_fk',
+                        'product_images_sizes_product_images_image_id_fk',
                         [
-                            'referencedTable' => 'product',
+                            'referencedTable' => 'product_images',
                             'referencedSchema' => 'shop_products',
-                            'columns' => ['product_id'],
-                            'referencedColumns' => ['product_id'],
+                            'columns' => ['image_id'],
+                            'referencedColumns' => ['image_id'],
                             'onUpdate' => 'NO ACTION',
                             'onDelete' => 'CASCADE'
                         ]
@@ -112,7 +124,7 @@ class ProductQuestionsMigration_100 extends Migration
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',
-                    'AUTO_INCREMENT' => '',
+                    'AUTO_INCREMENT' => '1',
                     'ENGINE' => 'InnoDB',
                     'TABLE_COLLATION' => 'utf8mb4_0900_ai_ci'
                 ],

@@ -87,7 +87,7 @@ class DownloadableProperties extends BaseModel
     /**
      * @return array
      */
-    public function toApiArray()
+    public function toApiArray(): array
     {
         return [
             'productDigitalSize' => (int) $this->productDigitalSize
