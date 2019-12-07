@@ -8,26 +8,24 @@
 namespace app\common\services;
 
 
-use app\common\models\Product;
-use app\common\repositories\ImageRepository;
-use app\common\repositories\QuestionRepository;
-use app\common\repositories\RateRepository;
-use app\common\services\cache\ImagesCache;
-use app\common\services\cache\QuestionsCache;
+use app\common\repositories\{
+    ProductRepository, ImageRepository, QuestionRepository, RateRepository
+};
+use app\common\services\cache\{
+    ProductCache, ImagesCache, QuestionsCache
+};
+use app\common\exceptions\{
+    OperationFailed, NotFound
+};
+use app\common\enums\{
+    AccessLevelsEnum, QueueNamesEnum
+};
 use Mechpave\ImgurClient\Entity\Album;
-use app\common\enums\AccessLevelsEnum;
-use app\common\enums\QueueNamesEnum;
-use app\common\exceptions\OperationFailed;
-use app\common\exceptions\NotFound;
-use app\common\repositories\ProductRepository;
 use app\common\requestHandler\queue\QueueRequestHandler;
-use app\common\services\cache\ProductCache;
 use app\common\utils\ImgurUtil;
 
 class ProductsService
 {
-    const DEFAULT_PAGINATION_LIMIT = 10;
-
     /** @var QueueRequestHandler */
     private $queueRequestHandler;
 
@@ -90,14 +88,13 @@ class ProductsService
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
         // get by category id or vendor id or both
-        if (1 || $editMode) {
+        if ($editMode) {
             $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, true, false, false);
         } else {
             $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
         }
 
         $result = [];
-        /** @var Product $product */
         foreach ($products as $product) {
             $result[] = $product->toApiArray();
         }
@@ -108,32 +105,16 @@ class ProductsService
     /**
      * Get product by id
      *
-     * @param string $vendorId
-     * @param string $categoryId
-     * @param string $productId
+     * @param string|null $productId
      * @return array
      *
      * @throws NotFound
      * @throws \Exception
      */
-    public function getProduct(
-        string $vendorId,
-        string $categoryId,
-        string $productId
-    ): array
+    public function getProduct(string $productId): array
     {
-        try {
-            $product = ProductCache::getInstance()->getById($productId, $vendorId, $categoryId);
-            if (empty($product)) {
-                $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true)->toApiArray();
-                ProductCache::getInstance()->updateCache($vendorId, $categoryId, $product);
-            }
-            // Attach images and questions
-            $product['productImages'] = ImagesCache::getInstance()->getAll($productId);
-            $product['productQuestions'] = QuestionsCache::getInstance()->getAll($productId);
-        } catch (\RedisException $exception) {
-            $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true)->toApiArray();
-        }
+        $product = ProductRepository::getInstance()->getById($productId, false, true, true)->toApiArray();
+//        $this->unsetSensitiveData($product);
         return $product;
     }
 
@@ -156,9 +137,8 @@ class ProductsService
         $product = ProductRepository::getInstance()->create($data);
         try {
             if ($product['isPublished']) {
-                $productCacheData = $this->unsetSensitiveData($product);
-                ProductCache::getInstance()->setInCache($productCacheData['productVendorId'], $productCacheData['productCategoryId'], $productCacheData);
-                ProductCache::indexProduct($productCacheData);
+                ProductCache::getInstance()->setInCache($product['productVendorId'], $product['productCategoryId'], $product);
+                ProductCache::indexProduct($product);
             }
         } catch (\RedisException $exception) {
             // do nothing
@@ -172,16 +152,15 @@ class ProductsService
      *
      * @param string $productId
      * @param array $data
-     * @param string $vendorId
      * @return array
      *
      * @throws OperationFailed
      * @throws NotFound
      * @throws \Exception
      */
-    public function update(string $productId, array $data, string $vendorId)
+    public function update(string $productId, array $data)
     {
-        $product = ProductRepository::getInstance()->update($productId, $vendorId, $data);
+        $product = ProductRepository::getInstance()->update($productId, $data)->toApiArray();
         try {
             if ($product['isPublished']) {
                 unset($product['isPublished']);
@@ -207,9 +186,9 @@ class ProductsService
      * @throws NotFound
      * @throws \Exception
      */
-    public function delete(string $productId, string $vendorId)
+    public function delete(string $productId)
     {
-        $deletedProduct = ProductRepository::getInstance()->delete($productId, $vendorId);
+        $deletedProduct = ProductRepository::getInstance()->delete($productId)->toApiArray();
         try {
             ProductCache::getInstance()->invalidateCache($deletedProduct['productVendorId'], $deletedProduct['productCategoryId'], [$productId]);
             (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
@@ -235,7 +214,7 @@ class ProductsService
     {
         /** Delete product related document */
         ProductRepository::getInstance()
-            ->getCollection()::findFirst([
+            ->getPropertiesCollection()::findFirst([
                 ['product_id' => $productId]
             ])->delete();
 
@@ -281,6 +260,22 @@ class ProductsService
             $product['productAlbumDeleteHash'],
             $product['isPublished']
         );
-        return $product;
+//        return $product;
+    }
+
+    /**
+     * Update entity quantity. It could be product or variation
+     *
+     * @param string $entityId
+     * @param array $data
+     * @return array
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateQuantity(string $entityId, array $data): array
+    {
+        $amount = $data['amount'];
+        $operator = $data['operator'];
+        return ProductRepository::getInstance()->updateQuantity($entityId, $amount, $operator)->toApiArray();
     }
 }

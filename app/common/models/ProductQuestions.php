@@ -16,8 +16,6 @@ use Phalcon\Validation;
  */
 class ProductQuestions extends BaseModel
 {
-
-    const MODEL_ALIAS = 'pq';
     const WHITE_LIST = [
         'userId',
         'productId',
@@ -81,11 +79,6 @@ class ProductQuestions extends BaseModel
      * @var QuestionRules
      */
     private $validationRules;
-
-    public function onConstruct()
-    {
-        self::$instance = $this;
-    }
 
     /**
      * Initialize method for model.

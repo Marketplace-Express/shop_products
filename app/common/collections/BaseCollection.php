@@ -7,12 +7,12 @@
 
 namespace app\common\collections;
 
-use Phalcon\Mvc\MongoCollection as Collection;
+use Phalcon\Mvc\MongoCollection;
 use app\common\traits\ModelCollectionBehaviorTrait;
 
-abstract class BaseCollection extends Collection
+abstract class BaseCollection extends MongoCollection
 {
-    /** @var Collection $instance */
+    /** @var MongoCollection $instance */
     protected static $instance;
 
     use ModelCollectionBehaviorTrait;
@@ -53,6 +53,6 @@ abstract class BaseCollection extends Collection
      */
     public function getType()
     {
-        return Collection::class;
+        return MongoCollection::class;
     }
 }

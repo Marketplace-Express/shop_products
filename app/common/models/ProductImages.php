@@ -17,9 +17,6 @@ use Phalcon\Mvc\Model\ResultSetInterface;
  */
 class ProductImages extends BaseModel
 {
-
-    const MODEL_ALIAS = 'pi';
-
     /**
      *
      * @var string
@@ -115,11 +112,6 @@ class ProductImages extends BaseModel
      * @Column(column='is_deleted', type='boolean', default=0)
      */
     public $isDeleted;
-
-    public function onConstruct()
-    {
-        self::$instance = $this;
-    }
 
     /**
      * Initialize method for model.
@@ -242,8 +234,8 @@ class ProductImages extends BaseModel
             'imageId' => $this->imageId,
             'imageAlbumId' => $this->imageAlbumId,
             'imageLink' => $this->imageLink,
-            'imageWidth' => $this->imageWidth,
-            'imageHeight' => $this->imageHeight,
+            'imageWidth' => (float) $this->imageWidth,
+            'imageHeight' => (float) $this->imageHeight,
             'imageType' => $this->imageType,
             'imageDeleteHash' => $this->imageDeleteHash,
             'imageOrder' => (int) $this->imageOrder,

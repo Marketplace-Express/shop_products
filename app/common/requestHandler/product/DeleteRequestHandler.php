@@ -22,16 +22,7 @@ class DeleteRequestHandler extends RequestAbstract
      */
     public function validate(): Group
     {
-        $validator = new Validation();
-
-        $validator->add(
-            'vendorId',
-            new UuidValidator()
-        );
-
-        return $validator->validate([
-            'vendorId' => $this->vendorId
-        ]);
+        return new Group();
     }
 
     /**

@@ -17,9 +17,8 @@ interface DataSourceInterface
 
     /**
      * @param string $productId
-     * @param string $vendorId
      * @return mixed
      * @throws NotFound
      */
-    public function getById(string $productId, string $vendorId);
+    public function getById(string $productId);
 }

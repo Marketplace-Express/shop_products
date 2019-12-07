@@ -91,7 +91,7 @@ class QuestionRepository
             throw new NotFound();
         }
         if (!$question->delete()) {
-            throw new OperationFailed('question could not be deleted');
+            throw new OperationFailed($question->getMessages());
         }
         return $question->toApiArray();
     }
@@ -108,7 +108,7 @@ class QuestionRepository
             'bind' => ['id' => $id]
         ]);
         if (!$question) {
-            throw new NotFound();
+            throw new NotFound('question not found');
         }
         return $question->toApiArray();
     }

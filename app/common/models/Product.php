@@ -3,10 +3,14 @@
 namespace app\common\models;
 
 
-use app\common\validators\rules\DownloadableProductRules;
-use app\common\validators\rules\PhysicalProductRules;
+use app\common\enums\QuantityOperatorsEnum;
+use app\common\exceptions\OperationFailed;
+use app\common\models\embedded\Properties;
+use app\common\models\embedded\Variation;
 use app\common\validators\SpecialCharactersValidator;
 use Phalcon\Mvc\Model;
+use Phalcon\Mvc\Model\Transaction\Failed as TxFailed;
+use Phalcon\Mvc\Model\Transaction\Manager as TxManager;
 use Phalcon\Validation;
 use app\common\enums\ProductTypesEnum;
 use app\common\validators\TypeValidator;
@@ -20,11 +24,12 @@ use app\common\validators\UuidValidator;
  * @date 2019-01-11, 16:38:52
  * @property PhysicalProperties $pp
  * @property DownloadableProperties $dp
- * @property-read  ProductImages[] $pi
- * @property-read  ProductQuestions[] $pq
- * @property-read  ProductRates[] $pr
+ * @property-read  ProductImages[] $productImages
+ * @property-read  ProductQuestions[] $productQuestions
+ * @property-read  ProductRates[] $productRates
  * @property-read array $productSegments
  * @property-read array $productKeywords
+ * @property Variation[] $variations
  */
 class Product extends BaseModel
 {
@@ -42,6 +47,7 @@ class Product extends BaseModel
         'productPrice',
         'productSalePrice',
         'productSaleEndTime',
+        'productQuantity',
         'productKeywords',
         'productSegments',
         'packageDimensions',
@@ -130,13 +136,19 @@ class Product extends BaseModel
     public $productSaleEndTime;
 
     /**
-     * @var string
+     * @var int
+     * @Column(column='product_quantity', type='integer', nullable=false)
+     */
+    public $productQuantity = 0;
+
+    /**
+     * @var \DateTime
      * @Column(column='created_at', type='datetime')
      */
     public $createdAt;
 
     /**
-     * @var string
+     * @var \DateTime
      * @Column(column='updated_at', type='datetime', nullable=true)
      */
     public $updatedAt;
@@ -153,44 +165,10 @@ class Product extends BaseModel
      */
     public $isPublished = false;
 
-    /**
-     * @var array
-     * This value appended from Mongo Collection
-     */
-    private $productKeywords;
-
-    /**
-     * @var array
-     * This value appended from Mongo Collection
-     */
-    private $productSegments;
-
-    /**
-     * @var ProductImages[]
-     * This value appended from related tables
-     */
-    public $productImages = [];
-
-    /**
-     * @var array
-     * This value appended from related tables
-     */
-    public $productQuestions = [];
-
-    /**
-     * @var array
-     * This value appended from related tables
-     */
-    public $productRates = [];
-
-    /** @var array */
-    public $packageDimensions = [];
-
-    /** @var \app\common\collections\Product */
-    public $extraInfo;
+    /** @var Properties */
+    public $properties;
 
     private static $attachRelations = false;
-    private static $attachProperties = true;
     private static $editMode = false;
 
     /**
@@ -201,19 +179,14 @@ class Product extends BaseModel
     public $isDeleted;
 
     /**
-     * @var PhysicalProductRules
+     * @param bool $new
+     * @param bool $attachRelations
+     * @param bool $editMode
+     * @return mixed
      */
-    private $physicalProductRules;
-
-    /**
-     * @var DownloadableProductRules
-     */
-    private $downloadableProductRules;
-
-    public static function model(bool $new = false, bool $attachRelations = true, bool $editMode = false, bool $attachProperties = true)
+    public static function model(bool $new = false, bool $attachRelations = true, bool $editMode = false)
     {
         self::$attachRelations = $attachRelations;
-        self::$attachProperties = $attachProperties;
         self::$editMode = $editMode;
         return parent::model($new);
     }
@@ -230,48 +203,58 @@ class Product extends BaseModel
 
         $this->useDynamicUpdate(true);
 
-        if (self::$attachProperties) {
-            $this->hasOne(
-                'productId',
-                PhysicalProperties::class,
-                'productId',
-                [
-                    'alias' => 'pp'
-                ]
-            );
+        $this->hasOne(
+            'productId',
+            PhysicalProperties::class,
+            'productId',
+            [
+                'alias' => 'pp'
+            ]
+        );
 
-            $this->hasOne(
-                'productId',
-                DownloadableProperties::class,
-                'productId',
-                [
-                    'alias' => 'dp'
-                ]
-            );
-        }
+        $this->hasOne(
+            'productId',
+            DownloadableProperties::class,
+            'productId',
+            [
+                'alias' => 'dp'
+            ]
+        );
 
         if (self::$attachRelations) {
             $this->hasMany('productId', ProductImages::class, 'productId', [
-                'alias' => 'pi',
+                'alias' => 'productImages',
                 'params' => [
                     'conditions' => 'isDeleted = false'
                 ]
             ]);
 
             $this->hasMany('productId', ProductQuestions::class, 'productId', [
-                'alias' => 'pq',
+                'alias' => 'productQuestions',
                 'params' => [
                     'conditions' => 'isDeleted = false'
                 ]
             ]);
 
             $this->hasMany('productId', ProductRates::class, 'productId', [
-                'alias' => 'pr',
+                'alias' => 'productRates',
                 'params' => [
                     'conditions' => 'isDeleted = false'
                 ]
             ]);
         }
+
+        $this->hasMany(
+            'productId',
+            Variation::class,
+            'productId',
+            [
+                'alias' => 'variations',
+                'params' => [
+                    'conditions' => 'isDeleted = false'
+                ]
+            ]
+        );
     }
 
     /**
@@ -327,41 +310,121 @@ class Product extends BaseModel
      */
     public function afterFetch()
     {
-        if (self::$attachProperties) {
-            if ($this->productType == ProductTypesEnum::TYPE_PHYSICAL) {
-                $this->assign($this->pp->toApiArray(), null, PhysicalProperties::WHITE_LIST);
-            } else {
-                $this->assign($this->dp->toApiArray(), null, DownloadableProperties::WHITE_LIST);
-            }
+        if ($this->productType == ProductTypesEnum::TYPE_PHYSICAL) {
+            $this->assign(['pp' => $this->pp], null, PhysicalProperties::WHITE_LIST);
+        } else {
+            $this->assign(['dp' => $this->dp], null, DownloadableProperties::WHITE_LIST);
         }
 
-        if (self::$attachRelations) {
-            $images = $questions = $rates = [];
+        // Cast real data types
+        $this->productQuantity = (int) $this->productQuantity;
+        $this->isDeleted = (bool) $this->isDeleted;
+        $this->isPublished = (bool) $this->isPublished;
+        $this->productPrice = (float) $this->productPrice;
+        $this->productSalePrice = (float) $this->productSalePrice;
+        $this->createdAt = new \DateTime($this->createdAt);
+        $this->updatedAt = $this->updatedAt ? new \DateTime($this->updatedAt) : null;
+    }
 
-            $this->pi->filter(function ($image) use (&$images) {
-                /** @var ProductImages $image */
-                $images[] = $image->toApiArray();
-            });
+    public function beforeCreate()
+    {
+        $this->productId = $this->getDI()->getSecurity()->getRandom()->uuid();
+    }
 
-            $this->pq->filter(function ($question) use (&$questions) {
-                /** @var ProductQuestions $question */
-                $questions[] = $question->toApiArray();
-            });
-
-            $this->pr->filter(function ($rate) use (&$rates) {
-                /** @var ProductRates $rate */
-                $rates[] = $rate->toApiArray();
-            });
-
-            $this->productImages = $images;
-            $this->productQuestions = $questions;
-            $this->productRates = $rates;
-        }
+    public function beforeUpdate()
+    {
+        $this->createdAt = $this->createdAt->format(self::$dateFormat);
     }
 
     public function afterSave()
     {
         $this->afterFetch();
+    }
+
+    /**
+     * @param bool $assoc
+     * @return array
+     */
+    private function getImages(bool $assoc = false): array
+    {
+        return $this->productImages->filter(function ($image) use ($assoc) {
+            return $assoc ? $image->toApiArray() : $image;
+        });
+    }
+
+    /**
+     * @param bool $assoc
+     * @return array
+     */
+    private function getQuestions(bool $assoc = false): array
+    {
+        return $this->productQuestions->filter(function ($question) use ($assoc) {
+            return $assoc ? $question->toApiArray() : $question;
+        });
+    }
+
+    /**
+     * @param bool $assoc
+     * @return array
+     */
+    private function getRates(bool $assoc = false): array
+    {
+        return $this->productRates->filter(function ($rate) use ($assoc) {
+            return $assoc ? $rate->toApiArray() : $rate;
+        });
+    }
+
+    /**
+     * @param bool $assoc
+     * @return array
+     */
+    private function getVariations(bool $assoc = false): array
+    {
+        return $this->variations->filter(function ($variation) use ($assoc) {
+            return $assoc ? $variation->toApiArray() : $variation;
+        });
+    }
+
+    /**
+     * @param int $amount
+     * @param string $operation
+     * @return $this
+     * @throws OperationFailed
+     */
+    public function updateQuantity(int $amount, string $operation)
+    {
+        if ($operation == QuantityOperatorsEnum::OPERATOR_INCREMENT) {
+            $remaining = $this->productQuantity + $amount;
+        } elseif ($operation == QuantityOperatorsEnum::OPERATOR_DECREMENT) {
+            $remaining = $this->productQuantity - $amount;
+        } else {
+            throw new \InvalidArgumentException('unknown operation', 400);
+        }
+
+        if ($remaining < 0) {
+            throw new \InvalidArgumentException('amount is bigger than quantity', 400);
+        }
+
+        try {
+            $transaction = new TxManager($this->getDI());
+            $this->setTransaction($transaction->getOrCreateTransaction());
+            if (!$this->update(['productQuantity' => $remaining])) {
+                $transaction->rollback();
+                throw new OperationFailed($this->getMessages());
+            }
+            $transaction->commit();
+            return $this;
+        } catch (TxFailed $exception) {
+            throw new OperationFailed($exception->getMessage());
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasVariations(): bool
+    {
+        return count($this->variations) > 0;
     }
 
     /**
@@ -386,6 +449,7 @@ class Product extends BaseModel
             'product_price' => 'productPrice',
             'product_sale_price' => 'productSalePrice',
             'product_sale_end_time' => 'productSaleEndTime',
+            'product_quantity' => 'productQuantity',
             'created_at' => 'createdAt',
             'updated_at' => 'updatedAt',
             'deleted_at' => 'deletedAt',
@@ -410,36 +474,20 @@ class Product extends BaseModel
                 'productSaleEndTime' => $this->productSaleEndTime,
                 'productAlbumId' => $this->productAlbumId,
                 'productKeywords' => $this->productKeywords ?? null,
-                'productSegments' => $this->productSegments ?? null
+                'productSegments' => $this->productSegments ?? null,
+                'productQuantity' => $this->productQuantity
             ],
+            $this->hasVariations() ? ['productVariations' => $this->getVariations(true)] : [],
             (self::$attachRelations) ? [
-                'productImages' => $this->productImages,
-                'productQuestions' => $this->productQuestions,
-                'productRates' => $this->productRates
+                'productImages' => $this->getImages(true),
+                'productQuestions' => $this->getQuestions(true),
+                'productRates' => $this->getRates(true)
             ] : [],
-            $this->extraInfo ? $this->extraInfo->toApiArray() : [],
+            $this->properties ? $this->properties->toApiArray() : [],
             ['createdAt' => $this->createdAt],
             ($this->updatedAt) ? ['updatedAt' => $this->updatedAt] : [],
             self::$editMode ? ['isPublished' => (bool) $this->isPublished] : []
         );
-    }
-
-    /**
-     * @return PhysicalProductRules
-     */
-    private function getPhysicalProductRules(): PhysicalProductRules
-    {
-        return $this->physicalProductRules ??
-            $this->physicalProductRules = new PhysicalProductRules();
-    }
-
-    /**
-     * @return DownloadableProductRules
-     */
-    private function getDownloadableProductRules(): DownloadableProductRules
-    {
-        return $this->downloadableProductRules ??
-            $this->downloadableProductRules = new DownloadableProductRules();
     }
 
     /**

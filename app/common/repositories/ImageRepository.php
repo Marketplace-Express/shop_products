@@ -10,6 +10,7 @@ namespace app\common\repositories;
 
 use app\common\exceptions\OperationFailed;
 use app\common\exceptions\NotFound;
+use app\common\exceptions\OperationNotPermitted;
 use app\common\models\ProductImages;
 use app\common\models\ProductImagesSizes;
 
@@ -183,7 +184,7 @@ class ImageRepository
      * @param string $imageId
      * @param string $productId
      * @return ProductImages[]
-     * @throws OperationFailed
+     * @throws OperationNotPermitted
      */
     public function makeMainImage(string $imageId, string $productId): array
     {
@@ -193,7 +194,7 @@ class ImageRepository
         ]);
 
         if (!$productImages) {
-            throw new OperationFailed('This product has no images');
+            throw new OperationNotPermitted('This product has no images');
         }
 
         $result = [];

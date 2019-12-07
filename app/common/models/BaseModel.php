@@ -36,7 +36,8 @@ abstract class BaseModel extends Model
         // TODO: TO BE ENHANCED LATER
         $messages = [];
         $multiErrorFields = [];
-        foreach (parent::getMessages() as $message) {
+        $errorMessages = parent::getMessages() ?: [];
+        foreach ($errorMessages as $message) {
             if (is_string($message)) {
                 return [$message];
             }
@@ -44,7 +45,7 @@ abstract class BaseModel extends Model
         }
         $multiErrorFields = array_diff_assoc($multiErrorFields, array_unique($multiErrorFields));
 
-        foreach (parent::getMessages() as $message) {
+        foreach ($errorMessages as $message) {
             if (in_array($message->getField(), $multiErrorFields)) {
                 $messages[$message->getField()][] = $message->getMessage();
             } else {

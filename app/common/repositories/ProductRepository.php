@@ -7,6 +7,7 @@
 
 namespace app\common\repositories;
 
+use app\common\enums\QuantityOperatorsEnum;
 use app\common\models\sorting\SortProduct;
 use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
@@ -15,10 +16,12 @@ use app\common\enums\ProductTypesEnum;
 use app\common\exceptions\OperationFailed;
 use app\common\exceptions\NotFound;
 use app\common\interfaces\DataSourceInterface;
-use app\common\collections\Product as ProductCollection;
+use app\common\models\embedded\Properties;
 use app\common\models\DownloadableProperties;
 use app\common\models\PhysicalProperties;
 use app\common\models\Product;
+use Phalcon\Mvc\Model\Transaction\Manager as TxManager;
+use Phalcon\Mvc\Model\Transaction\Failed as TxFailed;
 
 class ProductRepository implements DataSourceInterface
 {
@@ -28,18 +31,18 @@ class ProductRepository implements DataSourceInterface
      * @param bool $editMode
      * @return Product
      */
-    public function getModel(bool $new = false, bool $attachRelations = false, bool $editMode = false, bool $attachProperties = true)
+    public function getModel(bool $new = false, bool $attachRelations = false, bool $editMode = false)
     {
-         return Product::model($new, $attachRelations, $editMode, $attachProperties);
+         return Product::model($new, $attachRelations, $editMode);
     }
 
     /**
      * @param bool $new
-     * @return ProductCollection
+     * @return Properties
      */
-    public function getCollection(bool $new = false): ProductCollection
+    public function getPropertiesCollection(bool $new = false): Properties
     {
-        return ProductCollection::model($new);
+        return Properties::model($new);
     }
 
     /**
@@ -84,38 +87,32 @@ class ProductRepository implements DataSourceInterface
      * Get product by id
      *
      * @param string $productId
-     * @param string $vendorId
      * @param bool $editMode
-     * @param bool|null $getExtraInfo
+     * @param bool $getProperties
      * @param bool $attachRelations
-     * @param bool $returnModel
-     * @param bool $attachProperties
      * @return Product
      *
      * @throws NotFound
+     * @throws \Exception
      */
     public function getById(
         string $productId,
-        string $vendorId,
         bool $editMode = false,
-        bool $getExtraInfo = true,
-        bool $attachRelations = false,
-        bool $returnModel = false,
-        bool $attachProperties = true
+        bool $getProperties = true,
+        bool $attachRelations = false
     )
     {
-        $conditions = 'productId = :productId: AND productVendorId = :vendorId:';
+        $conditions = 'productId = :productId:';
         if ($editMode) {
             $conditions .= ' AND isPublished IN (true, false)';
         } else {
             $conditions .= ' AND isPublished = true';
         }
 
-        $product = $this->getModel(false, $attachRelations, $editMode, $attachProperties)::findFirst([
+        $product = $this->getModel(false, $attachRelations, $editMode)::findFirst([
             'conditions' => $conditions,
             'bind' => [
-                'productId' => $productId,
-                'vendorId' => $vendorId
+                'productId' => $productId
             ]
         ]);
 
@@ -123,12 +120,12 @@ class ProductRepository implements DataSourceInterface
             throw new NotFound('product not found or maybe deleted');
         }
 
-        if ($getExtraInfo) {
-            $productExtraInfo = $this->getCollection()::findFirst([
+        if ($getProperties) {
+            $productProperties = $this->getPropertiesCollection()::findFirst([
                 ['product_id' => $productId]
             ]);
-            if (!empty($productExtraInfo)) {
-                $product->assign($productExtraInfo->toApiArray());
+            if (!empty($productProperties)) {
+                $product->assign(['properties' => $productProperties]);
             }
         }
 
@@ -146,7 +143,7 @@ class ProductRepository implements DataSourceInterface
      * @param bool $editMode
      * @param bool $attachRelations
      * @param bool $getExtraInfo
-     * @return array
+     * @return Product[]
      *
      * @throws \Exception
      */
@@ -195,7 +192,7 @@ class ProductRepository implements DataSourceInterface
 
         if ($result && $getExtraInfo) {
             $productsIds = array_column($products->toArray(), 'productId');
-            $productsExtraInfo = $this->getCollection()::find([
+            $productsExtraInfo = $this->getPropertiesCollection()::find([
                 'conditions' => [
                     'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
                 ]
@@ -270,13 +267,13 @@ class ProductRepository implements DataSourceInterface
         $productModel->assign($properties->toApiArray(), null, Product::getWhiteList());
 
         if (!empty($productCollectionData)) {
-            $productCollection = $this->getCollection(true);
-            $productCollection->setAttributes($productCollectionData);
-            if (!$productCollection->save()) {
-                throw new OperationFailed($productCollection->getMessages(), 400);
+            $propertiesCollection = $this->getPropertiesCollection(true);
+            $propertiesCollection->setAttributes($productCollectionData);
+            if (!$propertiesCollection->save()) {
+                throw new OperationFailed($propertiesCollection->getMessages(), 400);
             }
             unset($productCollectionData['product_id']);
-            $productModel->assign($productCollection->toApiArray(), null, Product::getWhiteList());
+            $productModel->assign($propertiesCollection->toApiArray(), null, Product::getWhiteList());
         }
         return $productModel->toApiArray();
     }
@@ -285,13 +282,12 @@ class ProductRepository implements DataSourceInterface
      * Update product
      *
      * @param string $productId
-     * @param string $vendorId
      * @param array $data
-     * @return array
-     * @throws OperationFailed
+     * @return Product
      * @throws NotFound
+     * @throws OperationFailed
      */
-    public function update(string $productId, string $vendorId, array $data): array
+    public function update(string $productId, array $data): Product
     {
         $attachProperties = false;
         if (count(array_intersect(
@@ -307,7 +303,7 @@ class ProductRepository implements DataSourceInterface
             $attachProperties = true;
         }
 
-        $product = $this->getById($productId, $vendorId, true, false, false, true, $attachProperties);
+        $product = $this->getById($productId, true, false, false);
 
         if ($attachProperties) {
             if ($product->productType == ProductTypesEnum::TYPE_PHYSICAL) {
@@ -323,25 +319,41 @@ class ProductRepository implements DataSourceInterface
         if (!$product->update($data, Product::getWhiteList())) {
             throw new OperationFailed($product->getMessages(), 400);
         }
-        return $product->toApiArray();
+        return $product;
     }
 
     /**
      * Delete product
      *
      * @param string $productId
-     * @param string $vendorId
-     * @return array
+     * @return Product
      * @throws NotFound
-     * @throws \Exception
+     * @throws OperationFailed
      */
-    public function delete(string $productId, string $vendorId)
+    public function delete(string $productId): Product
     {
-        $product = $this->getById($productId, $vendorId, true, false, false, true);
-        if (!$product || !$product->delete()) {
-            throw new \Exception('Product not found or maybe deleted', 404);
+        $product = $this->getById($productId, true, false, false);
+        if (!$product) {
+            throw new NotFound('Product not found or maybe deleted');
+        }
+        if (!$product->delete()) {
+            throw new OperationFailed($product->getMessages());
         }
 
-        return $product->toApiArray();
+        return $product;
+    }
+
+    /**
+     * @param string $productId
+     * @param int $amount
+     * @param string $operator
+     * @return Product
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateQuantity(string $productId, int $amount, string $operator = QuantityOperatorsEnum::OPERATOR_INCREMENT): Product
+    {
+        $product = $this->getById($productId);
+        return $product->updateQuantity($amount, $operator);
     }
 }

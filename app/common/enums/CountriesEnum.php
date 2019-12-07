@@ -8,7 +8,7 @@
 namespace app\common\enums;
 
 
-class CountriesEnum extends \SplEnum
+class CountriesEnum
 {
     private static $countries = array
     (

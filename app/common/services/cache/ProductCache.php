@@ -164,15 +164,11 @@ class ProductCache implements DataSourceInterface
      * Get product by id
      *
      * @param string $productId
-     * @param string|null $vendorId
-     * @param string|null $categoryId
      * @return array
      * @throws \Exception
      */
     public function getById(
-        string $productId,
-        string $vendorId,
-        string $categoryId = null
+        string $productId
     )
     {
         if (empty($vendorId) || empty($categoryId)) {

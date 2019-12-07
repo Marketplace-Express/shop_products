@@ -13,8 +13,6 @@ namespace app\common\models;
 class ProductRates extends BaseModel
 {
 
-    const MODEL_ALIAS = 'pr';
-
     /**
      * @var string
      * @Primary
@@ -74,11 +72,6 @@ class ProductRates extends BaseModel
      * @Column(column='is_deleted', type='boolean', default=0)
      */
     public $isDeleted;
-
-    public function onConstruct()
-    {
-        self::$instance = $this;
-    }
 
     /**
      * Initialize method for model.

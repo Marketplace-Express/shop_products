@@ -5,9 +5,10 @@
  * Time: 09:33 م
  */
 
-namespace app\common\collections;
+namespace app\common\models\embedded;
 
 
+use app\common\collections\BaseCollection;
 use app\common\models\embedded\physical\PackageDimensions;
 use Phalcon\Validation;
 use app\common\validators\SegmentsValidator;
@@ -18,7 +19,7 @@ use app\common\validators\UuidValidator;
  * Class Product
  * @package app\common\collections
  */
-class Product extends BaseCollection
+class Properties extends BaseCollection
 {
     /** @var string */
     public $product_id;
@@ -37,11 +38,17 @@ class Product extends BaseCollection
     /** @var bool */
     public $is_deleted = false;
 
-    public function getSource()
+    /**
+     * @return string
+     */
+    public function getSource(): string
     {
-        return 'product';
+        return 'properties';
     }
 
+    /**
+     * @param array $attributes
+     */
     public function setAttributes(array $attributes)
     {
         foreach ($attributes as $attribute => $value) {
@@ -51,7 +58,7 @@ class Product extends BaseCollection
 
     /**
      * @param array|null $parameters
-     * @return Variation[]
+     * @return Properties[]
      */
     public static function find(array $parameters = null)
     {
@@ -61,7 +68,7 @@ class Product extends BaseCollection
 
     /**
      * @param array|null $parameters
-     * @return Product|bool|array
+     * @return Properties|null
      */
     public static function findFirst(array $parameters = null)
     {
@@ -71,7 +78,7 @@ class Product extends BaseCollection
 
     /**
      * @param mixed $id
-     * @return array|Variation|bool
+     * @return Properties|bool
      */
     public static function findById($id)
     {

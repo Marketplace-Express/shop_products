@@ -7,11 +7,12 @@
 
 namespace app\modules\api\controllers;
 
-use Exception;
+
 use app\common\controllers\BaseController;
 use app\common\requestHandler\product\{AbstractCreateRequestHandler,
     DeleteRequestHandler,
     GetRequestHandler,
+    UpdateQuantityRequestHandler,
     UpdateRequestHandler};
 use app\common\requestHandler\ProductRequestResolver;
 use app\common\services\ProductsService;
@@ -58,14 +59,10 @@ class ProductsController extends BaseController
     public function getAction($id)
     {
         try {
-            /** @var GetRequestHandler $request */
-            $request = new GetRequestHandler($this);
-            $request->requireCategoryId = true;
-            $request = $this->getJsonMapper()->map($this->request->getQuery(), $request);
-            if (!$request->isValid()) {
-                $request->invalidRequest();
-            }
-            $request->successRequest($this->getService()->getProduct($request->vendorId, $request->categoryId, $id));
+            $this->response->setJsonContent([
+                'status' => 200,
+                'message' => $this->getService()->getProduct($id)
+            ]);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
@@ -142,16 +139,12 @@ class ProductsController extends BaseController
     public function updateAction($id)
     {
         try {
-            $vendorId = $this->request->getQuery('vendorId');
-            if (!isset($vendorId) || !$this->getUuidUtil()->isValid($vendorId)) {
-                throw new Exception('Invalid vendor id', 400);
-            }
             /** @var UpdateRequestHandler $request */
             $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new UpdateRequestHandler($this));
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->getService()->update($id, $request->toArray(), $vendorId));
+            $request->successRequest($this->getService()->update($id, $request->toArray()));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
         }
@@ -173,10 +166,30 @@ class ProductsController extends BaseController
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->getService()->delete($id, $request->vendorId);
+            $this->getService()->delete($id);
             $request->successRequest('Deleted');
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
+        }
+    }
+
+    /**
+     * @Put('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/quantity')
+     * @AuthMiddleware('app\common\events\middleware\RequestMiddlewareEvent')
+     * @param $id
+     */
+    public function updateQuantityAction($id)
+    {
+        try {
+            /** @var UpdateQuantityRequestHandler $request */
+            $request = $this->getJsonMapper()->map($this->request->getJsonRawBody(), new UpdateQuantityRequestHandler($this));
+            if (!$request->isValid()) {
+                $request->invalidRequest();
+            }
+            $request->successRequest($this->getService()->updateQuantity($id, $request->toArray()));
+
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
         }
     }
 }
