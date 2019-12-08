@@ -225,7 +225,7 @@ class Product extends BaseModel
             $this->hasMany('productId', ProductImages::class, 'productId', [
                 'alias' => 'productImages',
                 'params' => [
-                    'conditions' => 'isDeleted = false'
+                    'conditions' => 'isDeleted = false AND isVariationImage = false'
                 ]
             ]);
 
@@ -405,8 +405,8 @@ class Product extends BaseModel
             throw new \InvalidArgumentException('amount is bigger than quantity', 400);
         }
 
+        $transaction = new TxManager($this->getDI());
         try {
-            $transaction = new TxManager($this->getDI());
             $this->setTransaction($transaction->getOrCreateTransaction());
             if (!$this->update(['productQuantity' => $remaining])) {
                 $transaction->rollback();
@@ -415,6 +415,7 @@ class Product extends BaseModel
             $transaction->commit();
             return $this;
         } catch (TxFailed $exception) {
+            $transaction->rollback();
             throw new OperationFailed($exception->getMessage());
         }
     }
@@ -583,6 +584,16 @@ class Product extends BaseModel
             ])
         );
 
+        $validation->add(
+            'productQuantity',
+            new Validation\Validator\NumericValidator([
+                'min' => 1,
+                'allowFloat' => false,
+                'allowSign' => false,
+                'allowEmpty' => false
+            ])
+        );
+
         $this->_errorMessages = $validation->validate([
             'productCategoryId' => $this->productCategoryId,
             'productVendorId' => $this->productVendorId,
@@ -592,7 +603,8 @@ class Product extends BaseModel
             'productPrice' => $this->productPrice,
             'productSalePrice' => $this->productSalePrice,
             'productSaleEndTime' => $this->productSaleEndTime,
-            'productType' => $this->productType
+            'productType' => $this->productType,
+            'productQuantity' => $this->productQuantity
         ]);
 
         return !$this->_errorMessages->count();

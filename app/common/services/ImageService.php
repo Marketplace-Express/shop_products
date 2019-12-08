@@ -16,7 +16,6 @@ use Phalcon\Di;
 use Phalcon\Http\Request\File;
 use app\common\repositories\ImageRepository;
 use app\common\repositories\ProductRepository;
-use app\common\services\cache\ProductCache;
 use app\common\utils\ImgurUtil;
 use app\common\exceptions\OperationFailed;
 use app\common\exceptions\NotFound;
@@ -36,12 +35,13 @@ class ImageService
      * @param File $image
      * @param string $albumId
      * @param string $productId
+     * @param bool $isVariationImage
      * @return array
      * @throws NotFound
      * @throws OperationFailed
      * @throws \Exception
      */
-    public function upload(File $image, string $albumId, string $productId)
+    public function upload(File $image, string $albumId, string $productId, bool $isVariationImage)
     {
         $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
             'productCategoryId', 'productVendorId', 'productAlbumId'
@@ -77,7 +77,8 @@ class ImageService
                 $uploaded->getSize(),
                 $uploaded->getDeleteHash(),
                 $uploaded->getName(),
-                $uploaded->getLink()
+                $uploaded->getLink(),
+                $isVariationImage
             );
 
             $this->getRepository()->saveSizes($image, $image->imageLink);

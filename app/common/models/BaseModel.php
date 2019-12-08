@@ -16,7 +16,11 @@ abstract class BaseModel extends Model
 
     protected static $instance;
 
-    public $exposedFields = [];
+    /**
+     * @var int
+     * Override default _operationMode
+     */
+    protected $operationMode;
 
     /**
      * @param bool $new

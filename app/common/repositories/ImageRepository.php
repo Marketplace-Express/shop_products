@@ -14,26 +14,18 @@ use app\common\exceptions\OperationNotPermitted;
 use app\common\models\ProductImages;
 use app\common\models\ProductImagesSizes;
 
-class ImageRepository
+class ImageRepository extends BaseRepository
 {
     /** @var ProductImages */
     private $model;
 
     /**
      * @param bool $new
-     * @return \app\common\models\BaseModel|ProductImages
+     * @return ProductImages
      */
-    public function getModel(bool $new = false)
+    public function getModel(bool $new = false): ProductImages
     {
-        return $this->model ?? $this->model = ProductImages::model($new);
-    }
-
-    /**
-     * @return ImageRepository
-     */
-    static public function getInstance(): ImageRepository
-    {
-        return new self;
+        return ProductImages::model($new);
     }
 
     /**
@@ -47,6 +39,7 @@ class ImageRepository
      * @param string $deleteHash
      * @param string $name
      * @param string $link
+     * @param bool $isVariationImage
      * @return ProductImages
      * @throws OperationFailed
      */
@@ -60,7 +53,8 @@ class ImageRepository
         string $size,
         string $deleteHash,
         string $name,
-        string $link
+        string $link,
+        bool $isVariationImage
     )
     {
         $model = $this->getModel(true);
@@ -74,7 +68,8 @@ class ImageRepository
             'imageHeight' => $height,
             'imageSize' => $size,
             'imageDeleteHash' => $deleteHash,
-            'imageName' => $name
+            'imageName' => $name,
+            'isVariationImage' => $isVariationImage
         ];
         if (!$model->save($data)) {
             throw new OperationFailed($model->getMessages(), 500);
@@ -233,5 +228,24 @@ class ImageRepository
         }
 
         return $image->toApiArray();
+    }
+
+    /**
+     * @param string $imageId
+     * @return ProductImages
+     * @throws NotFound
+     */
+    public function get(string $imageId): ProductImages
+    {
+        $image = $this->getModel(true)::findFirst([
+            'conditions' => 'imageId = :imageId:',
+            'bind' => ['imageId' => $imageId]
+        ]);
+
+        if (!$image) {
+            throw new NotFound('image not found');
+        }
+
+        return $image;
     }
 }

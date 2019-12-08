@@ -12,7 +12,7 @@ use app\common\exceptions\NotFound;
 use app\common\exceptions\OperationFailed;
 use app\common\models\ProductQuestions;
 
-class QuestionRepository
+class QuestionRepository extends BaseRepository
 {
     /**
      * @return ProductQuestions
@@ -20,14 +20,6 @@ class QuestionRepository
     public function getModel(): ProductQuestions
     {
         return new ProductQuestions();
-    }
-
-    /**
-     * @return QuestionRepository
-     */
-    static public function getInstance(): QuestionRepository
-    {
-        return new self;
     }
 
     /**

@@ -8,9 +8,11 @@
 namespace app\common\services;
 
 
-use app\common\repositories\{
-    ProductRepository, ImageRepository, QuestionRepository, RateRepository
-};
+use app\common\repositories\{ProductRepository,
+    ImageRepository,
+    QuestionRepository,
+    RateRepository,
+    VariationRepository};
 use app\common\services\cache\{
     ProductCache, ImagesCache, QuestionsCache
 };
@@ -277,5 +279,39 @@ class ProductsService
         $amount = $data['amount'];
         $operator = $data['operator'];
         return ProductRepository::getInstance()->updateQuantity($entityId, $amount, $operator)->toApiArray();
+    }
+
+    /**
+     * @param string $productId
+     * @param array $data
+     * @return array
+     * @throws OperationFailed
+     * @throws NotFound
+     */
+    public function createVariation(string $productId, array $data): array
+    {
+        $userId = array_key_exists('userId', $data) ? $data['userId'] : null;
+        $imageId = array_key_exists('imageId', $data) ? $data['imageId'] : null;
+        $attributes = array_key_exists('attributes', $data) ? $data['attributes'] : [];
+        $quantity = array_key_exists('quantity', $data) ? $data['quantity'] : 0;
+        $price = array_key_exists('price', $data) ? $data['price'] : 0;
+        $salePrice = array_key_exists('salePrice', $data) ? $data['salePrice'] : 0;
+
+        if ($imageId) {
+            // Throw NotFound exception if image does not exist
+            ImageRepository::getInstance()->get($imageId);
+        }
+        return VariationRepository::getInstance()->create($productId, $userId, $imageId, $quantity, $price, $salePrice, $attributes)->toApiArray();
+    }
+
+    /**
+     * @param string $variationId
+     * @return bool
+     * @throws OperationFailed
+     * @throws NotFound
+     */
+    public function deleteVariation(string $variationId)
+    {
+        return VariationRepository::getInstance()->deleteVariation($variationId);
     }
 }

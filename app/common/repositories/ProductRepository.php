@@ -20,10 +20,8 @@ use app\common\models\embedded\Properties;
 use app\common\models\DownloadableProperties;
 use app\common\models\PhysicalProperties;
 use app\common\models\Product;
-use Phalcon\Mvc\Model\Transaction\Manager as TxManager;
-use Phalcon\Mvc\Model\Transaction\Failed as TxFailed;
 
-class ProductRepository implements DataSourceInterface
+class ProductRepository extends BaseRepository implements DataSourceInterface
 {
     /**
      * @param bool $new
@@ -46,24 +44,21 @@ class ProductRepository implements DataSourceInterface
     }
 
     /**
-     * @return ProductRepository
-     */
-    public static function getInstance()
-    {
-        return new self;
-    }
-
-    /**
      * @param string $productId
      * @param array $columns
      * @param bool $editMode
      * @return array
      * @throws NotFound
+     * @throws \InvalidArgumentException
      */
     public function getColumnsForProduct(string $productId, array $columns, bool $editMode = false)
     {
         if (empty($columns)) {
-            $columns = Product::MODEL_ALIAS.'.*';
+            throw new \InvalidArgumentException('please provide columns to select', 400);
+        }
+
+        if (array_diff($columns, $this->getModel()->columnMap())) {
+            throw new \InvalidArgumentException('invalid provided columns', 400);
         }
 
         /** @var array $product */

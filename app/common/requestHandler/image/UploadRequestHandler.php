@@ -10,6 +10,7 @@ namespace app\common\requestHandler\image;
 
 use app\common\requestHandler\RequestAbstract;
 use app\common\validators\rules\ImagesRules;
+use app\common\validators\TypeValidator;
 use Phalcon\Http\Request\File;
 use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
@@ -19,14 +20,17 @@ use app\common\validators\UuidValidator;
 
 class UploadRequestHandler extends RequestAbstract
 {
-    /** @var File $image */
+    /** @var File */
     public $image;
 
-    /** @var string $albumId */
+    /** @var string */
     public $albumId;
 
-    /** @var string $productId */
+    /** @var string */
     public $productId;
+
+    /** @var bool */
+    public $isVariationImage = false;
 
     /**
      * @var ImagesRules
@@ -75,6 +79,13 @@ class UploadRequestHandler extends RequestAbstract
             ])
         );
 
+        $validator->add(
+            'isVariationImage',
+            new TypeValidator([
+                'type' => TypeValidator::TYPE_BOOLEAN
+            ])
+        );
+
         return $validator->validate([
             'image' => [
                 'name' => $this->image->getName(),
@@ -84,7 +95,8 @@ class UploadRequestHandler extends RequestAbstract
                 'size' => $this->image->getSize()
             ],
             'albumId' => $this->albumId,
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'isVariationImage' => $this->isVariationImage
         ]);
     }
 
@@ -108,7 +120,8 @@ class UploadRequestHandler extends RequestAbstract
         return [
             'image' => $this->image,
             'albumId' => $this->albumId,
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'isVariationImage' => $this->isVariationImage
         ];
     }
 }

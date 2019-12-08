@@ -11,7 +11,7 @@ namespace app\common\repositories;
 use app\common\models\ProductRates;
 use app\common\models\RateImages;
 
-class RateRepository
+class RateRepository extends BaseRepository
 {
     /**
      * @return ProductRates
@@ -19,14 +19,6 @@ class RateRepository
     public function getModel(): ProductRates
     {
         return new ProductRates();
-    }
-
-    /**
-     * @return RateRepository
-     */
-    static public function getInstance(): RateRepository
-    {
-        return new self;
     }
 
     /**
