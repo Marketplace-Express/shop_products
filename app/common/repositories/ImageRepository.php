@@ -232,13 +232,20 @@ class ImageRepository extends BaseRepository
 
     /**
      * @param string $imageId
+     * @param bool $isVariation
      * @return ProductImages
      * @throws NotFound
      */
-    public function get(string $imageId): ProductImages
+    public function get(string $imageId, bool $isVariation = false): ProductImages
     {
+        $conditions = 'imageId = :imageId:';
+
+        if ($isVariation) {
+            $conditions .= ' AND isVariationImage = true';
+        }
+
         $image = $this->getModel(true)::findFirst([
-            'conditions' => 'imageId = :imageId:',
+            'conditions' => $conditions,
             'bind' => ['imageId' => $imageId]
         ]);
 

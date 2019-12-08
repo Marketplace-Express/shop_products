@@ -299,7 +299,7 @@ class ProductsService
 
         if ($imageId) {
             // Throw NotFound exception if image does not exist
-            ImageRepository::getInstance()->get($imageId);
+            ImageRepository::getInstance()->get($imageId, true);
         }
         return VariationRepository::getInstance()->create($productId, $userId, $imageId, $quantity, $price, $salePrice, $attributes)->toApiArray();
     }
