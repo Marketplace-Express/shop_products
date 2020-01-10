@@ -10,8 +10,10 @@ namespace app\common\repositories;
 
 abstract class BaseRepository
 {
-    static public function getInstance()
+    private static $repository;
+
+    static public function getInstance(): self
     {
-        return new static();
+        return self::$repository ?? self::$repository = new static();
     }
 }

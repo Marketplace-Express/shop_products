@@ -10,7 +10,7 @@ namespace app\common\models;
 use Phalcon\Mvc\Model;
 use app\common\traits\ModelCollectionBehaviorTrait;
 
-abstract class BaseModel extends Model
+abstract class BaseModel extends Model implements \ArrayAccess
 {
     use ModelCollectionBehaviorTrait;
 
@@ -88,6 +88,47 @@ abstract class BaseModel extends Model
             $this->writeAttribute($attribute, $value);
         }
         return $this;
+    }
+
+    /**
+     * @param mixed $offset
+     * @return bool
+     */
+    public function offsetExists($offset): bool
+    {
+        return property_exists($this, $offset);
+    }
+
+    /**
+     * @param mixed $offset
+     * @return mixed
+     */
+    public function offsetGet($offset)
+    {
+        if ($this->offsetExists($offset)) {
+            return $this->$offset;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->$offset = $value;
+    }
+
+    /**
+     * @param mixed $offset
+     */
+    public function offsetUnset($offset)
+    {
+        if ($this->offsetExists($offset)) {
+            unset($this->$offset);
+        }
     }
 
     abstract public function toApiArray(): array;

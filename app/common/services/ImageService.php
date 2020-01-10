@@ -22,15 +22,6 @@ use app\common\exceptions\NotFound;
 
 class ImageService
 {
-    /** @var ImageRepository */
-    private $imageRepository;
-
-    public function getRepository(): ImageRepository
-    {
-        return $this->imageRepository ??
-            $this->imageRepository = new ImageRepository();
-    }
-
     /**
      * @param File $image
      * @param string $albumId
@@ -67,7 +58,7 @@ class ImageService
 
         $data = [];
         if (!empty($uploaded)) {
-            $image = $this->getRepository()->create(
+            $image = ImageRepository::getInstance()->create(
                 $productId,
                 $uploaded->getImageId(),
                 $albumId,
@@ -81,7 +72,7 @@ class ImageService
                 $isVariationImage
             );
 
-            $this->getRepository()->saveSizes($image, $image->imageLink);
+            ImageRepository::getInstance()->saveSizes($image, $image->imageLink);
 
             $data = $image->toApiArray();
 
@@ -107,7 +98,7 @@ class ImageService
         if ($accessLevel < 1) {
             throw new OperationNotPermitted('Not allowed action');
         }
-        if ($this->getRepository()->delete($imageId, $albumId, $productId)) {
+        if (ImageRepository::getInstance()->delete($imageId, $albumId, $productId)) {
             ImagesCache::getInstance()->invalidate($productId, $imageId);
         }
     }
@@ -116,11 +107,11 @@ class ImageService
      * @param string $imageId
      * @param string $productId
      * @return void
-     * @throws OperationFailed
+     * @throws OperationNotPermitted
      */
     public function makeMainImage(string $imageId, string $productId)
     {
-        $images = $this->getRepository()->makeMainImage($imageId, $productId);
+        $images = ImageRepository::getInstance()->makeMainImage($imageId, $productId);
         ImagesCache::getInstance()->invalidateProductImages($productId);
         ImagesCache::getInstance()->bulkProductSet($productId, $images);
     }
@@ -134,7 +125,7 @@ class ImageService
      */
     public function updateOrder(string $productId, string $imageId, int $order = 0)
     {
-        $image = $this->getRepository()->updateOrder($imageId, $order);
+        $image = ImageRepository::getInstance()->updateOrder($imageId, $order);
         ImagesCache::getInstance()->set($productId, $image);
     }
 }

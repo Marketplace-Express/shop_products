@@ -114,6 +114,12 @@ class ProductImages extends BaseModel
     public $isVariationImage = false;
 
     /**
+     * @var bool
+     * @Column(column='is_used', type='boolean', default=false)
+     */
+    public $isUsed = false;
+
+    /**
      *
      * @var integer
      * @Column(column='is_deleted', type='boolean', default=0)
@@ -238,6 +244,7 @@ class ProductImages extends BaseModel
             'deleted_at' => 'deletedAt',
             'is_main' => 'isMain',
             'is_variation_image' => 'isVariationImage',
+            'is_used' => 'isUsed',
             'is_deleted' => 'isDeleted'
         ];
     }

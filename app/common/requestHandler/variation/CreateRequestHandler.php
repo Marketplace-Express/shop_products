@@ -72,8 +72,15 @@ class CreateRequestHandler extends RequestAbstract
         $validator->add(
             'price',
             new Validation\Validator\NumericValidator([
+                'min' => 0
+            ])
+        );
+
+        $validator->add(
+            'salePrice',
+            new Validation\Validator\NumericValidator([
                 'min' => 0,
-                'allowEmpty' => false
+                'allowEmpty' => true
             ])
         );
 

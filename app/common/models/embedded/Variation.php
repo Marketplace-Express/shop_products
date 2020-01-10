@@ -280,10 +280,27 @@ class Variation extends BaseModel
             ])
         );
 
+        $validation->add(
+            'price',
+            new Validation\Validator\NumericValidator([
+                'min' => 1
+            ])
+        );
+
+        $validation->add(
+            'salePrice',
+            new Validation\Validator\NumericValidator([
+                'min' => 0,
+                'allowEmpty' => true
+            ])
+        );
+
         $this->_errorMessages = $validation->validate([
             'productId' => $this->productId,
             'userId' => $this->userId,
-            'quantity' => $this->quantity
+            'quantity' => $this->quantity,
+            'price' => $this->price,
+            'salePrice' => $this->salePrice
         ]);
 
         return !count($this->_errorMessages);

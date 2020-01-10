@@ -37,8 +37,7 @@ class ProductsService
      */
     public function getQueueRequestHandler($requestType = QueueRequestHandler::REQUEST_TYPE_SYNC): QueueRequestHandler
     {
-        return $this->queueRequestHandler ??
-            $this->queueRequestHandler = new QueueRequestHandler($requestType);
+        return new QueueRequestHandler($requestType);
     }
 
     /**
@@ -64,7 +63,7 @@ class ProductsService
             ])
             ->sendSync();
 
-        if (empty($exists)) {
+        if (empty($exists) || false === $exists) {
             throw new NotFound('Category not found or maybe deleted');
         }
     }
@@ -116,7 +115,6 @@ class ProductsService
     public function getProduct(string $productId): array
     {
         $product = ProductRepository::getInstance()->getById($productId, false, true, true)->toApiArray();
-//        $this->unsetSensitiveData($product);
         return $product;
     }
 
@@ -132,21 +130,28 @@ class ProductsService
     public function create(array $data)
     {
         $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
+
         if (!empty($album = $this->createAlbum($data['productId']))) {
             $data['productAlbumId'] = $album['albumId'];
             $data['productAlbumDeleteHash'] = $album['deleteHash'];
         }
+
+        // Create product
         $product = ProductRepository::getInstance()->create($data);
+
+        // TODO: Mark product images as used
+
+        $productAsArray = $product->toApiArray();
         try {
             if ($product['isPublished']) {
-                ProductCache::getInstance()->setInCache($product['productVendorId'], $product['productCategoryId'], $product);
-                ProductCache::indexProduct($product);
+                ProductCache::getInstance()->setInCache($product['productVendorId'], $product['productCategoryId'], $productAsArray);
+                ProductCache::indexProduct($productAsArray);
             }
         } catch (\RedisException $exception) {
             // do nothing
         }
 
-        return $product;
+        return $productAsArray;
     }
 
     /**
@@ -181,7 +186,6 @@ class ProductsService
      * Delete product
      *
      * @param string $productId
-     * @param string $vendorId
      * @return bool
      *
      * @throws OperationFailed
@@ -252,20 +256,6 @@ class ProductsService
     }
 
     /**
-     * @param array $product
-     * @return array
-     */
-    private function unsetSensitiveData(array $product)
-    {
-        unset(
-            $product['productUserId'],
-            $product['productAlbumDeleteHash'],
-            $product['isPublished']
-        );
-//        return $product;
-    }
-
-    /**
      * Update entity quantity. It could be product or variation
      *
      * @param string $entityId
@@ -290,18 +280,30 @@ class ProductsService
      */
     public function createVariation(string $productId, array $data): array
     {
-        $userId = array_key_exists('userId', $data) ? $data['userId'] : null;
+        if (empty($data['userId']) || empty($data['quantity']) || empty($data['price'])) {
+            throw new \InvalidArgumentException('variation has invalid input', 400);
+        }
+
+        $userId = $data['userId'];
+        $quantity = $data['quantity'];
+        $price = $data['price'];
         $imageId = array_key_exists('imageId', $data) ? $data['imageId'] : null;
         $attributes = array_key_exists('attributes', $data) ? $data['attributes'] : [];
-        $quantity = array_key_exists('quantity', $data) ? $data['quantity'] : 0;
-        $price = array_key_exists('price', $data) ? $data['price'] : 0;
         $salePrice = array_key_exists('salePrice', $data) ? $data['salePrice'] : 0;
 
         if ($imageId) {
             // Throw NotFound exception if image does not exist
-            ImageRepository::getInstance()->get($imageId, true);
+            ImageRepository::getInstance()->getUnused($imageId, true);
         }
-        return VariationRepository::getInstance()->create($productId, $userId, $imageId, $quantity, $price, $salePrice, $attributes)->toApiArray();
+
+        $variation = VariationRepository::getInstance()
+            ->create($productId, $userId, $imageId, $quantity, $price, $salePrice, $attributes)
+            ->toApiArray();
+
+        // Mark image as used
+        ImageRepository::getInstance()->markAsUsed([$imageId]);
+
+        return $variation;
     }
 
     /**

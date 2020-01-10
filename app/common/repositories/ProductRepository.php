@@ -230,13 +230,13 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      * Create new product
      *
      * @param array $data
-     * @return array
+     * @return Product
      *
-     * @throws OperationFailed
      * @throws Exception
+     * @throws OperationFailed
      * @throws \Exception
      */
-    public function create(array $data): array
+    public function create(array $data): Product
     {
         $productCollectionData = $this->getProductCollectionData($data);
         $productModel = $this->getModel(true, true, true);
@@ -270,7 +270,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             unset($productCollectionData['product_id']);
             $productModel->assign($propertiesCollection->toApiArray(), null, Product::getWhiteList());
         }
-        return $productModel->toApiArray();
+        return $productModel;
     }
 
     /**

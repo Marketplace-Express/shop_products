@@ -13,6 +13,7 @@ use app\common\exceptions\NotFound;
 use app\common\exceptions\OperationNotPermitted;
 use app\common\models\ProductImages;
 use app\common\models\ProductImagesSizes;
+use Phalcon\Mvc\Model\Resultset;
 
 class ImageRepository extends BaseRepository
 {
@@ -235,24 +236,51 @@ class ImageRepository extends BaseRepository
      * @param bool $isVariation
      * @return ProductImages
      * @throws NotFound
+     * @throws \Exception
      */
-    public function get(string $imageId, bool $isVariation = false): ProductImages
+    public function getUnused(string $imageId, bool $isVariation = false): ProductImages
     {
-        $conditions = 'imageId = :imageId:';
+        $query = $this->getModel()::query()
+            ->andWhere('imageId = :imageId:', ['imageId' => $imageId])
+            ->andWhere('isDeleted  = false');
 
         if ($isVariation) {
-            $conditions .= ' AND isVariationImage = true';
+            $query->andWhere('isVariationImage = true');
         }
 
-        $image = $this->getModel(true)::findFirst([
-            'conditions' => $conditions,
-            'bind' => ['imageId' => $imageId]
-        ]);
+        /** @var ProductImages $image */
+        $image = $query->execute()->getFirst();
 
         if (!$image) {
             throw new NotFound('image not found');
         }
 
+        if ($image->isUsed) {
+            throw new \Exception('image is already used', 403);
+        }
+
         return $image;
+    }
+
+    /**
+     * @param array $imagesIds
+     * @return bool
+     * @throws OperationFailed
+     */
+    public function markAsUsed(array $imagesIds): bool
+    {
+        /** @var ProductImages[] $images */
+        $images = $this->getModel(true)::find([
+            'conditions' => 'imageId IN ({imagesIds:array})',
+            'bind' => ['imagesIds' => $imagesIds]
+        ]);
+
+        foreach ($images as $image) {
+            if (!$image->update(['isUsed' => true])) {
+                throw new OperationFailed($image->getMessages());
+            }
+        }
+
+        return true;
     }
 }
