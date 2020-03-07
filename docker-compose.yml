@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  shop-products:
+    container_name: 'shop-products'
+    build: .
+    image: 'shop/products'
+    volumes:
+      - .:/var/www/html
+      - ./app/config/products.yml:/etc/shop/products.yml

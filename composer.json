@@ -1,4 +1,8 @@
 {
+  "config": {
+    "vendor-dir": "app/common/library/vendor",
+    "bin-dir": "app/common/library/vendor/bin"
+  },
   "require": {
     "ext-phalcon": "^3.4",
     "ext-intl": "*",
@@ -6,6 +10,7 @@
     "ext-json": "*",
     "ext-redis": "*",
     "ext-mongodb": "*",
+    "ext-yaml": "*",
     "netresearch/jsonmapper": "^1.4",
     "ramsey/uuid": "^3.8",
     "phalcon/incubator": "^3.4",

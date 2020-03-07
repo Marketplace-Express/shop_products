@@ -1,10 +1,6 @@
-# logs
-app/logs
-
-# .idea PHPSTORM
-.idea
-
-# phalcon auto generated folder
-.phalcon
-
+# Exclude files
 composer.phar
+
+# Exlude directories
+.idea/
+.phalcon/
