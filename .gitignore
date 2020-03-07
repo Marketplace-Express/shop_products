@@ -6,3 +6,5 @@ app/logs
 
 # phalcon auto generated folder
 .phalcon
+
+composer.phar
