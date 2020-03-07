@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class ProductRatesMigration_100
@@ -22,7 +22,7 @@ class ProductRatesMigration_100 extends Migration
                     new Column(
                         'rate_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'first' => true
@@ -31,7 +31,7 @@ class ProductRatesMigration_100 extends Migration
                     new Column(
                         'rate_user_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'rate_id'
@@ -40,7 +40,7 @@ class ProductRatesMigration_100 extends Migration
                     new Column(
                         'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'rate_user_id'
@@ -50,7 +50,6 @@ class ProductRatesMigration_100 extends Migration
                         'rate_text',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'product_id'
                         ]
                     ),
@@ -70,7 +69,6 @@ class ProductRatesMigration_100 extends Migration
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'rate_stars'
                         ]
                     ),
@@ -78,7 +76,6 @@ class ProductRatesMigration_100 extends Migration
                         'updated_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'created_at'
                         ]
                     ),
@@ -86,14 +83,13 @@ class ProductRatesMigration_100 extends Migration
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'updated_at'
                         ]
                     ),
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_INTEGER,
+                            'type' => Column::TYPE_TINYINTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
@@ -104,8 +100,8 @@ class ProductRatesMigration_100 extends Migration
                 'indexes' => [
                     new Index('PRIMARY', ['rate_id'], 'PRIMARY'),
                     new Index('product_rated_rate_id_uindex', ['rate_id'], 'UNIQUE'),
-                    new Index('product_rated_product_product_id_fk', ['product_id'], null),
-                    new Index('product_rates_index', ['is_deleted', 'product_id'], null)
+                    new Index('product_rated_product_product_id_fk', ['product_id']),
+                    new Index('product_rates_index', ['is_deleted', 'product_id'])
                 ],
                 'references' => [
                     new Reference(

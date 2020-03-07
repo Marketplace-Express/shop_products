@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class ProductImagesSizesMigration_100
@@ -32,7 +32,7 @@ class ProductImagesSizesMigration_100 extends Migration
                     new Column(
                         'image_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 10,
                             'after' => 'row_id'
@@ -42,7 +42,6 @@ class ProductImagesSizesMigration_100 extends Migration
                         'small',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'image_id'
                         ]
                     ),
@@ -50,7 +49,6 @@ class ProductImagesSizesMigration_100 extends Migration
                         'big',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'small'
                         ]
                     ),
@@ -58,7 +56,6 @@ class ProductImagesSizesMigration_100 extends Migration
                         'thumb',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'big'
                         ]
                     ),
@@ -66,7 +63,6 @@ class ProductImagesSizesMigration_100 extends Migration
                         'medium',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'thumb'
                         ]
                     ),
@@ -74,7 +70,6 @@ class ProductImagesSizesMigration_100 extends Migration
                         'large',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'medium'
                         ]
                     ),
@@ -82,7 +77,6 @@ class ProductImagesSizesMigration_100 extends Migration
                         'huge',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'large'
                         ]
                     ),
@@ -90,14 +84,13 @@ class ProductImagesSizesMigration_100 extends Migration
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'huge'
                         ]
                     ),
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_INTEGER,
+                            'type' => Column::TYPE_TINYINTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
@@ -107,7 +100,7 @@ class ProductImagesSizesMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['row_id'], 'PRIMARY'),
-                    new Index('product_images_sizes_product_images_image_id_fk', ['image_id'], null)
+                    new Index('product_images_sizes_product_images_image_id_fk', ['image_id'])
                 ],
                 'references' => [
                     new Reference(

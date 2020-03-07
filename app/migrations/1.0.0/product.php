@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class ProductMigration_100
@@ -22,7 +22,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'first' => true
@@ -31,7 +31,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'product_category_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'product_id'
@@ -40,7 +40,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'product_vendor_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'product_category_id'
@@ -49,7 +49,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'product_user_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'product_vendor_id'
@@ -75,10 +75,10 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'product_type',
                         [
-                            'type' => Column::TYPE_CHAR,
+                            'type' => Column::TYPE_VARCHAR,
                             'default' => "physical",
                             'notNull' => true,
-                            'size' => 1,
+                            'size' => 12,
                             'after' => 'product_link_slug'
                         ]
                     ),
@@ -136,13 +136,22 @@ class ProductMigration_100 extends Migration
                         ]
                     ),
                     new Column(
+                        'product_quantity',
+                        [
+                            'type' => Column::TYPE_INTEGER,
+                            'notNull' => true,
+                            'size' => 11,
+                            'after' => 'product_sale_end_time'
+                        ]
+                    ),
+                    new Column(
                         'created_at',
                         [
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'product_sale_end_time'
+                            'after' => 'product_quantity'
                         ]
                     ),
                     new Column(
@@ -164,7 +173,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_INTEGER,
+                            'type' => Column::TYPE_TINYINTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
@@ -174,7 +183,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'is_published',
                         [
-                            'type' => Column::TYPE_INTEGER,
+                            'type' => Column::TYPE_TINYINTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
@@ -184,7 +193,7 @@ class ProductMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['product_id'], 'PRIMARY'),
-                    new Index('product_listing_index', ['product_category_id', 'product_vendor_id', 'is_published', 'is_deleted'], null)
+                    new Index('product_listing_index', ['product_category_id', 'product_vendor_id', 'is_published', 'is_deleted'])
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',

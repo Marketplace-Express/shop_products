@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class ProductQuestionsMigration_100
@@ -22,7 +22,7 @@ class ProductQuestionsMigration_100 extends Migration
                     new Column(
                         'id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'first' => true
@@ -31,7 +31,7 @@ class ProductQuestionsMigration_100 extends Migration
                     new Column(
                         'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'id'
@@ -40,7 +40,7 @@ class ProductQuestionsMigration_100 extends Migration
                     new Column(
                         'user_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'product_id'
@@ -51,7 +51,6 @@ class ProductQuestionsMigration_100 extends Migration
                         [
                             'type' => Column::TYPE_TEXT,
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'user_id'
                         ]
                     ),
@@ -61,7 +60,6 @@ class ProductQuestionsMigration_100 extends Migration
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'text'
                         ]
                     ),
@@ -69,7 +67,6 @@ class ProductQuestionsMigration_100 extends Migration
                         'updated_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'created_at'
                         ]
                     ),
@@ -77,14 +74,13 @@ class ProductQuestionsMigration_100 extends Migration
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'updated_at'
                         ]
                     ),
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_INTEGER,
+                            'type' => Column::TYPE_TINYINTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
@@ -94,8 +90,8 @@ class ProductQuestionsMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['id'], 'PRIMARY'),
-                    new Index('product_questions_product_product_id_fk', ['product_id'], null),
-                    new Index('product_questions_index', ['is_deleted', 'product_id'], null)
+                    new Index('product_questions_product_product_id_fk', ['product_id']),
+                    new Index('product_questions_index', ['is_deleted', 'product_id'])
                 ],
                 'references' => [
                     new Reference(

@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class DownloadablePropertiesMigration_100
@@ -32,7 +32,7 @@ class DownloadablePropertiesMigration_100 extends Migration
                     new Column(
                         'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'row_id'
@@ -50,7 +50,7 @@ class DownloadablePropertiesMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['row_id'], 'PRIMARY'),
-                    new Index('product_id_UNIQUE', ['product_id'], null)
+                    new Index('product_id_unique', ['product_id'], 'UNIQUE')
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',

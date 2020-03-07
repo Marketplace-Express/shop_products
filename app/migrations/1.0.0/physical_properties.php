@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class PhysicalPropertiesMigration_100
@@ -32,7 +32,7 @@ class PhysicalPropertiesMigration_100 extends Migration
                     new Column(
                         'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'row_id'
@@ -67,7 +67,7 @@ class PhysicalPropertiesMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['row_id'], 'PRIMARY'),
-                    new Index('physical_properties_product_product_id_fk', ['product_id'], null)
+                    new Index('physical_properties_product_product_id_fk', ['product_id'])
                 ],
                 'references' => [
                     new Reference(

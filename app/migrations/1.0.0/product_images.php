@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Mvc\Model\Migration;
+use Phalcon\Migrations\Mvc\Model\Migration;
 
 /**
  * Class ProductImagesMigration_100
@@ -39,7 +39,7 @@ class ProductImagesMigration_100 extends Migration
                     new Column(
                         'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'image_album_id'
@@ -143,19 +143,38 @@ class ProductImagesMigration_100 extends Migration
                         ]
                     ),
                     new Column(
+                        'is_variation_image',
+                        [
+                            'type' => Column::TYPE_INTEGER,
+                            'default' => "0",
+                            'size' => 1,
+                            'after' => 'is_main'
+                        ]
+                    ),
+                    new Column(
+                        'is_used',
+                        [
+                            'type' => Column::TYPE_INTEGER,
+                            'default' => "0",
+                            'notNull' => true,
+                            'size' => 1,
+                            'after' => 'is_variation_image'
+                        ]
+                    ),
+                    new Column(
                         'is_deleted',
                         [
                             'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'is_main'
+                            'after' => 'is_used'
                         ]
                     )
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['image_id'], 'PRIMARY'),
-                    new Index('images_listing_index', ['product_id', 'is_deleted'], null)
+                    new Index('images_listing_index', ['product_id', 'is_deleted'])
                 ],
                 'references' => [
                     new Reference(
