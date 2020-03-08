@@ -4,14 +4,14 @@ api:
 
 database:
   adapter: Mysql
-  host: 172.19.0.2
+  host: 172.22.0.2
   username: phalcon
   password: phalcon
   dbname: shop_products
   charset: utf8
 
 mongodb:
-  host: localhost
+  host: 172.22.0.3
   username:
   password:
   port: 27017
@@ -48,15 +48,15 @@ cache:
     auth:
 
 rabbitmq:
-  host: localhost
+  host: 172.22.0.4
   port: 5672
   username: guest
   password: guest
   sync_queue:
-    queue_name: products-sync
+    queue_name: products_sync
     message_ttl: 10000
   async_queue:
-    queue_name: products-async
+    queue_name: products_async
     message_ttl: 10000
   rpc:
     queue_name: rpc_queue
