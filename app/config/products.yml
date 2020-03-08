@@ -4,9 +4,9 @@ api:
 
 database:
   adapter: Mysql
-  host: 127.0.0.1
+  host: 172.19.0.2
   username: phalcon
-  password: secret
+  password: phalcon
   dbname: shop_products
   charset: utf8
 

@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
  * Class ProductRatesMigration_100
@@ -89,7 +89,7 @@ class ProductRatesMigration_100 extends Migration
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_TINYINTEGER,
+                            'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,

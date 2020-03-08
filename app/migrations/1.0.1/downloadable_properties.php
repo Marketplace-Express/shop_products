@@ -3,12 +3,12 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class DownloadablePropertiesMigration_100
+ * Class DownloadablePropertiesMigration_101
  */
-class DownloadablePropertiesMigration_100 extends Migration
+class DownloadablePropertiesMigration_101 extends Migration
 {
     /**
      * Define the table structure

@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
  * Class ProductMigration_100
@@ -173,7 +173,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_TINYINTEGER,
+                            'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
@@ -183,7 +183,7 @@ class ProductMigration_100 extends Migration
                     new Column(
                         'is_published',
                         [
-                            'type' => Column::TYPE_TINYINTEGER,
+                            'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,

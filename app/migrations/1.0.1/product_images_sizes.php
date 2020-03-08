@@ -3,12 +3,12 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductImagesSizesMigration_100
+ * Class ProductImagesSizesMigration_101
  */
-class ProductImagesSizesMigration_100 extends Migration
+class ProductImagesSizesMigration_101 extends Migration
 {
     /**
      * Define the table structure
@@ -90,7 +90,7 @@ class ProductImagesSizesMigration_100 extends Migration
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_TINYINTEGER,
+                            'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,

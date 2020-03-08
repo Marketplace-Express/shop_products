@@ -3,7 +3,7 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
  * Class ProductImagesMigration_100

@@ -8,7 +8,7 @@ docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd
 docker-php-ext-configure gd --with-freetype-dir=/usr/include/ \
                                    --with-png-dir=/usr/include/ \
                                    --with-jpeg-dir=/usr/include/
-docker-php-ext-install intl gettext gd bcmath zip pdo_mysql
+docker-php-ext-install intl gettext gd bcmath zip pdo_mysql sockets
 
 # Install extra extensions
 echo '' | pecl install redis mongodb yaml

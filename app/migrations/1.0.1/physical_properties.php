@@ -3,12 +3,12 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class PhysicalPropertiesMigration_100
+ * Class PhysicalPropertiesMigration_101
  */
-class PhysicalPropertiesMigration_100 extends Migration
+class PhysicalPropertiesMigration_101 extends Migration
 {
     /**
      * Define the table structure

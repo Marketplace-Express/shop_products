@@ -3,12 +3,12 @@
 use Phalcon\Db\Column;
 use Phalcon\Db\Index;
 use Phalcon\Db\Reference;
-use Phalcon\Migrations\Mvc\Model\Migration;
+use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class RateImagesMigration_100
+ * Class RateImagesMigration_101
  */
-class RateImagesMigration_100 extends Migration
+class RateImagesMigration_101 extends Migration
 {
     /**
      * Define the table structure
@@ -64,7 +64,7 @@ class RateImagesMigration_100 extends Migration
                     new Column(
                         'is_deleted',
                         [
-                            'type' => Column::TYPE_TINYINTEGER,
+                            'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
