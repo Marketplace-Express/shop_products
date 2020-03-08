@@ -24,6 +24,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     public $title;
     public $categoryId;
     public $price;
+    public $quantity;
     public $salePrice;
     public $endSaleTime;
     public $customPageId;
@@ -71,7 +72,8 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
             'customPageId' => $this->customPageId,
             'keywords' => $this->keywords,
             'segments' => $this->segments,
-            'isPublished' => $this->isPublished
+            'isPublished' => $this->isPublished,
+            'quantity' => $this->quantity
         ];
     }
 
@@ -139,6 +141,13 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
         );
 
         $validator->add(
+            'quantity',
+            new Validation\Validator\NumericValidator([
+                'min' => 1
+            ])
+        );
+
+        $validator->add(
             'endSaleTime',
             new Validation\Validator\Callback([
                 'callback' => function ($data) {
@@ -197,6 +206,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
             'productCustomPageId' => $this->customPageId,
             'productTitle' => $this->title,
             'productPrice' => $this->price,
+            'productQuantity' => $this->quantity,
             'productSalePrice' => $this->salePrice,
             'productSaleEndTime' => $this->endSaleTime,
             'productKeywords' => $this->keywords,

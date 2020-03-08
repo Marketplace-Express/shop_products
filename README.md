@@ -36,11 +36,11 @@ If you are sure that all required extensions exist, run this command:
 ```
 3- Create a schema inside MySQL container
 
-4- Change the DB name inside ```/etc/shop/products.yml``` to match the DB name in step 4
+4- Change the DB name inside ```/etc/shop/products.yml``` to match the DB name in step 3
 
 5- Run migrations:
 ```shell script
-/var/www/html# ./app/common/library/vendor/bin/phalcon migration --action=run --directory=$(pwd)/app/migration
+/var/www/html# ./app/common/library/vendor/bin/phalcon migration --action=run --config=../../../etc/shop/products.yml --migrations=app/migrations/
 ```
 
 5- Edit configuration in ```/etc/shop/products.yml``` to match your current settings for MySQL, MongoDB, RabbitMQ and Redis connections.

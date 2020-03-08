@@ -66,7 +66,7 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     {
         exit(JWT::encode([
             'user_id' => 'fded67e4-9fcd-4a2d-ae2e-de15d70a8bb5',
-            'vendor_id' => '9cde9748-b010-4767-9e89-566bf98f1833',
+            'vendor_id' => $this->request->get('vendorId') ?? '9cde9748-b010-4767-9e89-566bf98f1833',
             'access_level' => 2,
             'exp' => time() + 3600 * 10,
             'entropy' => mt_rand(10000, 20000)

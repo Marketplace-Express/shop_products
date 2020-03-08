@@ -19,28 +19,28 @@ mongodb:
 
 cache:
   products_cache:
-    host: 172.17.0.3
+    host: 172.22.0.7
     port: 6379
     persistent: true
     database: 0
     ttl: -1
     auth:
   images_cache:
-    host: 172.17.0.3
+    host: 172.22.0.7
     port: 6379
     persistent: true
     database: 1
     ttl: -1
     auth:
   questions_cache:
-    host: 172.17.0.3
+    host: 172.22.0.7
     port: 6379
     persistent: true
     database: 2
     ttl: -1
     auth:
   rates_cache:
-    host: 172.17.0.3
+    host: 172.22.0.7
     port: 6379
     persistent: true
     database: 3

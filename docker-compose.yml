@@ -7,3 +7,9 @@ services:
     volumes:
       - .:/var/www/html
       - ./app/config/products.yml:/etc/shop/products.yml
+    networks:
+      - marketplace
+networks:
+  marketplace:
+    external:
+      name: marketplace-network
