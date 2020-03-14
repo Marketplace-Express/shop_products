@@ -27,7 +27,7 @@ services:
     image: 'shop/products'
     working_dir: /var/www/html
     ports:
-      - "1002:80"
+      - "1001:80"
     volumes:
       - .:/var/www/html
     command: >
