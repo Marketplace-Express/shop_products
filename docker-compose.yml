@@ -5,7 +5,6 @@ services:
     build: .
     image: 'shop/products'
     working_dir: /var/www/html
-    network_mode: bridge
     volumes:
       - .:/var/www/html
     command: ./run consumer syncConsumer
@@ -17,7 +16,6 @@ services:
     build: .
     image: 'shop/products'
     working_dir: /var/www/html
-    network_mode: bridge
     volumes:
       - .:/var/www/html
     command: ./run consumer asyncConsumer
@@ -29,7 +27,6 @@ services:
     build: .
     image: 'shop/products'
     working_dir: /var/www/html
-    network_mode: bridge
     ports:
       - "1002:80"
     volumes:
