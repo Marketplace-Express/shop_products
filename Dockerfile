@@ -3,7 +3,7 @@
 # Copyrights to MilesChou <github.com/MilesChou>, fizzka <github.com/fizzka>
 # Edited by Wajdi Jurry <github.com/wajdijurry>
 #
-FROM php:7.3-apache
+FROM php:7.3-fpm
 
 LABEL maintainer="MilesChou <github.com/MilesChou>, fizzka <github.com/fizzka>"
 
@@ -29,8 +29,11 @@ RUN set -xe && \
             ${PWD}/v${PHALCON_VERSION}.tar.gz \
             ${PWD}/cphalcon-${PHALCON_VERSION} \
         && php -m
-RUN mkdir /etc/shop
-COPY ./utilities/setup_service.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/setup_service.sh
-RUN sh /usr/local/bin/setup_service.sh
+# Copy service config to config directory
 COPY ./utilities/shop_products_workers.conf /etc/supervisor/conf.d
+COPY ./utilities/setup_service.sh /usr/local/bin/
+# Run commands
+WORKDIR /usr/local/bin
+RUN chmod +x setup_service.sh && sh setup_service.sh
+# Return working directory to its default state
+WORKDIR /var/www/html

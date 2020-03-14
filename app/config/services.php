@@ -20,7 +20,7 @@ use app\common\services\user\UserService;
  * Shared configuration service
  */
 $di->setShared('config', function () {
-    $config = new Yaml(CONFIG_PATH . '/products.yml', [
+    $config = new Yaml(APP_PATH . '/config/config.yml', [
         '!appDir' => function ($value) {
             return APP_PATH . $value ;
         },

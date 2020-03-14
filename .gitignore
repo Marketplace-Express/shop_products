@@ -1,6 +1,3 @@
-# Exclude files
-composer.phar
-
 # Exlude directories
 .idea/
 .phalcon/

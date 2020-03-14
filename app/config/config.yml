@@ -4,14 +4,14 @@ api:
 
 database:
   adapter: Mysql
-  host: 172.22.0.2
+  host: 0.0.0.0
   username: phalcon
-  password: phalcon
+  password: secret
   dbname: shop_products
   charset: utf8
 
 mongodb:
-  host: 172.22.0.3
+  host: 0.0.0.0
   username:
   password:
   port: 27017
@@ -19,28 +19,28 @@ mongodb:
 
 cache:
   products_cache:
-    host: 172.22.0.7
+    host: 0.0.0.0
     port: 6379
     persistent: true
     database: 0
     ttl: -1
     auth:
   images_cache:
-    host: 172.22.0.7
+    host: 0.0.0.0
     port: 6379
     persistent: true
     database: 1
     ttl: -1
     auth:
   questions_cache:
-    host: 172.22.0.7
+    host: 0.0.0.0
     port: 6379
     persistent: true
     database: 2
     ttl: -1
     auth:
   rates_cache:
-    host: 172.22.0.7
+    host: 0.0.0.0
     port: 6379
     persistent: true
     database: 3
@@ -48,7 +48,7 @@ cache:
     auth:
 
 rabbitmq:
-  host: 172.22.0.4
+  host: 172.17.0.1
   port: 5672
   username: guest
   password: guest

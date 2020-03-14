@@ -15,3 +15,7 @@ echo '' | pecl install redis mongodb yaml
 echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini
 echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini
 echo "extension=yaml.so" > /usr/local/etc/php/conf.d/yaml.ini
+
+cd /var/www/html && php composer.phar install
+
+supervisord && supervisorctl update && supervisorctl start shop_products:

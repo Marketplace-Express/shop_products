@@ -1,15 +1,42 @@
 version: '3.3'
 services:
-  shop-products:
-    container_name: 'shop-products'
+  shop-products-sync:
+    container_name: 'shop-products-sync'
     build: .
     image: 'shop/products'
+    working_dir: /var/www/html
+    network_mode: bridge
     volumes:
       - .:/var/www/html
-      - ./app/config/products.yml:/etc/shop/products.yml
+    command: ./run consumer syncConsumer
     networks:
-      - marketplace
+      - marketplace-network
+
+  shop-products-async:
+    container_name: 'shop-products-async'
+    build: .
+    image: 'shop/products'
+    working_dir: /var/www/html
+    network_mode: bridge
+    volumes:
+      - .:/var/www/html
+    command: ./run consumer asyncConsumer
+    networks:
+      - marketplace-network
+
+  shop-products-api:
+    container_name: 'shop-products-api'
+    build: .
+    image: 'shop/products'
+    working_dir: /var/www/html
+    network_mode: bridge
+    ports:
+      - "1002:80"
+    volumes:
+      - .:/var/www/html
+    command: php -S 0.0.0.0:80 ./public
+    networks:
+      - marketplace-network
+
 networks:
-  marketplace:
-    external:
-      name: marketplace-network
+  marketplace-network:
