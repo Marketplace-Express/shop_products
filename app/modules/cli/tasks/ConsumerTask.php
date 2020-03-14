@@ -8,6 +8,7 @@
 namespace app\modules\cli\tasks;
 
 
+use app\common\utils\AMQPHandler;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use app\common\enums\QueueNamesEnum;
@@ -30,8 +31,12 @@ class ConsumerTask extends MainTask
 
     public function syncConsumerAction()
     {
-        /** @var AMQPChannel $channel */
-        $channel = $this->getDI()->get('queue');
+        /** @var AMQPHandler $amqpHandler */
+        $amqpHandler = $this->getDI()->getAmqp();
+        $amqpHandler->declareSync();
+
+        $channel = $amqpHandler->getChannel();
+
 
         try {
             $channel->basic_qos(null, 1, null);
@@ -77,8 +82,11 @@ class ConsumerTask extends MainTask
 
     public function asyncConsumerAction()
     {
-        /** @var AMQPChannel $channel */
-        $channel = $this->getDI()->get('queue');
+        /** @var AMQPHandler $amqpHandler */
+        $amqpHandler = $this->getDI()->getAmqp();
+        $amqpHandler->declareAsync();
+
+        $channel = $amqpHandler->getChannel();
 
         try {
             $channel->basic_qos(null, 1, null);

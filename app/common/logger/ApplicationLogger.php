@@ -24,6 +24,10 @@ class ApplicationLogger extends Injectable
      */
     public function getFile()
     {
+        $config = $this->getDI()->get('config');
+        if (!file_exists($config->application->logsDir . self::LOG_FILE)) {
+            touch($config->application->logsDir . self::LOG_FILE);
+        }
         $this->file = new File($this->getDI()->get('config')->application->logsDir . self::LOG_FILE);
         return $this->file;
     }

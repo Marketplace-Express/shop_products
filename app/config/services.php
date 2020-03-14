@@ -1,5 +1,6 @@
 <?php
 
+use app\common\utils\AMQPHandler;
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
 use Phalcon\Config\Adapter\Yaml;
@@ -48,6 +49,7 @@ $di->setShared('db', function () {
     $class = 'Phalcon\Db\Adapter\Pdo\\' . $config->database->adapter;
     $params = [
         'host'     => $config->database->host,
+        'port'     => $config->database->port,
         'username' => $config->database->username,
         'password' => $config->database->password,
         'dbname'   => $config->database->dbname,
@@ -192,7 +194,7 @@ $di->setShared('logger', function() {
 });
 
 /** RabbitMQ service */
-$di->setShared('queue', function () {
+$di->setShared('amqp', function () {
     $config = $this->getConfig();
     $connection = new AMQPStreamConnection(
         $config->rabbitmq->host,
@@ -200,18 +202,7 @@ $di->setShared('queue', function () {
         $config->rabbitmq->username,
         $config->rabbitmq->password
     );
-    $channel = $connection->channel();
-    $channel->queue_declare(
-        $config->rabbitmq->sync_queue->queue_name,
-        false, false, false, false, false,
-        new AMQPTable(['x-message-ttl' => $config->rabbitmq->sync_queue->message_ttl])
-    );
-    $channel->queue_declare(
-        $config->rabbitmq->async_queue->queue_name,
-        false, false, false, false, false,
-        new AMQPTable(['x-message-ttl' => $config->rabbitmq->async_queue->message_ttl])
-    );
-    return $channel;
+    return new AMQPHandler($connection->channel(), $config);
 });
 
 $di->setShared(

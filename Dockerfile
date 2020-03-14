@@ -30,7 +30,6 @@ RUN set -xe && \
             ${PWD}/cphalcon-${PHALCON_VERSION} \
         && php -m
 # Copy service config to config directory
-COPY ./utilities/shop_products_workers.conf /etc/supervisor/conf.d
 COPY ./utilities/setup_service.sh /usr/local/bin/
 # Run commands
 WORKDIR /usr/local/bin

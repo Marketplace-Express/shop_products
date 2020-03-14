@@ -2,7 +2,7 @@
 # Products service
 # Install required tools
 apt-get -y update \
-&& apt-get install -y libfreetype6-dev libpng-dev libjpeg-dev libcurl4-gnutls-dev libyaml-dev libicu-dev libzip-dev unzip supervisor
+&& apt-get install -y libfreetype6-dev libpng-dev libjpeg-dev libcurl4-gnutls-dev libyaml-dev libicu-dev libzip-dev unzip
 # Install required PHP extensions
 docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd
 docker-php-ext-configure gd --with-freetype-dir=/usr/include/ \
@@ -15,7 +15,3 @@ echo '' | pecl install redis mongodb yaml
 echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini
 echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini
 echo "extension=yaml.so" > /usr/local/etc/php/conf.d/yaml.ini
-
-cd /var/www/html && php composer.phar install
-
-supervisord && supervisorctl update && supervisorctl start shop_products:

@@ -113,7 +113,7 @@ class QueueRequestHandler extends Injectable
     public function __construct($requestType)
     {
         $this->requestType = $requestType;
-        $this->channel = $this->getDI()->get('queue');
+        $this->channel = $this->getDI()->getAmqp()->getChannel();
         if ($requestType == self::REQUEST_TYPE_SYNC) {
             $this->queueName = \Phalcon\Di::getDefault()->getConfig()
                 ->rabbitmq->rpc->queue_name;
