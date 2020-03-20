@@ -5,35 +5,29 @@
  * Time: 11:25 م
  */
 
-namespace app\tests\app\common\controllers;
+namespace app\tests\app\modules\api\controllers;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use app\common\controllers\NotfoundController;
+use app\modules\api\controllers\NotfoundController;
 use app\tests\mocks\ResponseMock;
 
 class NotfoundControllerTest extends \UnitTestCase
 {
+    /** @var NotfoundController */
+    private $controller;
+
     public function  setUp()
     {
+        $this->controller = new NotfoundController();
         parent::setUp();
-    }
-
-    public function getControllerMock(...$methods)
-    {
-        return $this->getMockBuilder(NotfoundController::class)
-            ->setMethods($methods)
-            ->getMock();
     }
 
     public function testIndexAction()
     {
-        /** @var NotfoundController|MockObject $controllerMock */
-        $controllerMock = $this->getControllerMock('nothing');
-
         /** @var ResponseMock $response */
         $response = $this->di->get('response');
 
-        $controllerMock->indexAction();
+        $this->controller->indexAction();
 
         $this->assertEquals(['status' => 404, 'message' => 'API not found'], $response->jsonContent);
     }
