@@ -3,8 +3,8 @@
 use Phalcon\Di\FactoryDefault\Cli as FactoryDefault;
 use Phalcon\Cli\Console as ConsoleApp;
 
-define('BASE_PATH', dirname(__DIR__));
-define('APP_PATH', BASE_PATH . '/app');
+defined('BASE_PATH') || define('BASE_PATH', dirname(__DIR__));
+defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
 /**
  * The FactoryDefault Dependency Injector automatically registers the services that

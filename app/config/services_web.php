@@ -94,8 +94,8 @@ $di->setShared('dispatcher', function() {
                 case Dispatcher::EXCEPTION_HANDLER_NOT_FOUND:
                 case Dispatcher::EXCEPTION_ACTION_NOT_FOUND:
                     $dispatcher->forward([
-                        'controller' => '\app\common\controllers\Notfound',
-                        'action'     => 'index'
+                        'namespace' => 'app\modules\api\controllers',
+                        'controller' => 'Notfound'
                     ]);
                     return false;
                     break;
