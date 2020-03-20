@@ -5,7 +5,7 @@
  * Time: 06:27 PM
  */
 
-namespace mocks;
+namespace tests\mocks;
 
 
 class ApplicationLogger

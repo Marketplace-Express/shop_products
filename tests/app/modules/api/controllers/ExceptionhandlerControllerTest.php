@@ -5,10 +5,10 @@
  * Time: 06:23 م
  */
 
-namespace app\tests\app\modules\api\controllers;
+namespace tests\app\modules\api\controllers;
 
 use app\modules\api\controllers\ExceptionhandlerController;
-use app\tests\mocks\ResponseMock;
+use tests\mocks\ResponseMock;
 
 class ExceptionhandlerControllerTest extends \UnitTestCase
 {

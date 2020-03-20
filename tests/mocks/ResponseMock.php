@@ -5,7 +5,7 @@
  * Time: 10:38 م
  */
 
-namespace app\tests\mocks;
+namespace tests\mocks;
 
 
 use Phalcon\Http\Response;

@@ -44,12 +44,10 @@ $loader->registerNamespaces([
     'app\modules\api\controllers' => APP_PATH . '/modules/api/controllers',
     'app\common\utils' => APP_PATH . '/common/utils',
     'app\common\logger' => APP_PATH . '/common/logger/',
-    'app\tests' => ROOT_PATH . '/'
+    'tests' => ROOT_PATH . '/'
 ]);
 
 $loader->registerClasses([
-    'app\tests\mocks\RequestMock' => ROOT_PATH . '/mocks/RequestMock.php',
-    'app\tests\mocks\ResponseMock' => ROOT_PATH . '/mocks/ResponseMock.php',
     'app\common\exceptions\OperationFailed' => APP_PATH . '/common/exceptions/OperationFailed.php',
     'app\common\exceptions\NotFound' => APP_PATH . '/common/exceptions/NotFound.php'
 ]);

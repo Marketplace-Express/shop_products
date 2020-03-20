@@ -1,16 +1,15 @@
 <?php
-
 /**
  * User: Wajdi Jurry
- * Date: 20/03/2020
- * Time: 06:27 PM
+ * Date: 19/04/2019
+ * Time: 02:59 PM
  */
 
-use mocks\ApplicationLogger;
 use Phalcon\Di;
 use Phalcon\Test\UnitTestCase as PhalconTestCase;
-use app\tests\mocks\RequestMock;
-use app\tests\mocks\ResponseMock;
+use tests\mocks\RequestMock;
+use tests\mocks\ResponseMock;
+use tests\mocks\ApplicationLogger;
 
 abstract class UnitTestCase extends PhalconTestCase
 {
