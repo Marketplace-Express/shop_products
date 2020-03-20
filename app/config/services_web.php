@@ -1,5 +1,6 @@
 <?php
 
+use Phalcon\Events\Event;
 use Phalcon\Events\Manager;
 use Phalcon\Mvc\Dispatcher;
 use Phalcon\Mvc\Router;
@@ -13,12 +14,12 @@ use Phalcon\Flash\Direct as Flash;
 $di->setShared('router', function () {
     $config = $this->getConfig();
     $router = new Router\Annotations(false);
-    $router->addModuleResource('api', 'app\modules\api\controllers\Products', '/api/' . $config->api->version . '/products');
-    $router->addModuleResource('api', 'app\modules\api\controllers\Variations', '/api/' . $config->api->version . '/variations');
-    $router->addModuleResource('api', 'app\modules\api\controllers\Images', '/api/' . $config->api->version . '/images');
-    $router->addModuleResource('api', 'app\modules\api\controllers\Rate', '/api/' . $config->api->version . '/rate');
-    $router->addModuleResource('api', 'app\modules\api\controllers\Questions', '/api/' . $config->api->version . '/questions');
-    $router->addModuleResource('api', 'app\modules\api\controllers\Search', '/api/' . $config->api->version . '/search');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Products', '/api/products');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Variations', '/api/variations');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Images', '/api/images');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Rate', '/api/rate');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Questions', '/api/questions');
+    $router->addModuleResource('api', 'app\modules\api\controllers\Search', '/api/search');
     return $router;
 });
 
@@ -62,6 +63,22 @@ $di->set('flash', function () {
 $di->setShared('dispatcher', function() {
     /** @var Manager $evManager */
     $evManager = $this->getEventsManager();
+    $evManager->attach("dispatch:beforeDispatch", function (Event $event, Dispatcher $dispatcher) {
+        try {
+            $methodReflection = new ReflectionMethod(
+                $dispatcher->getControllerClass(),
+                $dispatcher->getActiveMethod()
+            );
+            foreach ($methodReflection->getParameters() as $parameter) {
+                $parameterClass = $parameter->getClass();
+                if ($parameterClass instanceof ReflectionClass) {
+                    $dispatcher->setParam($parameter->name, new $parameterClass->name);
+                }
+            }
+        } catch (Exception $exception) {
+            throw new \Exception('', Dispatcher::EXCEPTION_HANDLER_NOT_FOUND);
+        }
+    });
     $evManager->attach(
         "dispatch:beforeExecuteRoute",
         new \Sid\Phalcon\AuthMiddleware\Event()
@@ -100,4 +117,14 @@ $di->setShared('dispatcher', function() {
     $dispatcher = new Dispatcher();
     $dispatcher->setEventsManager($evManager);
     return $dispatcher;
+});
+
+/**
+ * Json Mapper Service
+ */
+$di->setShared('jsonMapper', function () {
+    $jsonMapper = new JsonMapper();
+    $jsonMapper->bExceptionOnUndefinedProperty = false;
+    $jsonMapper->bEnforceMapType = false;
+    return $jsonMapper;
 });

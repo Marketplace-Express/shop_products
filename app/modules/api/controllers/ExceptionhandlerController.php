@@ -5,7 +5,7 @@
  * Time: 10:41 م
  */
 
-namespace app\common\controllers;
+namespace app\modules\api\controllers;
 
 use Phalcon\Mvc\Controller;
 use app\common\logger\ApplicationLogger;

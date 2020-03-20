@@ -8,9 +8,11 @@
 namespace app\modules\api\controllers;
 
 
-use app\common\controllers\BaseController;
 
 class RateController extends BaseController
 {
+    public function indexAction()
+    {
 
+    }
 }

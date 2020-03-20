@@ -22,14 +22,11 @@ class DeleteRequestHandler extends RequestAbstract
      */
     public function validate(): Group
     {
-        return new Group();
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [];
+        $validator = new Validation();
+        $validator->add(
+            'vendorId',
+            new UuidValidator()
+        );
+        return $validator->validate(['vendorId' => $this->vendorId]);
     }
 }

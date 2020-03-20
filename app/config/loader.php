@@ -14,7 +14,6 @@ $loader->registerNamespaces([
     'app\common\models\embedded\downloadable' => APP_PATH . '/common/models/embedded/downloadable',
     'app\common\models\sorting' => APP_PATH . '/common/models/sorting',
     'app\common\collections' => APP_PATH . '/common/collections',
-    'app\common\controllers' => APP_PATH . '/common/controllers/',
     'app\common\events\middleware' => APP_PATH . '/common/events/middleware/',
     'app\common\services' => APP_PATH . '/common/services/',
     'app\common\services\user' => APP_PATH . '/common/services/user/',
@@ -35,7 +34,7 @@ $loader->registerNamespaces([
     'app\common\interfaces' => APP_PATH . '/common/interfaces/',
     'app\common\repositories' => APP_PATH . '/common/repositories/',
     'app\common\enums' => APP_PATH . '/common/enums/',
-    'app\modules\api\controllers' => APP_PATH . '/modules/api/' . $config->api->version . '/controllers/',
+    'app\modules\api\controllers' => APP_PATH . '/modules/api/controllers/',
     'app\modules\cli\request' => APP_PATH . '/modules/cli/request/',
     'app\modules\cli\services' => APP_PATH . '/modules/cli/services/',
     'app\common\redis' => APP_PATH . '/common/redis/'

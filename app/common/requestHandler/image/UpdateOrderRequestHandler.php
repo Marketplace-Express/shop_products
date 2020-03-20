@@ -33,12 +33,4 @@ class UpdateOrderRequestHandler extends RequestAbstract
             'order' => $this->order
         ]);
     }
-
-    /**
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [];
-    }
 }

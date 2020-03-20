@@ -31,7 +31,7 @@ class DeleteRequestHandler extends RequestAbstract
      */
     private function getUserService(): UserService
     {
-        return $this->controller->getDI()->getUserService();
+        return $this->di->getUserService();
     }
 
     /**
@@ -67,13 +67,5 @@ class DeleteRequestHandler extends RequestAbstract
             'albumId' => $this->albumId,
             'productId' => $this->productId
         ]);
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [];
     }
 }

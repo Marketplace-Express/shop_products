@@ -8,7 +8,7 @@
 namespace app\common\models\embedded;
 
 
-use app\common\collections\BaseCollection;
+use app\common\models\BaseCollection;
 use app\common\models\embedded\physical\PackageDimensions;
 use Phalcon\Validation;
 use app\common\validators\SegmentsValidator;

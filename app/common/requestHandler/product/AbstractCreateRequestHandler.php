@@ -15,7 +15,6 @@ use app\common\validators\SpecialCharactersValidator;
 use app\common\validators\TypeValidator;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
-use Phalcon\Validation\Message\Group;
 use app\common\validators\SegmentsValidator;
 use app\common\validators\UuidValidator;
 
@@ -36,26 +35,11 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     protected $validationRules;
 
     /**
-     * @var \JsonMapper
-     */
-    private $jsonMapper;
-
-    /**
      * @return UserService
      */
     protected function getUserService(): UserService
     {
-        return $this->controller->getDI()->getUserService();
-    }
-
-    /**
-     * @return \JsonMapper
-     */
-    protected function getJsonMapper(): \JsonMapper
-    {
-        $jsonMapper = $this->jsonMapper ?? new \JsonMapper();
-        $jsonMapper->bEnforceMapType = false;
-        return $jsonMapper;
+        return $this->di->getUserService();
     }
 
     /**
@@ -195,11 +179,12 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
 
     /**
      * @return array
+     * @throws \Phalcon\Exception
      */
     public function toArray(): array
     {
         return [
-            'productId' => $this->controller->getDI()->getSecurity()->getRandom()->uuid(),
+            'productId' => $this->di->getSecurity()->getRandom()->uuid(),
             'productCategoryId' => $this->categoryId,
             'productUserId' => $this->getUserService()->userId,
             'productVendorId' => $this->getUserService()->vendorId,

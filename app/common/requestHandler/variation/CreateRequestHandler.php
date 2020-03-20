@@ -51,7 +51,7 @@ class CreateRequestHandler extends RequestAbstract
      */
     protected function getUserService(): UserService
     {
-        return $this->controller->getDI()->getUserService();
+        return $this->di->getUserService();
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator

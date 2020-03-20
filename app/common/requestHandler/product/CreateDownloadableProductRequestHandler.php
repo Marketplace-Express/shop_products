@@ -9,8 +9,6 @@ namespace app\common\requestHandler\product;
 
 
 use app\common\validators\rules\DownloadableProductRules;
-use app\common\validators\rules\RulesAbstract;
-use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\enums\ProductTypesEnum;
@@ -25,9 +23,12 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
      */
     protected $validationRules;
 
-    public function __construct(Controller $controller)
+    /**
+     * CreateDownloadableProductRequestHandler constructor.
+     */
+    public function __construct()
     {
-        parent::__construct($controller, new DownloadableProductRules());
+        parent::__construct(new DownloadableProductRules());
     }
 
     /**

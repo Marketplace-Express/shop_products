@@ -5,17 +5,17 @@
  * Time: 11:14 م
  */
 
-namespace app\common\collections;
+namespace app\common\models;
 
 use Phalcon\Mvc\MongoCollection;
 use app\common\traits\ModelCollectionBehaviorTrait;
 
 abstract class BaseCollection extends MongoCollection
 {
+    use ModelCollectionBehaviorTrait;
+
     /** @var MongoCollection $instance */
     protected static $instance;
-
-    use ModelCollectionBehaviorTrait;
 
     public function onConstruct()
     {

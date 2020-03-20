@@ -9,13 +9,14 @@ namespace app\modules\cli\tasks;
 
 
 use app\common\utils\AMQPHandler;
+use Phalcon\Cli\Task;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use app\common\enums\QueueNamesEnum;
 use app\common\logger\ApplicationLogger;
 use app\modules\cli\request\Handler as RequestHandler;
 
-class ConsumerTask extends MainTask
+class ConsumerTask extends Task
 {
 
     const SYNC_QUEUE_NAME = QueueNamesEnum::PRODUCT_SYNC_QUEUE;

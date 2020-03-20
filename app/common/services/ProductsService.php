@@ -28,9 +28,6 @@ use app\common\utils\ImgurUtil;
 
 class ProductsService
 {
-    /** @var QueueRequestHandler */
-    private $queueRequestHandler;
-
     /**
      * @param string $requestType
      * @return QueueRequestHandler

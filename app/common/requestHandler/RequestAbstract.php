@@ -11,10 +11,9 @@ namespace app\common\requestHandler;
 use app\common\exceptions\NotFound;
 use app\common\exceptions\ValidationFailed;
 use app\common\validators\rules\RulesAbstract;
-use Phalcon\Mvc\Controller;
-use Phalcon\Mvc\ControllerInterface;
+use Phalcon\Di\Injectable;
 
-abstract class RequestAbstract  implements IRequestHandler, ControllerInterface
+abstract class RequestAbstract extends Injectable implements IRequestHandler
 {
     /** @var array */
     public $errorMessages = [];
@@ -22,17 +21,12 @@ abstract class RequestAbstract  implements IRequestHandler, ControllerInterface
     /** @var RulesAbstract */
     protected $validationRules;
 
-    /** @var Controller */
-    protected $controller;
-
     /**
      * RequestAbstract constructor.
-     * @param Controller $controller
      * @param RulesAbstract|null $rulesAbstract
      */
-    public function __construct(Controller $controller, ?RulesAbstract $rulesAbstract = null)
+    public function __construct(?RulesAbstract $rulesAbstract = null)
     {
-        $this->controller = $controller;
         $this->validationRules = $rulesAbstract;
     }
 
@@ -66,13 +60,13 @@ abstract class RequestAbstract  implements IRequestHandler, ControllerInterface
     {
         http_response_code($code);
         if ($code != 204) {
-            $this->controller->response
+            $this->response
                 ->setJsonContent([
                     'status' => 200,
                     'message' => $message
                 ]);
         }
-        return $this->controller->response;
+        return $this->response;
     }
 
     /**

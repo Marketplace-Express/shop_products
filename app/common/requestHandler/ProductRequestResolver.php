@@ -11,25 +11,14 @@ namespace app\common\requestHandler;
 use app\common\enums\ProductTypesEnum;
 use app\common\requestHandler\product\CreateDownloadableProductRequestHandler;
 use app\common\requestHandler\product\CreatePhysicalProductRequestHandler;
-use Phalcon\Mvc\Controller;
 
 class ProductRequestResolver
 {
-
     const PHYSICAL_PRODUCT = CreatePhysicalProductRequestHandler::class;
     const DOWNLOADABLE_PRODUCT = CreateDownloadableProductRequestHandler::class;
 
+    /** @var string */
     public $type;
-    private $controller;
-
-    /**
-     * ProductRequestResolver constructor.
-     * @param Controller $controller
-     */
-    public function __construct(Controller $controller)
-    {
-        $this->controller = $controller;
-    }
 
     /**
      * @return mixed
@@ -46,6 +35,6 @@ class ProductRequestResolver
             throw new \Exception('Invalid product type', 400);
         }
 
-        return new $validTypes[$this->type]($this->controller);
+        return new $validTypes[$this->type];
     }
 }

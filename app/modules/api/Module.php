@@ -20,10 +20,9 @@ class Module implements ModuleDefinitionInterface
      */
     public function registerAutoloaders(DiInterface $dependencyInjector = null)
     {
-        $config = $dependencyInjector->getConfig();
         $loader = new Loader();
         $loader->registerNamespaces([
-            'app\modules\api\controllers' => __DIR__ . '/' . $config->api->version . '/controllers/'
+            'app\modules\api\controllers' => __DIR__ . '/controllers/'
         ]);
         $loader->register();
     }

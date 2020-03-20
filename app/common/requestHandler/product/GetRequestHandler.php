@@ -8,64 +8,45 @@
 namespace app\common\requestHandler\product;
 
 use app\common\models\sorting\SortProduct;
+use app\common\requestHandler\IArrayData;
 use app\common\requestHandler\RequestAbstract;
-use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\services\user\UserService;
 use app\common\validators\UuidValidator;
 
-class GetRequestHandler extends RequestAbstract
+class GetRequestHandler extends RequestAbstract implements IArrayData
 {
-    /** @var string $categoryId */
+    /** @var string */
     public $categoryId;
 
-    /** @var string $vendorId */
+    /** @var string */
     public $vendorId;
 
-    /** @var int $limit */
+    /** @var int */
     public $limit;
 
-    /** @var int $page */
+    /** @var int */
     public $page;
 
     /** @var bool */
     public $requireCategoryId = false;
 
-    /**
-     * @var SortProduct
-     */
+    /** @var SortProduct */
     private $sort;
 
     /**
-     * @var \JsonMapper
-     */
-    private $jsonMapper;
-
-    /**
      * GetRequestHandler constructor.
-     * @param Controller $controller
      * @throws \JsonMapper_Exception
      */
-    public function __construct(Controller $controller)
+    public function __construct()
     {
-        if ($controller->request->get('sort')) {
-            $this->sort = $this->getJsonMapper()->map(
-                json_decode($controller->request->get('sort')),
+        if ($this->request->get('sort')) {
+            $this->sort = $this->di->getJsonMapper()->map(
+                json_decode($this->request->get('sort')),
                 new SortProduct()
             );
         }
-        parent::__construct($controller);
-    }
-
-    /**
-     * @return \JsonMapper
-     */
-    protected function getJsonMapper(): \JsonMapper
-    {
-        $jsonMapper = $this->jsonMapper ?? $this->jsonMapper = new \JsonMapper();
-        $jsonMapper->bEnforceMapType = false;
-        return $jsonMapper;
     }
 
     /**
@@ -81,7 +62,7 @@ class GetRequestHandler extends RequestAbstract
      */
     private function getUserService(): UserService
     {
-        return $this->controller->getDI()->getUserService();
+        return $this->di->getUserService();
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator

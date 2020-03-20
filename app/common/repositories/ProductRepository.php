@@ -162,9 +162,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             $binds['productCategoryId'] = $categoryId;
         }
 
-        if ($editMode) {
-            $conditions .= ' AND isPublished IN (TRUE, FALSE)';
-        } else {
+        if (!$editMode) {
             $conditions .= ' AND isPublished = TRUE';
         }
 

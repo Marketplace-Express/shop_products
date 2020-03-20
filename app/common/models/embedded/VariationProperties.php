@@ -8,7 +8,7 @@
 namespace app\common\models\embedded;
 
 
-use app\common\collections\BaseCollection;
+use app\common\models\BaseCollection;
 use app\common\traits\ModelCollectionBehaviorTrait;
 use app\common\validators\UuidValidator;
 use MongoDB\BSON\UTCDateTime;

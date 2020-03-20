@@ -13,7 +13,6 @@ use Phalcon\Validation\Message\Group;
 
 class AutocompleteRequestHandler extends SearchRequestHandler
 {
-
     /** @var null|string */
     public $scope;
 

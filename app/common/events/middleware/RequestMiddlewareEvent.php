@@ -7,7 +7,7 @@
 
 namespace app\common\events\middleware;
 
-use app\common\exceptions\OperationFailed;
+
 use app\common\services\user\Token;
 use app\common\services\user\UserService;
 use app\common\validators\UuidValidator;
@@ -29,9 +29,6 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     /** @var UserService $userService */
     private $userService;
 
-    /** @var \JsonMapper */
-    private $jsonMapper;
-
     /**
      * @return mixed
      */
@@ -48,16 +45,13 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     {
         $this->saltKey = $this->getTokenConfig()->saltKey;
         $this->allowedAlg = $this->getTokenConfig()->allowedAlg;
-        $this->userService = $this->getDI()->getUserService();
+        $this->userService = $this->di->getUserService();
 
-        $accessToken = $this->request->getHeader('Authorization');
-
+        // Generate a token
 //        $this->generate();
-        $this->validate($accessToken);
 
-        /** @var \stdClass $accessToken */
-        $this->token = $this->getJsonMapper()->map(
-            $accessToken,
+        $this->token = @$this->di->getJsonMapper()->map(
+            $this->decode($this->request->getHeader('Authorization')),
             new Token()
         );
     }
@@ -66,7 +60,7 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     {
         exit(JWT::encode([
             'user_id' => 'fded67e4-9fcd-4a2d-ae2e-de15d70a8bb5',
-            'vendor_id' => $this->request->get('vendorId') ?? '9cde9748-b010-4767-9e89-566bf98f1833',
+            'vendor_id' => '74a20f34-7f76-4a26-8cf6-e69dc2166576',
             'access_level' => 2,
             'exp' => time() + 3600 * 10,
             'entropy' => mt_rand(10000, 20000)
@@ -74,11 +68,29 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     }
 
     /**
-     * @return \JsonMapper
+     * @param string $token
+     * @return object
      */
-    private function getJsonMapper()
+    private function decode(string $token)
     {
-        return $this->jsonMapper ?? $this->jsonMapper = new \JsonMapper();
+        try {
+            $token = explode(' ', $token)[1];
+            return JWT::decode($token, $this->saltKey, [$this->allowedAlg]);
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), 400);
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    private function isValid(): bool
+    {
+        $errorMessages = $this->validate();
+        if (count($errorMessages)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -87,6 +99,11 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
      */
     public function authenticate(): bool
     {
+        // validate token
+        if (!$this->isValid()) {
+            $this->handleError('Invalid token', 400);
+        }
+
         $this->userService->userId = $this->token->user_id;
         $this->userService->vendorId = $this->token->vendor_id;
         $this->userService->accessLevel = $this->token->access_level;
@@ -94,54 +111,32 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     }
 
     /**
-     * @param $accessToken
-     * @throws \Exception
+     * @return Validation\Message\Group
      */
-    private function validate(&$accessToken)
+    private function validate(): Validation\Message\Group
     {
-        try {
+        $validator = new Validation();
+        $validator->add(
+            ['user_id', 'vendor_id', 'access_level'],
+            new Validation\Validator\PresenceOf()
+        );
+        $validator->add(
+            ['user_id', 'vendor_id'],
+            new UuidValidator()
+        );
+        $validator->add(
+            'access_level',
+            new Validation\Validator\NumericValidator([
+                'allowFloat' => false,
+                'allowSign' => false
+            ])
+        );
 
-            if (empty($accessToken)) {
-                throw new \Exception('Unauthorized action', 400);
-            }
-            $accessToken = explode(' ', $accessToken)[1];
-
-            try {
-                $accessToken = JWT::decode($accessToken, $this->saltKey, [$this->allowedAlg]);
-            } catch (\UnexpectedValueException $exception) {
-                throw new \Exception('Invalid token', 400, $exception);
-            }
-
-            // user is logged in, then check token structure
-            $validator = new Validation();
-            $validator->add(
-                ['user_id', 'vendor_id', 'access_level'],
-                new Validation\Validator\PresenceOf()
-            );
-            $validator->add(
-                ['user_id', 'vendor_id'],
-                new UuidValidator()
-            );
-            $validator->add(
-                'access_level',
-                new Validation\Validator\NumericValidator([
-                    'allowFloat' => false,
-                    'allowSign' => false
-                ])
-            );
-
-            $errors = $validator->validate([
-                'user_id' => $accessToken->user_id,
-                'vendor_id' => $accessToken->vendor_id,
-                'access_level' => $accessToken->access_level
-            ]);
-
-            if (count($errors)) {
-                throw new OperationFailed($errors);
-            }
-        } catch (\Throwable $exception) {
-            $this->handleError($exception->getMessage(), $exception->getCode() ?: 400);
-        }
+        return $validator->validate([
+            'user_id' => $this->token->user_id,
+            'vendor_id' => $this->token->vendor_id,
+            'access_level' => $this->token->access_level
+        ]);
     }
 
     /**
@@ -154,7 +149,7 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     {
         $this->dispatcher->forward([
             'namespace' => 'app\common\controllers',
-            'controller' => 'exceptionhandler',
+            'controller' => 'exceptionHandler',
             'action' => 'raiseError',
             'params' => [$errors, $code]
         ]);

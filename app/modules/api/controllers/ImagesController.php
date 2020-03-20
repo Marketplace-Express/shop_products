@@ -8,18 +8,16 @@
 namespace app\modules\api\controllers;
 
 
-use app\common\requestHandler\image\DeleteRequestHandler;
-use app\common\requestHandler\image\UpdateOrderRequestHandler;
-use Exception;
-use app\common\controllers\BaseController;
-use app\common\requestHandler\image\UploadRequestHandler;
-use app\common\services\ImageService;
-use Throwable;
+use app\common\requestHandler\image\{
+    DeleteRequestHandler,
+    UpdateOrderRequestHandler,
+    UploadRequestHandler
+};
 
 /**
  * Class ImagesController
  * @package app\modules\api\controllers
- * @RoutePrefix('/api/1.0/images')
+ * @RoutePrefix('/api/images')
  */
 class ImagesController extends BaseController
 {
@@ -27,66 +25,59 @@ class ImagesController extends BaseController
     private $productId;
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function initialize()
     {
         $albumId = $this->request->get('albumId');
         $productId = $this->request->get('productId');
         if (!isset($albumId) || !$this->getUuidUtil()->isValid($productId)) {
-            throw new Exception('Invalid album Id or product Id');
+            throw new \Exception('Invalid album Id or product Id');
         }
         $this->albumId = $albumId;
         $this->productId = $productId;
     }
 
     /**
-     * @return ImageService
-     */
-    public function getService(): ImageService
-    {
-        return new ImageService();
-    }
-
-    /**
      * @Post('/upload')
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
+     * @param UploadRequestHandler $request
      */
-    public function uploadAction()
+    public function uploadAction(UploadRequestHandler $request)
     {
         try {
             /** @var UploadRequestHandler $request */
-            $request = $this->getJsonMapper()->map(
-                $this->request->getPost(),
-                new UploadRequestHandler($this)
-            );
+            $request = $this->di->get('jsonMapper')->map($this->request->getPost(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $image = call_user_func_array([$this->getService(), 'upload'], $request->toArray());
+            $image = call_user_func_array([$this->di->getAppServices('imageService'), 'upload'], $request->toArray());
             $request->successRequest($image);
-        } catch (Throwable $exception) {
-            $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * @Delete('/{id:[0-9a-zA-Z]{7}}')
      * @param $id
+     * @param DeleteRequestHandler $request
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
-    public function deleteAction($id)
+    public function deleteAction($id, DeleteRequestHandler $request)
     {
         try {
             /** @var DeleteRequestHandler $request */
-            $request = $this->getJsonMapper()->map(
-                $this->request->getQuery(),
-                new DeleteRequestHandler($this)
-            );
+            $request = $this->di->get('jsonMapper')->map($this->request->getQuery(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->getService()->delete($request->productId, $id, $request->albumId, $request->getAccessLevel());
+            $this->di->getAppServices('imageService')->delete(
+                $request->productId,
+                $id,
+                $request->albumId,
+                $request->getAccessLevel()
+            );
             $request->successRequest('Deleted');
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -100,7 +91,7 @@ class ImagesController extends BaseController
     public function makeMainAction($id)
     {
         try {
-            $this->getService()->makeMainImage($id, $this->productId);
+            $this->di->getAppServices('imageService')->makeMainImage($id, $this->productId);
             http_response_code(204);
             $this->response->send();
         } catch (\Throwable $exception) {
@@ -110,20 +101,18 @@ class ImagesController extends BaseController
 
     /**
      * @param $id
+     * @param UpdateOrderRequestHandler $request
      * @Put('/order/{id:[0-9a-zA-Z]{7}}')
      */
-    public function updateOrderAction($id)
+    public function updateOrderAction($id, UpdateOrderRequestHandler $request)
     {
         try {
             /** @var UpdateOrderRequestHandler $request */
-            $request = $this->getJsonMapper()->map(
-                $this->request->getJsonRawBody(),
-                new UpdateOrderRequestHandler($this)
-            );
+            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->getService()->updateOrder($this->productId, $id, $request->order);
+            $this->di->getAppServices('imageService')->updateOrder($this->productId, $id, $request->order);
             $request->successRequest(null, 204);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());

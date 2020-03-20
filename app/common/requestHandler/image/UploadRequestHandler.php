@@ -8,17 +8,17 @@
 namespace app\common\requestHandler\image;
 
 
+use app\common\requestHandler\IArrayData;
 use app\common\requestHandler\RequestAbstract;
 use app\common\validators\rules\ImagesRules;
 use app\common\validators\TypeValidator;
 use Phalcon\Http\Request\File;
-use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 use app\common\utils\DigitalUnitsConverterUtil;
 use app\common\validators\UuidValidator;
 
-class UploadRequestHandler extends RequestAbstract
+class UploadRequestHandler extends RequestAbstract implements IArrayData
 {
     /** @var File */
     public $image;
@@ -32,20 +32,17 @@ class UploadRequestHandler extends RequestAbstract
     /** @var bool */
     public $isVariationImage = false;
 
-    /**
-     * @var ImagesRules
-     */
+    /** @var ImagesRules */
     protected $validationRules;
 
     /**
      * Set uploaded image
-     * @param Controller $controller
      */
-    public function __construct(Controller $controller)
+    public function __construct()
     {
-        $images = $controller->request->getUploadedFiles();
+        $images = $this->request->getUploadedFiles();
         $this->image = array_shift($images); // take only 1 image
-        parent::__construct($controller, new ImagesRules());
+        parent::__construct(new ImagesRules());
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
@@ -105,7 +102,7 @@ class UploadRequestHandler extends RequestAbstract
      */
     public function isValid(): bool
     {
-        if (!$this->controller->request->hasFiles()) {
+        if (!$this->request->hasFiles()) {
             $this->errorMessages[] = new Validation\Message('required', 'image');
             return false;
         }

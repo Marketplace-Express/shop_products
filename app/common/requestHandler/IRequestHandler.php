@@ -40,9 +40,4 @@ interface IRequestHandler
      * @return mixed
      */
     public function successRequest($message = null);
-
-    /**
-     * @return array
-     */
-    public function toArray(): array;
 }

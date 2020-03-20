@@ -40,11 +40,10 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler
 
     /**
      * CreatePhysicalProductRequestHandler constructor.
-     * @param Controller $controller
      */
-    public function __construct(Controller $controller)
+    public function __construct()
     {
-        parent::__construct($controller, new PhysicalProductRules());
+        parent::__construct(new PhysicalProductRules());
     }
 
     /**

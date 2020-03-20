@@ -3,7 +3,6 @@
 use app\common\utils\AMQPHandler;
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
-use Phalcon\Config\Adapter\Yaml;
 use Phalcon\Db\Adapter\MongoDB\Client;
 use Phalcon\Db\Profiler;
 use Phalcon\Events\Event;
@@ -11,25 +10,15 @@ use Phalcon\Events\Manager;
 use Phalcon\Logger\Factory;
 use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Wire\AMQPTable;
 use app\common\enums\ProductsCacheIndexesEnum;
 use app\common\logger\ApplicationLogger;
 use app\common\redis\Connector;
-use app\common\services\user\UserService;
 
 /**
  * Shared configuration service
  */
 $di->setShared('config', function () {
-    $config = new Yaml(APP_PATH . '/config/config.yml', [
-        '!appDir' => function ($value) {
-            return APP_PATH . $value ;
-        },
-        '!baseDir' => function ($value) {
-            return BASE_PATH . $value;
-        }
-    ]);
-    return $config;
+    return require(APP_PATH . '/config/config.php');
 });
 
 /**
@@ -205,7 +194,25 @@ $di->setShared('amqp', function () {
     return new AMQPHandler($connection->channel(), $config);
 });
 
-$di->setShared(
-    'userService',
-    UserService::class
-);
+/**
+ * UserService should be shared among application
+ */
+$di->setShared('userService', app\common\services\user\UserService::class);
+
+/**
+ * AppServices
+ */
+$di->set('appServices', function($serviceName) {
+    $services = [
+        'productsService' => \app\common\services\ProductsService::class,
+        'imageService' => \app\common\services\ImageService::class,
+        'questionService' => \app\common\services\QuestionsService::class,
+        'searchService' => \app\common\services\SearchService::class
+    ];
+
+    if (!array_key_exists($serviceName, $services)) {
+        throw new Exception(sprintf('DI: service "%s" not found', $serviceName));
+    }
+
+    return new $services[$serviceName];
+});
