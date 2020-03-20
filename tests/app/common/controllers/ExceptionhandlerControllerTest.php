@@ -9,7 +9,7 @@ namespace app\tests\app\common\controllers;
 
 use Phalcon\Logger\Adapter\File;
 use PHPUnit\Framework\MockObject\MockObject;
-use app\common\controllers\ExceptionhandlerController;
+use app\modules\api\controllers\ExceptionhandlerController;
 use app\common\logger\ApplicationLogger;
 use app\tests\mocks\ResponseMock;
 

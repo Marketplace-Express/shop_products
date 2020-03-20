@@ -13,7 +13,6 @@ use Phalcon\Cli\Task;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
 use app\common\enums\QueueNamesEnum;
-use app\common\logger\ApplicationLogger;
 use app\modules\cli\request\Handler as RequestHandler;
 
 class ConsumerTask extends Task
@@ -22,18 +21,10 @@ class ConsumerTask extends Task
     const SYNC_QUEUE_NAME = QueueNamesEnum::PRODUCT_SYNC_QUEUE;
     const ASYNC_QUEUE_NAME = QueueNamesEnum::PRODUCT_ASYNC_QUEUE;
 
-    /** @var ApplicationLogger */
-    private $logger;
-
-    public function onConstruct()
-    {
-        $this->logger = new ApplicationLogger();
-    }
-
     public function syncConsumerAction()
     {
         /** @var AMQPHandler $amqpHandler */
-        $amqpHandler = $this->getDI()->getAmqp();
+        $amqpHandler = $this->di->getAmqp();
         $amqpHandler->declareSync();
 
         $channel = $amqpHandler->getChannel();
@@ -57,11 +48,11 @@ class ConsumerTask extends Task
                         $message = json_encode($response);
 
                     } catch (\Throwable $exception) {
-                        $this->logger->logError($exception->getMessage());
+                        $this->di->getLogger()->logError($exception->getMessage());
                         $message = json_encode([
                             'hasError' => true,
                             'message' => $exception->getMessage(),
-                            'code' => $exception->getCode() ?: 500
+                            'code' => $exception->getCode()
                         ]);
                     }
                     $amqpRequest->basic_ack($request->delivery_info['delivery_tag']);
@@ -77,7 +68,7 @@ class ConsumerTask extends Task
             }
 
         } catch (\Throwable $exception) {
-            $this->logger->logError($exception->getMessage());
+            $this->di->getLogger()->logError($exception->getMessage());
         }
     }
 
@@ -103,7 +94,7 @@ class ConsumerTask extends Task
                 $channel->wait();
             }
         } catch (\Throwable $exception) {
-            $this->logger->logError($exception->getMessage());
+            $this->di->getLogger()->logError($exception->getMessage());
         }
     }
 }

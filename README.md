@@ -2,54 +2,49 @@ Shop: Products Service
 --
 ### Installation:
 
-After starting a new container, go inside it and do the following:
-
-1- Enable Apache2 rewrite module and HTTP Authorization:
+1. Clone the repository:
 ```shell script
-~# a2enmod rewrite
-~# vim /etc/apache2/conf-enabled/security.conf
-```
-Add this line at the end of the file:
-```shell script
-SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
-```
-Then, save and exit. After that, reload apache2 service:
-```shell script
-~# service apache2 reload
-[ ok ] Reloading Apache httpd web server: apache2.
+git clone git@gitlab.com:shop_ecommerce/shop_products.git
 ```
 
-2- Install dependencies:
-```text
-Note: Type "php -m" and make sure these extensions are installed and enabled:
-1. phalcon
-2. intl
-3. pdo
-4. json
-5. redis
-6. mongodb
-7. yaml
+2- Open Dockerfile and check these arguments if they match your OS architecture (x86 or x64):
 ```
-If you are sure that all required extensions exist, run this command:
-```shell script
-/var/www/html# composer install
-```
-3- Create a schema inside MySQL container
-
-4- Change the DB name inside ```app/config/config.yml``` to match the DB name in step 3
-
-5- Run migrations:
-```shell script
-/var/www/html# ./app/common/library/vendor/bin/phalcon migration --action=run --config=app/config/config.yml --migrations=app/migrations/
+ARG PHALCON_EXT_PATH=php7/64bits
 ```
 
-5- Edit configuration in ```app/config/config.yml``` to match your current settings for MySQL, MongoDB, RabbitMQ and Redis connections.
-
-6- Run supervisord && supervisorctl update to update your supervisor programs and make sure that the status of the programs are READY, or you can check if there are two new queues (products_sync, product_async) by going to http://rabbitmq-container-ip:15672/#/queues
-
-7 - Import API collection into postman to start using this service
-
-8- To run unit test:
-```shell script
-/var/www/html# ./app/common/library/vendor/bin/phpunit -c tests/phpunit.xml
+3- Rename file “config.example.php” under “app/config” to “config.php” then change the parameters to match the your preferences, example:
+```php
+return new \Phalcon\Config([
+    'database' => [
+        'adapter' => 'Mysql',
+        'host' => 'network-gateway-ip from step 1.b',
+        'port' => 3306,
+        'username' => 'mysql-username',
+        'password' => 'mysql-password',
+        'dbname' => 'shop_products',
+        'charset' => 'utf8'
+    ],
+    'mongodb' => [
+        'host' => 'network-gateway-ip from step 1.b',
+        'port' => 27017,
+        'username' => null,
+        'password' => null,
+        'dbname' => 'shop_products'
+    ],
+    ...
+]);
 ```
+
+And so on for Redis and RabbitMQ ...
+       
+4- Run ```docker-compose up -d```, This command will create new containers:
+1. shop_products_products-sync_1
+    - This will declare a new queue “products_sync” in RabbitMQ queues list
+2. shop_products_products-async_1
+    - This will declare a new queue “products_async” in RabbitMQ queues list
+3. shop_products_products-api_1
+    - This will start a new application server listening on a specific port specified in docker-compose file, you can access it by going to this URL: [http://localhost:port](http://localhost:1001)
+    - As a default, the port value is 1001.
+    - You can use Postman with the collections provided to test micro-service APIs.
+4. shop_products_products-unit-test_1
+    - This will run the unit test for this micro-service

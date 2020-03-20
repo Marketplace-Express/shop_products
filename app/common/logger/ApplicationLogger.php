@@ -17,6 +17,7 @@ class ApplicationLogger extends Injectable
      */
     const LOG_FILE = 'app.log';
 
+    /** @var File */
     private $file;
 
     /**
@@ -24,11 +25,11 @@ class ApplicationLogger extends Injectable
      */
     public function getFile()
     {
-        $config = $this->getDI()->get('config');
+        $config = $this->di->getConfig();
         if (!file_exists($config->application->logsDir . self::LOG_FILE)) {
             touch($config->application->logsDir . self::LOG_FILE);
         }
-        $this->file = new File($this->getDI()->get('config')->application->logsDir . self::LOG_FILE);
+        $this->file = new File($config->application->logsDir . self::LOG_FILE);
         return $this->file;
     }
 

@@ -1,14 +1,21 @@
 <?php
 
+use app\common\services\ImageService;
+use app\common\services\ProductsService;
+use app\common\services\QuestionsService;
+use app\common\services\SearchService;
+use app\common\services\user\UserService;
 use app\common\utils\AMQPHandler;
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
 use Phalcon\Db\Adapter\MongoDB\Client;
 use Phalcon\Db\Profiler;
 use Phalcon\Events\Event;
-use Phalcon\Events\Manager;
+use Phalcon\Events\Manager as EventManager;
 use Phalcon\Logger\Factory;
+use Phalcon\Mvc\Collection\Manager as CollectionManager;
 use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
+use Phalcon\Mvc\Model\MetaData\Strategy\Annotations;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use app\common\enums\ProductsCacheIndexesEnum;
 use app\common\logger\ApplicationLogger;
@@ -24,9 +31,7 @@ $di->setShared('config', function () {
 /**
  * Profiler service
  */
-$di->setShared('profiler', function () {
-    return new Phalcon\Db\Profiler();
-});
+$di->setShared('profiler', Profiler::class);
 
 
 /**
@@ -56,7 +61,7 @@ $di->setShared('db', function () {
      * @var Profiler $profiler
      */
     $profiler = $this->getProfiler();
-    $eventsManager = new Manager();
+    $eventsManager = new EventManager();
     $eventsManager->attach('db', function ($event, $connection) use ($profiler, $config) {
         /**
          * @var Event $event
@@ -100,9 +105,10 @@ $di->setShared('mongo', function () {
     return $mongo->selectDatabase($config->mongodb->dbname);
 });
 
-$di->setShared('collectionManager', function () {
-    return new \Phalcon\Mvc\Collection\Manager();
-});
+/**
+ * Collection Manager
+ */
+$di->setShared('collectionManager', CollectionManager::class);
 
 /**
  * Register Redis as a service
@@ -170,11 +176,7 @@ $di->setShared('modelsMetadata', function () {
     $metadata = new MetaDataAdapter([
         'lifetime' => 1
     ]);
-
-    $metadata->setStrategy(
-        new \Phalcon\Mvc\Model\MetaData\Strategy\Annotations()
-    );
-
+    $metadata->setStrategy(new Annotations());
     return $metadata;
 });
 
@@ -197,17 +199,17 @@ $di->setShared('amqp', function () {
 /**
  * UserService should be shared among application
  */
-$di->setShared('userService', app\common\services\user\UserService::class);
+$di->setShared('userService', UserService::class);
 
 /**
  * AppServices
  */
 $di->set('appServices', function($serviceName) {
     $services = [
-        'productsService' => \app\common\services\ProductsService::class,
-        'imageService' => \app\common\services\ImageService::class,
-        'questionService' => \app\common\services\QuestionsService::class,
-        'searchService' => \app\common\services\SearchService::class
+        'productsService' => ProductsService::class,
+        'imageService' => ImageService::class,
+        'questionService' => QuestionsService::class,
+        'searchService' => SearchService::class
     ];
 
     if (!array_key_exists($serviceName, $services)) {
