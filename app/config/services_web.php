@@ -20,6 +20,7 @@ $di->setShared('router', function () {
     $router->addModuleResource('api', 'app\modules\api\controllers\Rate', '/api/rate');
     $router->addModuleResource('api', 'app\modules\api\controllers\Questions', '/api/questions');
     $router->addModuleResource('api', 'app\modules\api\controllers\Search', '/api/search');
+    $router->addModuleResource('api', 'app\modules\api\controllers\HealthCheck', '/api/health');
     return $router;
 });
 
