@@ -80,9 +80,16 @@ class HealthCheckController extends Controller
     private function checkRedisConnection()
     {
         try {
-            $redis = $this->di->getCache('products_cache')['instance'];
-            $ping = $redis->ping("1");
-            Assert::eq($ping, "1");
+            $productsCacheInstance = $this->di->getCache('products_cache')['instance'];
+            $imagesCacheInstance = $this->di->getCache('images_cache')['instance'];
+            $questionsCacheInstance = $this->di->getCache('questions_cache')['instance'];
+            $ratesCacheInstance = $this->di->getCache('rates_cache')['instance'];
+            Assert::eq([
+                $productsCacheInstance->ping("1"),
+                $imagesCacheInstance->ping("1"),
+                $questionsCacheInstance->ping("1"),
+                $ratesCacheInstance->ping("1")
+            ], ["1", "1", "1", "1"]);
         } catch (\Throwable $exception) {
             throw new ConnectionFailedException('could not connect to redis server');
         }
