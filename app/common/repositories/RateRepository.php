@@ -35,6 +35,10 @@ class RateRepository extends BaseRepository
             ]
         ]);
 
+        if (!count($allProductRates)) {
+            return false;
+        }
+
         if ($allProductRates) {
             foreach ($allProductRates as $productRate) {
                 $allDeleted = $productRate->delete();

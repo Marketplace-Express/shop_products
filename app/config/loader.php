@@ -13,6 +13,7 @@ $loader->registerNamespaces([
     'app\common\models\embedded\physical' => APP_PATH . '/common/models/embedded/physical',
     'app\common\models\embedded\downloadable' => APP_PATH . '/common/models/embedded/downloadable',
     'app\common\models\sorting' => APP_PATH . '/common/models/sorting',
+    'app\common\models\factory' => APP_PATH . '/common/models/factory',
     'app\common\collections' => APP_PATH . '/common/collections',
     'app\common\events\middleware' => APP_PATH . '/common/events/middleware/',
     'app\common\services' => APP_PATH . '/common/services/',

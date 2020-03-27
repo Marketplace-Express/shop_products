@@ -10,12 +10,12 @@ namespace app\modules\api\controllers;
 
 use app\common\requestHandler\product\{
     AbstractCreateRequestHandler,
-    DeleteRequestHandler,
     GetRequestHandler,
     UpdateQuantityRequestHandler,
     UpdateRequestHandler
 };
 use app\common\requestHandler\ProductRequestResolver;
+use Phalcon\Http\Response\StatusCode;
 
 /**
  * Class IndexController
@@ -143,18 +143,12 @@ class ProductsController extends BaseController
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
-     * @param DeleteRequestHandler $request
      */
-    public function deleteAction($id, DeleteRequestHandler $request)
+    public function deleteAction($id)
     {
         try {
-            /** @var DeleteRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getQuery(), $request);
-            if (!$request->isValid()) {
-                $request->invalidRequest();
-            }
             $this->di->getAppServices('productsService')->delete($id);
-            $request->successRequest('Deleted');
+            http_response_code(StatusCode::NO_CONTENT);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }

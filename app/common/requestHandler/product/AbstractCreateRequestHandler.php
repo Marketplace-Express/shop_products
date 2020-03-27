@@ -20,15 +20,37 @@ use app\common\validators\UuidValidator;
 
 abstract class AbstractCreateRequestHandler extends RequestAbstract
 {
+    /** @var string */
     public $title;
+
+    /** @var string */
     public $categoryId;
+
+    /** @var float */
     public $price;
-    public $quantity;
+
+    /** @var float */
     public $salePrice;
+
+    /** @var int */
+    public $quantity;
+
+    /** @var string */
     public $endSaleTime;
+
+    /** @var string */
     public $customPageId;
+
+    /** @var string */
+    public $brandId;
+
+    /** @var array */
     public $keywords;
+
+    /** @var array */
     public $segments;
+
+    /** @var bool */
     public $isPublished = false;
 
     /** @var AbstractProductRules */
@@ -54,6 +76,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
             'salePrice' => $this->salePrice,
             'endSaleTime' => $this->endSaleTime,
             'customPageId' => $this->customPageId,
+            'brandId' => $this->brandId,
             'keywords' => $this->keywords,
             'segments' => $this->segments,
             'isPublished' => $this->isPublished,
@@ -94,6 +117,13 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
 
         $validator->add(
             'customPageId',
+            new UuidValidator([
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
+            'brandId',
             new UuidValidator([
                 'allowEmpty' => true
             ])
@@ -164,7 +194,9 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
 
         $validator->add(
             'segments',
-            new SegmentsValidator()
+            new SegmentsValidator([
+                'allowEmpty' => true
+            ])
         );
 
         $validator->add(
@@ -184,7 +216,6 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     public function toArray(): array
     {
         return [
-            'productId' => $this->di->getSecurity()->getRandom()->uuid(),
             'productCategoryId' => $this->categoryId,
             'productUserId' => $this->getUserService()->userId,
             'productVendorId' => $this->getUserService()->vendorId,

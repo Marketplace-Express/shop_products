@@ -29,10 +29,19 @@ RUN set -xe && \
             ${PWD}/v${PHALCON_VERSION}.tar.gz \
             ${PWD}/cphalcon-${PHALCON_VERSION} \
         && php -m
-# Copy service config to config directory
-COPY ./utilities/setup_service.sh /usr/local/bin/
-# Run commands
-WORKDIR /usr/local/bin
-RUN chmod +x setup_service.sh && sh setup_service.sh
 # Return working directory to its default state
 WORKDIR /var/www/html
+# Install environment dependencies
+RUN apt-get -y update && \
+   apt-get install -y libfreetype6-dev libpng-dev libjpeg-dev libcurl4-gnutls-dev libyaml-dev libicu-dev libzip-dev unzip && \
+   # Install required PHP extensions
+   docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd && \
+   docker-php-ext-configure gd --with-freetype-dir=/usr/include/ \
+                                      --with-png-dir=/usr/include/ \
+                                      --with-jpeg-dir=/usr/include/ && \
+   docker-php-ext-install intl gettext gd bcmath zip pdo_mysql sockets && \
+   # Install extra extensions
+   echo '' | pecl install redis mongodb yaml && \
+   echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini && \
+   echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongodb.ini && \
+   echo "extension=yaml.so" > /usr/local/etc/php/conf.d/yaml.ini

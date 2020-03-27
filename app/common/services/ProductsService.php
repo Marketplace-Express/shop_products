@@ -8,14 +8,13 @@
 namespace app\common\services;
 
 
+use app\common\models\embedded\Properties;
 use app\common\repositories\{ProductRepository,
     ImageRepository,
     QuestionRepository,
     RateRepository,
     VariationRepository};
-use app\common\services\cache\{
-    ProductCache, ImagesCache, QuestionsCache
-};
+use app\common\services\cache\ProductCache;
 use app\common\exceptions\{
     OperationFailed, NotFound
 };
@@ -128,10 +127,12 @@ class ProductsService
     {
         $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
 
-        if (!empty($album = $this->createAlbum($data['productId']))) {
-            $data['productAlbumId'] = $album['albumId'];
-            $data['productAlbumDeleteHash'] = $album['deleteHash'];
-        }
+//        if (!empty($album = $this->createAlbum($data['productId']))) {
+//            $data['productAlbumId'] = $album['albumId'];
+//            $data['productAlbumDeleteHash'] = $album['deleteHash'];
+//        }
+        $data['productAlbumId'] = 1234;
+        $data['productAlbumDeleteHash'] = 1234;
 
         // Create product
         $product = ProductRepository::getInstance()->create($data);
@@ -216,8 +217,7 @@ class ProductsService
     public function deleteExtraInfo(string $productId): void
     {
         /** Delete product related document */
-        ProductRepository::getInstance()
-            ->getPropertiesCollection()::findFirst([
+        Properties::findFirst([
                 ['product_id' => $productId]
             ])->delete();
 

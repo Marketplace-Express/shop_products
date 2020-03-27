@@ -1,17 +1,17 @@
 <?php
 /**
  * User: Wajdi Jurry
- * Date: 31/08/2018
- * Time: 10:21 PM
+ * Date: ٣١‏/٨‏/٢٠١٩
+ * Time: ١٠:٢٠ م
  */
 
 namespace app\common\models\embedded\physical;
 
 
-class Weight
+class Dimensions
 {
-    /** @var float */
-    public $amount;
+    /** @var float[] */
+    public $dimensions;
 
     /** @var string */
     public $unit;
@@ -21,7 +21,7 @@ class Weight
      */
     public function setAttributes(array $data): void
     {
-        $this->amount = $data->amount ?? null;
+        $this->dimensions = $data->dimensions ?? [];
         $this->unit = $data->unit ?? null;
     }
 
@@ -31,7 +31,7 @@ class Weight
     public function toApiArray(): array
     {
         return [
-            'amount' => $this->amount,
+            'dimensions' => $this->dimensions,
             'unit' => $this->unit
         ];
     }

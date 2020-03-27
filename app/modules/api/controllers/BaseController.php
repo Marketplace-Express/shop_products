@@ -31,7 +31,7 @@ class BaseController extends Controller
     public function handleError(string $message, $code = 500)
     {
         $this->dispatcher->forward([
-            'namespace' => 'app\common\controllers',
+            'namespace' => 'app\modules\api\controllers',
             'controller' => 'exceptionHandler',
             'action' => 'raiseError',
             'params' => [$message, $code]

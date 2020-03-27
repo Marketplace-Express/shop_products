@@ -13,7 +13,6 @@ use app\common\exceptions\NotFound;
 use app\common\exceptions\OperationNotPermitted;
 use app\common\models\ProductImages;
 use app\common\models\ProductImagesSizes;
-use Phalcon\Mvc\Model\Resultset;
 
 class ImageRepository extends BaseRepository
 {
@@ -153,6 +152,11 @@ class ImageRepository extends BaseRepository
                 'productId' => $productId
             ]
         ]);
+
+        if (!count($allProductImages)) {
+            return false;
+        }
+
         if ($allProductImages) {
             foreach ($allProductImages as $productImage) {
                 $allDeleted = $productImage->delete();

@@ -5,7 +5,7 @@
  * Time: 10:35 م
  */
 
-namespace app\common\models;
+namespace app\common\models\embedded;
 
 
 use app\common\validators\rules\DownloadableProductRules;
@@ -16,32 +16,9 @@ use app\common\utils\DigitalUnitsConverterUtil;
  * Class DownloadableProperties
  * @package app\common\models
  */
-class DownloadableProperties extends BaseModel
+class DownloadableProperties extends Properties
 {
-    const WHITE_LIST = [
-        'productDigitalSize'
-    ];
-
-    const MODEL_ALIAS = 'dp';
-
-    /**
-     * @var int
-     * @Primary
-     * @Identity
-     * @Column(column='row_id', type="int", length=11)
-     */
-    public $rowId;
-
-    /**
-     * @var string
-     * @Column(column='product_id', type="string", length=36)
-     */
-    public $productId;
-
-    /**
-     * @var float
-     * @Column(column='product_digital_size', type='integer', length=11, nullable=false)
-     */
+    /** @var float */
     public $productDigitalSize;
 
     /**
@@ -49,39 +26,13 @@ class DownloadableProperties extends BaseModel
      */
     private $validationRules;
 
-    public function initialize()
-    {
-        $this->belongsTo(
-            'productId',
-            Product::class,
-            'productId',
-            [
-                'reusable' => true
-            ]
-        );
-    }
-
     /**
-     * @return string
+     * @param array $data
      */
-    public function getSource()
+    public function setAttributes(array $data): void
     {
-        return 'downloadable_properties';
-    }
-
-    public function columnMap()
-    {
-        return [
-            'product_id' => 'productId',
-            'product_digital_size' => 'productDigitalSize'
-        ];
-    }
-
-    public static function count($parameters = null)
-    {
-        return count(array_filter([
-            self::model()->productDigitalSize
-        ]));
+        parent::setAttributes($data);
+        $this->productDigitalSize = $data['productDigitalSize'];
     }
 
     /**
@@ -89,9 +40,9 @@ class DownloadableProperties extends BaseModel
      */
     public function toApiArray(): array
     {
-        return [
-            'productDigitalSize' => (int) $this->productDigitalSize
-        ];
+        return array_merge(parent::toApiArray(), [
+            'productDigitalSize' => DigitalUnitsConverterUtil::bytesToMb($this->productDigitalSize)
+        ]);
     }
 
     /**

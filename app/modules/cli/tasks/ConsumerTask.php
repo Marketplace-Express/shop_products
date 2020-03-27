@@ -29,7 +29,6 @@ class ConsumerTask extends Task
 
         $channel = $amqpHandler->getChannel();
 
-
         try {
             $channel->basic_qos(null, 1, null);
             $channel->basic_consume(self::SYNC_QUEUE_NAME,
@@ -41,8 +40,12 @@ class ConsumerTask extends Task
                     try {
 
                         // handle request
-                        $response = (new RequestHandler($payload['service'], $payload['service_args'], $payload['action'], $payload['data']))
-                            ->call();
+                        $response = RequestHandler::process(
+                            $payload['service'],
+                            $payload['service_args'],
+                            $payload['action'],
+                            $payload['data']
+                        );
 
                         // send response
                         $message = json_encode($response);
@@ -85,8 +88,12 @@ class ConsumerTask extends Task
             $channel->basic_consume(self::ASYNC_QUEUE_NAME, '', false, true, false, false,
                 function (AMQPMessage $message) {
                     $payload = json_decode($message->getBody(), true);
-                    (new RequestHandler($payload['service'], $payload['service_args'], $payload['method'], $payload['data']))
-                        ->call();
+                    RequestHandler::process(
+                        $payload['service'],
+                        $payload['service_args'],
+                        $payload['method'],
+                        $payload['data']
+                    );
                 }
             );
 

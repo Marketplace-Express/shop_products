@@ -30,9 +30,13 @@ class SegmentsValidator extends Validator implements ValidatorInterface
     {
         $segments = $validation->getValue($attribute);
 
-        if (empty($segments) || !property_exists($segments, 'countries')
-            || !property_exists($segments, 'age')
-            || !property_exists($segments, 'gender')
+        if (empty($segments) && $this->getOption('allowEmpty')) {
+            return true;
+        }
+
+        if (empty($segments) || !array_key_exists('countries', $segments)
+            || !array_key_exists('age', $segments)
+            || !array_key_exists('gender', $segments)
         ) {
             $validation->appendMessage(
                 new Message($this->getOption('message') ?? 'Invalid segments provided',
@@ -76,9 +80,9 @@ class SegmentsValidator extends Validator implements ValidatorInterface
         );
 
         $messages = $validator->validate([
-            'countries' => $segments->countries,
-            'age' => $segments->age,
-            'gender' => $segments->gender
+            'countries' => $segments['countries'],
+            'age' => $segments['age'],
+            'gender' => $segments['gender']
         ]);
 
         if (count($messages)) {

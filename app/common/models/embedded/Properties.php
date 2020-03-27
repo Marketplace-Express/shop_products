@@ -9,34 +9,28 @@ namespace app\common\models\embedded;
 
 
 use app\common\models\BaseCollection;
-use app\common\models\embedded\physical\PackageDimensions;
 use Phalcon\Validation;
-use app\common\validators\SegmentsValidator;
-use app\common\validators\TypeValidator;
-use app\common\validators\UuidValidator;
+use app\common\validators\{PackageDimensionsValidator, SegmentsValidator, TypeValidator, UuidValidator};
 
 /**
- * Class Product
- * @package app\common\collections
+ * Class Properties
+ * @package app\common\models\embedded
  */
 class Properties extends BaseCollection
 {
     /** @var string */
     public $product_id;
 
-    /** @var PackageDimensions */
-    public $packageDimensions;
-
     /** @var array */
     public $keywords;
 
-    /** @var \stdClass */
+    /** @var Segment */
     public $segments;
-
-    private $_oldOperationMade;
 
     /** @var bool */
     public $is_deleted = false;
+
+    private $_oldOperationMade;
 
     /**
      * @return string
@@ -46,13 +40,21 @@ class Properties extends BaseCollection
         return 'properties';
     }
 
-    /**
-     * @param array $attributes
-     */
-    public function setAttributes(array $attributes)
+    public function initialize()
     {
-        foreach ($attributes as $attribute => $value) {
-            $this->$attribute = $value;
+        $this->defaultBehavior();
+        $this->segments = new Segment();
+    }
+
+    /**
+     * @param array $data
+     */
+    public function setAttributes(array $data)
+    {
+        $this->product_id = $data['productId'];
+        $this->keywords = $data['productKeywords'] ?? [];
+        if (!empty($data['productSegments'])) {
+            $this->segments->setAttributes($data['productSegments']);
         }
     }
 
@@ -86,14 +88,6 @@ class Properties extends BaseCollection
     }
 
     /**
-     * @throws \Exception
-     */
-    public function initialize()
-    {
-        $this->defaultBehavior();
-    }
-
-    /**
      * @return bool|void
      * @throws \Exception
      */
@@ -120,20 +114,12 @@ class Properties extends BaseCollection
     /**
      * @return array
      */
-    public function toApiArray()
+    public function toApiArray(): array
     {
-        $data = [
-            'packageDimensions' => $this->packageDimensions,
+        return [
             'productKeywords' => $this->keywords,
-            'productSegments' => $this->segments
+            'productSegments' => $this->segments->toApiArray()
         ];
-
-        if ($this->packageDimensions == null) {
-            // for downloadable products
-            unset($data['packageDimensions']);
-        }
-
-        return $data;
     }
 
     /**
@@ -153,16 +139,12 @@ class Properties extends BaseCollection
             new UuidValidator()
         );
 
-        if ($this->packageDimensions) {
-            $validation->add(
-                'packageDimensions',
-                new TypeValidator([
-                    'type' => TypeValidator::TYPE_FLOAT,
-                    'allowEmpty' => false,
-                    'message' => 'Invalid Dimensions'
-                ])
-            );
-        }
+        $validation->add(
+            'packageDimensions',
+            new PackageDimensionsValidator([
+                'allowEmpty' => true
+            ])
+        );
 
         $validation->add(
             'keywords',
@@ -182,20 +164,11 @@ class Properties extends BaseCollection
             new SegmentsValidator()
         );
 
-        $fields = [
+        $this->_errorMessages = $validation->validate([
             'product_id' => $this->product_id,
             'keywords' => $this->keywords,
             'segments' => $this->segments
-        ];
-
-        if ($this->packageDimensions) {
-            $fields = array_merge($fields, [
-                'packageDimensions' => $this->packageDimensions->dimensions,
-                'packageDimensionsUnit' => $this->packageDimensions->unit,
-            ]);
-        }
-
-        $this->_errorMessages = $validation->validate($fields);
+        ]);
 
         return !$this->_errorMessages->count();
     }

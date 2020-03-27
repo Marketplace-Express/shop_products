@@ -12,40 +12,21 @@ use Phalcon\Di\Injectable;
 
 class Handler extends Injectable
 {
-    /** @var mixed */
-    protected $service;
-
-    /** @var string */
-    protected $method;
-
-    /** @var array */
-    protected $params;
-
     /**
-     * RequestHandler constructor.
-     *
      * @param string $service
+     * @param $serviceArgs
      * @param string $method
-     * @param array $params
-     * @param array $serviceArgs
+     * @param $data
+     * @return mixed
      *
      * @throws Exception
      */
-    public function __construct(string $service, array $serviceArgs, string $method, array $params = [])
+    static public function process(string $service, $serviceArgs, string $method, $data)
     {
-        $this->service = $this->getDI()->get($service, $serviceArgs);
-        if (!is_callable([$this->service, $method])) {
-            throw new Exception('Method "' . get_class($this->service) . '::' . $method . '" is not a callable method');
+        $service = \Phalcon\Di::getDefault()->get($service, $serviceArgs);
+        if (!is_callable([$service, $method])) {
+            throw new Exception('Method "' . get_class($service) . '::' . $method . '" is not a callable method');
         }
-        $this->method = $method;
-        $this->params = $params;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function call()
-    {
-        return call_user_func_array([$this->service, $this->method], $this->params);
+        return call_user_func_array([$service, $method], $data);
     }
 }

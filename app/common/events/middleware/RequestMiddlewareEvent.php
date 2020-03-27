@@ -148,7 +148,7 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
     private function handleError($errors, $code = 500)
     {
         $this->dispatcher->forward([
-            'namespace' => 'app\common\controllers',
+            'namespace' => 'app\modules\api\controllers',
             'controller' => 'exceptionHandler',
             'action' => 'raiseError',
             'params' => [$errors, $code]

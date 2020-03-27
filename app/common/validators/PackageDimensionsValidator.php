@@ -9,7 +9,7 @@ namespace app\common\validators;
 
 
 use app\common\enums\DimensionUnitsEnum;
-use app\common\models\embedded\physical\PackageDimensions;
+use app\common\models\embedded\physical\Dimensions;
 use Phalcon\Validation\Message;
 use Phalcon\Validation\Validator;
 
@@ -25,7 +25,7 @@ class PackageDimensionsValidator extends Validator
      */
     public function validate(\Phalcon\Validation $validation, $attribute)
     {
-        /** @var PackageDimensions $value */
+        /** @var Dimensions $value */
         $value = $validation->getValue($attribute);
         $allowEmpty = (bool) $this->getOption('allowEmpty');
         $dimensions = $value->dimensions;

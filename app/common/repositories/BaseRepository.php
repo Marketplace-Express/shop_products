@@ -14,6 +14,6 @@ abstract class BaseRepository
 
     static public function getInstance(): self
     {
-        return self::$repository ?? self::$repository = new static();
+        return new static;
     }
 }

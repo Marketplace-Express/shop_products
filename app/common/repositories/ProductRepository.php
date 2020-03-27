@@ -7,19 +7,27 @@
 
 namespace app\common\repositories;
 
+
+use app\common\enums\{
+    MongoQueryOperatorsEnum,
+    ProductTypesEnum
+};
+use app\common\exceptions\{
+    OperationFailed,
+    NotFound
+};
+use app\common\models\{
+    factory\PropertiesFactory,
+    embedded\Properties,
+    sorting\SortProduct,
+    DownloadableProperties,
+    PhysicalProperties,
+    Product
+};
+use app\common\interfaces\DataSourceInterface;
 use app\common\enums\QuantityOperatorsEnum;
-use app\common\models\sorting\SortProduct;
 use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
-use app\common\enums\MongoQueryOperatorsEnum;
-use app\common\enums\ProductTypesEnum;
-use app\common\exceptions\OperationFailed;
-use app\common\exceptions\NotFound;
-use app\common\interfaces\DataSourceInterface;
-use app\common\models\embedded\Properties;
-use app\common\models\DownloadableProperties;
-use app\common\models\PhysicalProperties;
-use app\common\models\Product;
 
 class ProductRepository extends BaseRepository implements DataSourceInterface
 {
@@ -32,15 +40,6 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
     public function getModel(bool $new = false, bool $attachRelations = false, bool $editMode = false)
     {
          return Product::model($new, $attachRelations, $editMode);
-    }
-
-    /**
-     * @param bool $new
-     * @return Properties
-     */
-    public function getPropertiesCollection(bool $new = false): Properties
-    {
-        return Properties::model($new);
     }
 
     /**
@@ -116,7 +115,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         }
 
         if ($getProperties) {
-            $productProperties = $this->getPropertiesCollection()::findFirst([
+            $productProperties = Properties::findFirst([
                 ['product_id' => $productId]
             ]);
             if (!empty($productProperties)) {
@@ -185,7 +184,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
 
         if ($result && $getExtraInfo) {
             $productsIds = array_column($products->toArray(), 'productId');
-            $productsExtraInfo = $this->getPropertiesCollection()::find([
+            $productsExtraInfo = Properties::find([
                 'conditions' => [
                     'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
                 ]
@@ -205,25 +204,6 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         return $result;
     }
 
-    private function getProductCollectionData(array &$data)
-    {
-        $productCollectionData = [];
-        if (!empty($data['productKeywords']) || !empty($data['productSegments'] || !empty($data['productPackageDimensions']))) {
-            $productCollectionData = [
-                'packageDimensions' => $data['productPackageDimensions'] ?? null,
-                'keywords' => $data['productKeywords'] ?? null,
-                'segments' => $data['productSegments'] ?? null,
-                'product_id' => $data['productId']
-            ];
-            unset($data['productKeywords'], $data['productSegments'], $data['productPackageDimensions']);
-
-            if($data['productType'] == ProductTypesEnum::TYPE_DOWNLOADABLE) {
-                unset($productCollectionData['productPackageDimensions']);
-            }
-        }
-        return $productCollectionData;
-    }
-
     /**
      * Create new product
      *
@@ -236,38 +216,18 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      */
     public function create(array $data): Product
     {
-        $productCollectionData = $this->getProductCollectionData($data);
-        $productModel = $this->getModel(true, true, true);
-
-        if ($data['productType'] == ProductTypesEnum::TYPE_PHYSICAL) {
-            $properties = PhysicalProperties::model(true);
-            $properties->productWeight = $data['productWeight']->amount;
-            $properties->productWeightUnit = $data['productWeight']->unit;
-            $properties->productBrandId = $data['productBrandId'];
-            $productModel->pp = $properties;
-        } elseif ($data['productType'] == ProductTypesEnum::TYPE_DOWNLOADABLE) {
-            $properties = DownloadableProperties::model(true);
-            $properties->productDigitalSize = $data['productDigitalSize'];
-            $productModel->dp = $properties;
-        } else {
-            throw new \Exception('unknown product type', 400);
-        }
+        /** @var Product $productModel */
+        $productModel = Product::model(true, false, true);
 
         if (!$productModel->create($data, $productModel::getWhiteList())) {
             throw new OperationFailed($productModel->getMessages(), 400);
         }
-
-        $productModel->assign($properties->toApiArray(), null, Product::getWhiteList());
-
-        if (!empty($productCollectionData)) {
-            $propertiesCollection = $this->getPropertiesCollection(true);
-            $propertiesCollection->setAttributes($productCollectionData);
-            if (!$propertiesCollection->save()) {
-                throw new OperationFailed($propertiesCollection->getMessages(), 400);
-            }
-            unset($productCollectionData['product_id']);
-            $productModel->assign($propertiesCollection->toApiArray(), null, Product::getWhiteList());
+        $data['productId'] = $productModel->productId;
+        $properties = PropertiesFactory::create($data['productType'], $data);
+        if (!$properties->save()) {
+            throw new OperationFailed($properties->getMessages(), 400);
         }
+        $productModel->properties = $properties;
         return $productModel;
     }
 

@@ -16,6 +16,7 @@ use app\common\utils\DigitalUnitsConverterUtil;
 
 class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandler
 {
+    /** @var int */
     public $digitalSize;
 
     /**

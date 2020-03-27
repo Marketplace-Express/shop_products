@@ -14,7 +14,7 @@ use Phalcon\Mvc\Model;
 
 trait ModelCollectionBehaviorTrait
 {
-    public static $dateFormat = 'Y-m-d G:i:s';
+    public static $dateFormat = 'c';
 
     /**
      * @throws \Exception
