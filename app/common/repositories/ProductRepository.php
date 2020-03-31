@@ -320,7 +320,12 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         return true;
     }
 
-    public function countAll(string $vendorId, ?string $categoryId = null)
+    /**
+     * @param string $vendorId
+     * @param string|null $categoryId
+     * @return mixed
+     */
+    public function countAll(string $vendorId, ?string $categoryId = null): int
     {
         $conditions = 'productVendorId = :vendorId:';
         $bind = ['vendorId' => $vendorId];
