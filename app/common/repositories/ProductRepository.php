@@ -154,7 +154,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             $conditions .= ' AND isPublished = TRUE';
         }
 
-        $products = Product::find([
+        $products = $this->getModel(true, $attachRelations, $getProperties)::find([
             'conditions' => $conditions,
             'bind' => array_merge([
                 'productVendorId' => $vendorId

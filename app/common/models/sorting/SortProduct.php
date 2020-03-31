@@ -64,6 +64,9 @@ class SortProduct
     protected function prepareDirection(): array
     {
         $this->sorting = array_map(function ($field, $order) {
+            if (!array_key_exists($order, self::ORDERING)) {
+                $order = 1;
+            }
             return $field . " " . self::ORDERING[$order];
         }, array_keys($this->sorting), $this->sorting);
 
@@ -72,11 +75,15 @@ class SortProduct
 
     /**
      * @return string
+     * @throws \Exception
      */
     public function getSqlSort(): string
     {
         $this->prepareSorting();
         $this->prepareDirection();
+        if (empty($this->sorting)) {
+            throw new \Exception('Invalid sorting arguments', 400);
+        }
         return join(', ', $this->sorting);
     }
 }

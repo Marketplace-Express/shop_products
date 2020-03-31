@@ -25,14 +25,14 @@ class ImageService
 {
     /**
      * @param File $image
-     * @param string $albumId
+     * @param string|null $albumId
      * @param string $productId
      * @return array
      * @throws NotFound
      * @throws OperationFailed
      * @throws \Exception
      */
-    public function upload(File $image, string $albumId, string $productId)
+    public function upload(File $image, ?string $albumId, string $productId)
     {
         $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
             'productCategoryId', 'productVendorId', 'productAlbumId'

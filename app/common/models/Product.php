@@ -287,6 +287,19 @@ class Product extends BaseModel
         return $query->getFirst();
     }
 
+    public static function count($parameters = null)
+    {
+        $operator = '';
+        if (!array_key_exists('conditions', $parameters)) {
+            $parameters['conditions'] = '';
+        }
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
+        return parent::count($parameters);
+    }
+
     /**
      * @return array
      */
