@@ -1,17 +1,17 @@
 <?php
 /**
  * User: Wajdi Jurry
- * Date: 08/03/19
+ * Date: 28/03/2020
  * Time: 10:34 م
  */
 
 namespace app\common\models\embedded;
 
 
-use app\common\validators\PackageDimensionsValidator;
+use app\common\validators\PackageValidator;
 use app\common\validators\WeightValidator;
 use app\common\models\embedded\physical\{
-    Dimensions,
+    Package,
     Weight
 };
 use Phalcon\Validation;
@@ -23,17 +23,43 @@ use Phalcon\Validation;
  */
 class PhysicalProperties extends Properties
 {
-    /** @var Dimensions */
-    public $packageDimensions;
+    /** @var Package */
+    public $package;
 
     /** @var Weight */
-    public $productWeight;
+    public $weight;
 
-    public function initialize()
+    /**
+     * @return Package
+     */
+    protected function getPackage(): Package
     {
-        parent::initialize();
-        $this->packageDimensions = new Dimensions();
-        $this->productWeight = new Weight();
+        if (!$this->package || !$this->package instanceof Package) {
+            $this->package = new Package();
+        }
+        return $this->package;
+    }
+
+    /**
+     * @return Weight
+     */
+    protected function getWeight(): Weight
+    {
+        if (!$this->weight || !$this->weight instanceof Weight) {
+            $this->weight = new Weight();
+        }
+        return $this->weight;
+    }
+
+    /**
+     * @return array
+     */
+    public function attributes(): array
+    {
+        return array_merge(parent::attributes(), [
+            'package',
+            'weight'
+        ]);
     }
 
     /**
@@ -42,12 +68,8 @@ class PhysicalProperties extends Properties
     public function setAttributes(array $data)
     {
         parent::setAttributes($data);
-        if (!empty($data['productPackageDimensions'])) {
-            $this->packageDimensions = $data['productPackageDimensions'];
-        }
-        if (!empty($data['productWeight'])) {
-            $this->productWeight = $data['productWeight'];
-        }
+        $this->getPackage()->setAttributes($data['package']);
+        $this->getWeight()->setAttributes($data['weight']);
     }
 
     /**
@@ -56,8 +78,8 @@ class PhysicalProperties extends Properties
     public function toApiArray(): array
     {
         return array_merge(parent::toApiArray(), [
-            'packageDimensions' => $this->packageDimensions->toApiArray(),
-            'productWeight' => $this->productWeight->toApiArray()
+            'package' => $this->package,
+            'weight' => $this->weight
         ]);
     }
 
@@ -69,22 +91,22 @@ class PhysicalProperties extends Properties
         $validation = new Validation();
 
         $validation->add(
-            'productWeight',
+            'weight',
             new WeightValidator([
                 'allowEmpty' => true
             ])
         );
 
         $validation->add(
-            'packageDimensions',
-            new PackageDimensionsValidator([
+            'package',
+            new PackageValidator([
                 'allowEmpty' => true
             ])
         );
 
         $this->_errorMessages = $validation->validate([
-            'productWeight' => $this->productWeight,
-            'packageDimensions' => $this->packageDimensions
+            'weight' => $this->weight,
+            'package' => $this->package
         ]);
 
         return !$this->_errorMessages->count();

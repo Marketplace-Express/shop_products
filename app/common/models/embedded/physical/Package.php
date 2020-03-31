@@ -8,7 +8,7 @@
 namespace app\common\models\embedded\physical;
 
 
-class Dimensions
+class Package
 {
     /** @var float[] */
     public $dimensions;
@@ -17,12 +17,14 @@ class Dimensions
     public $unit;
 
     /**
-     * @param array $data
+     * @param mixed $data
      */
-    public function setAttributes(array $data): void
+    public function setAttributes($data): void
     {
-        $this->dimensions = $data->dimensions ?? [];
-        $this->unit = $data->unit ?? null;
+        if (!empty($data)) {
+            $this->dimensions = $data->dimensions ?? [];
+            $this->unit = $data->unit ?? null;
+        }
     }
 
     /**
@@ -31,7 +33,7 @@ class Dimensions
     public function toApiArray(): array
     {
         return [
-            'dimensions' => $this->dimensions,
+            'dimensions' => $this->dimensions ? array_map('floatval', $this->dimensions) : [],
             'unit' => $this->unit
         ];
     }

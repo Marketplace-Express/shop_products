@@ -8,11 +8,14 @@
 namespace app\common\models\embedded;
 
 
-use app\common\models\BaseModel;
-use app\common\models\Product;
-use app\common\models\ProductImages;
-use app\common\traits\ModelCollectionBehaviorTrait;
+use app\common\validators\SkuValidator;
+use app\common\models\{
+    BaseModel,
+    Product,
+    ProductImages
+};
 use app\common\validators\UuidValidator;
+use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Validation;
 
 /**
@@ -22,8 +25,6 @@ use Phalcon\Validation;
  */
 class Variation extends BaseModel
 {
-    use ModelCollectionBehaviorTrait;
-
     const WHITE_LIST = [
         'productId',
         'quantity',
@@ -60,7 +61,7 @@ class Variation extends BaseModel
 
     /**
      * @var string
-     * @Column(column='image_id', type='varchar', length=36)
+     * @Column(column='image_id', type='varchar', length=36, nullable=true)
      */
     public $imageId;
 
@@ -75,6 +76,12 @@ class Variation extends BaseModel
      * @Column(column='sale_price', type='float', default=0)
      */
     public $salePrice = 0;
+
+    /**
+     * @var string
+     * @Column(column='sku', type='string', nullable=false)
+     */
+    public $sku;
 
     /**
      * @var \DateTime
@@ -99,6 +106,12 @@ class Variation extends BaseModel
      * @Column(column='is_deleted', type='boolean', nullable=false, default=false)
      */
     public $isDeleted = false;
+
+    /**
+     * @var string
+     * @Column(column='deletion_token', type='string', length=36, default='N/A')
+     */
+    public $deletionToken = 'N/A';
 
     /**
      * @var VariationProperties
@@ -150,20 +163,45 @@ class Variation extends BaseModel
         );
     }
 
+    /**
+     * Allows to query a set of records that match the specified conditions
+     *
+     * @param mixed $parameters
+     * @return self[]
+     */
+    static public function find($parameters = null)
+    {
+        $operator = '';
+        if (!array_key_exists('conditions', $parameters)) {
+            $parameters['conditions'] = '';
+        }
+        if (!empty($parameters['conditions'])) {
+            $operator = ' AND ';
+        }
+        $parameters['conditions'] .= $operator.'isDeleted = false';
+        return parent::find($parameters);
+    }
+
+    /**
+     * @param null $parameters
+     * @return \Phalcon\Mvc\Model|Variation
+     */
+    public static function findFirst($parameters = null)
+    {
+        /** @var ResultsetInterface $models */
+        $models = self::find($parameters);
+        return $models->getFirst();
+    }
+
     public function beforeValidationOnCreate()
     {
         $this->variationId = $this->getDI()->getSecurity()->getRandom()->uuid();
     }
 
-    public function beforeValidationOnUpdate()
-    {
-        $this->createdAt = $this->createdAt->format(self::$dateFormat);
-        $this->updatedAt = $this->updatedAt ? $this->updatedAt->format(self::$dateFormat) : null;
-    }
-
     public function beforeDelete()
     {
         $this->operationMode = self::OP_DELETE;
+        $this->deletionToken = $this->getDI()->getSecurity()->getRandom()->base58();
     }
 
     public function afterUpdate()
@@ -183,8 +221,6 @@ class Variation extends BaseModel
      */
     public function afterFetch()
     {
-        $this->createdAt = new \DateTime($this->createdAt);
-        $this->updatedAt = $this->updatedAt ? new \DateTime($this->updatedAt) : null;
         $this->properties = VariationProperties::findFirst([
             'conditions' => [
                 'variationId' => $this->variationId
@@ -192,6 +228,9 @@ class Variation extends BaseModel
         ]);
     }
 
+    /**
+     * @return array
+     */
     public function columnMap(): array
     {
         return [
@@ -202,6 +241,7 @@ class Variation extends BaseModel
             'image_id' => 'imageId',
             'price' => 'price',
             'sale_price' => 'salePrice',
+            'sku' => 'sku',
             'created_at' => 'createdAt',
             'updated_at' => 'updatedAt',
             'deleted_at' => 'deleted_at',
@@ -253,7 +293,8 @@ class Variation extends BaseModel
             'properties' => $this->getProperties(true),
             'quantity' => (int) $this->quantity,
             'price' => (float) $this->price,
-            'salePrice' => (float) $this->salePrice
+            'salePrice' => (float) $this->salePrice,
+            'sku' => $this->sku
         ];
     }
 
@@ -263,6 +304,7 @@ class Variation extends BaseModel
     public function validation(): bool
     {
         $validation = new Validation();
+        $validation->bind($this, $this->toArray());
 
         $validation->add(
             ['productId', 'userId'],
@@ -283,7 +325,8 @@ class Variation extends BaseModel
         $validation->add(
             'price',
             new Validation\Validator\NumericValidator([
-                'min' => 1
+                'min' => 1,
+                'allowFloat' => true
             ])
         );
 
@@ -291,16 +334,32 @@ class Variation extends BaseModel
             'salePrice',
             new Validation\Validator\NumericValidator([
                 'min' => 0,
+                'allowFloat' => true,
                 'allowEmpty' => true
             ])
         );
+
+        $validation->add(
+            'sku',
+            new SkuValidator()
+        );
+
+        if ($this->operationMode != self::OP_DELETE) {
+            $validation->add(
+                ['productId', 'sku', 'isDeleted'],
+                new Validation\Validator\Uniqueness([
+                    'message' => 'SKU should be unique per variation'
+                ])
+            );
+        }
 
         $this->_errorMessages = $validation->validate([
             'productId' => $this->productId,
             'userId' => $this->userId,
             'quantity' => $this->quantity,
             'price' => $this->price,
-            'salePrice' => $this->salePrice
+            'salePrice' => $this->salePrice,
+            'sku' => $this->sku
         ]);
 
         return !count($this->_errorMessages);

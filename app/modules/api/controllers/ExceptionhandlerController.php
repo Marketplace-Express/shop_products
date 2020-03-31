@@ -16,14 +16,10 @@ class ExceptionhandlerController extends Controller
      * @param int $code
      * @return \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
      */
-    public function raiseErrorAction($errors, $code)
+    public function raiseErrorAction($errors, int $code)
     {
         if (!is_array($errors) && !is_object($errors) && ($jsonError = json_decode($errors, true)) != null) {
             $errors = $jsonError;
-        }
-
-        if (!is_int($code)) {
-            $code = (int) $code;
         }
 
         /**

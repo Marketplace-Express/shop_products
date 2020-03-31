@@ -47,8 +47,8 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     /** @var array */
     public $keywords;
 
-    /** @var array */
-    public $segments;
+    /** @var \app\common\models\embedded\Segment */
+    public $segment;
 
     /** @var bool */
     public $isPublished = false;
@@ -78,7 +78,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
             'customPageId' => $this->customPageId,
             'brandId' => $this->brandId,
             'keywords' => $this->keywords,
-            'segments' => $this->segments,
+            'segment' => $this->segment,
             'isPublished' => $this->isPublished,
             'quantity' => $this->quantity
         ];
@@ -178,8 +178,8 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
             'keywords',
             new Validation\Validator\Callback([
                 'callback' => function($data) {
-                    if (!is_array($data['keywords'])) {
-                        return false;
+                    if (empty($data['keywords'])) {
+                        return true;
                     }
                     foreach ($data['keywords'] as $keyword) {
                         if (preg_match('/[\'^£$%&*()}{@#~?><>,|=_+¬-]/', $keyword)) {
@@ -193,7 +193,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
         );
 
         $validator->add(
-            'segments',
+            'segment',
             new SegmentsValidator([
                 'allowEmpty' => true
             ])
@@ -225,10 +225,10 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
             'productQuantity' => $this->quantity,
             'productSalePrice' => $this->salePrice,
             'productSaleEndTime' => $this->endSaleTime,
-            'productKeywords' => $this->keywords,
-            'productSegments' => $this->segments,
             'productLinkSlug' => (new Slug())->generate($this->title),
-            'isPublished' => $this->isPublished
+            'isPublished' => $this->isPublished,
+            'keywords' => $this->keywords,
+            'segment' => $this->segment,
         ];
     }
 }

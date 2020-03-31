@@ -8,7 +8,6 @@
 namespace app\common\traits;
 
 use MongoDB\BSON\UTCDateTime;
-use Phalcon\Mvc\Collection;
 use Phalcon\Mvc\MongoCollection;
 use Phalcon\Mvc\Model;
 
@@ -23,17 +22,17 @@ trait ModelCollectionBehaviorTrait
     {
         $modelType = self::getType();
         if ($modelType === Model::class) {
-            $this->addBehavior(new Model\Behavior\SoftDelete([
+            $this->addBehavior(new \Phalcon\Mvc\Model\Behavior\SoftDelete([
                 'field' => 'isDeleted',
-                'value' => 1
+                'value' => true
             ]));
 
-            $this->addBehavior(new Model\Behavior\SoftDelete([
+            $this->addBehavior(new \Phalcon\Mvc\Model\Behavior\SoftDelete([
                 'field' => 'deletedAt',
                 'value' => date(self::$dateFormat, time())
             ]));
 
-            $this->addBehavior(new Model\Behavior\Timestampable([
+            $this->addBehavior(new \Phalcon\Mvc\Model\Behavior\Timestampable([
                 'beforeValidationOnCreate' => [
                     'field' => 'createdAt',
                     'format' => self::$dateFormat
@@ -46,17 +45,17 @@ trait ModelCollectionBehaviorTrait
 
         } elseif ($modelType === MongoCollection::class) {
 
-            $this->addBehavior(new Collection\Behavior\SoftDelete([
+            $this->addBehavior(new \Phalcon\Mvc\Collection\Behavior\SoftDelete([
                 'field' => 'is_deleted',
                 'value' => true
             ]));
 
-            $this->addBehavior(new Collection\Behavior\SoftDelete([
+            $this->addBehavior(new \Phalcon\Mvc\Collection\Behavior\SoftDelete([
                 'field' => 'deleted_at',
                 'value' => new UTCDateTime()
             ]));
 
-            $this->addBehavior(new Collection\Behavior\Timestampable([
+            $this->addBehavior(new \Phalcon\Mvc\Collection\Behavior\Timestampable([
                 'beforeCreate' => [
                     'field' => 'created_at',
                     'generator' => function() {

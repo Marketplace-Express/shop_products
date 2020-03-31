@@ -10,19 +10,32 @@ namespace app\common\models\embedded\physical;
 
 class Weight
 {
-    /** @var float */
+    /** @var float|null */
     public $amount;
 
-    /** @var string */
+    /** @var string|null */
     public $unit;
 
     /**
-     * @param array $data
+     * @return array
      */
-    public function setAttributes(array $data): void
+    public function attributes(): array
     {
-        $this->amount = $data->amount ?? null;
-        $this->unit = $data->unit ?? null;
+        return [
+            'amount',
+            'unit'
+        ];
+    }
+
+    /**
+     * @param mixed $data
+     */
+    public function setAttributes($data): void
+    {
+        if (!empty($data)) {
+            $this->amount = $data->amount ?? null;
+            $this->unit = $data->unit ?? null;
+        }
     }
 
     /**

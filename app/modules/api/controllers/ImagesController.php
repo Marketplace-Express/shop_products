@@ -8,11 +8,11 @@
 namespace app\modules\api\controllers;
 
 
-use app\common\requestHandler\image\{
-    DeleteRequestHandler,
+use app\common\services\ImageService;
+use app\common\requestHandler\image\{DeleteRequestHandler,
+    MakeMainImageRequestHandler,
     UpdateOrderRequestHandler,
-    UploadRequestHandler
-};
+    UploadRequestHandler};
 
 /**
  * Class ImagesController
@@ -21,21 +21,32 @@ use app\common\requestHandler\image\{
  */
 class ImagesController extends BaseController
 {
-    private $albumId;
-    private $productId;
+    /** @var ImageService */
+    private $service;
+
+    /** @var \JsonMapper */
+    private $mapper;
 
     /**
-     * @throws \Exception
+     * @param ImageService $service
      */
+    protected function setService(ImageService $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
+     * @param \JsonMapper $mapper
+     */
+    protected function setMapper(\JsonMapper $mapper)
+    {
+        $this->mapper = $mapper;
+    }
+
     public function initialize()
     {
-        $albumId = $this->request->get('albumId');
-        $productId = $this->request->get('productId');
-        if (!isset($albumId) || !$this->getUuidUtil()->isValid($productId)) {
-            throw new \Exception('Invalid album Id or product Id');
-        }
-        $this->albumId = $albumId;
-        $this->productId = $productId;
+        $this->setService($this->di->getAppServices('imageService'));
+        $this->setMapper($this->di->get('jsonMapper'));
     }
 
     /**
@@ -47,11 +58,11 @@ class ImagesController extends BaseController
     {
         try {
             /** @var UploadRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getPost(), $request);
+            $request = $this->mapper->map($this->request->getPost(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $image = call_user_func_array([$this->di->getAppServices('imageService'), 'upload'], $request->toArray());
+            $image = call_user_func_array([$this->service, 'upload'], $request->toArray());
             $request->successRequest($image);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -68,11 +79,11 @@ class ImagesController extends BaseController
     {
         try {
             /** @var DeleteRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getQuery(), $request);
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->di->getAppServices('imageService')->delete(
+            $this->service->delete(
                 $request->productId,
                 $id,
                 $request->albumId,
@@ -86,12 +97,15 @@ class ImagesController extends BaseController
 
     /**
      * @param $id
+     * @param MakeMainImageRequestHandler $request
      * @Put('/makeMain/{id:[0-9a-zA-Z]{7}}')
      */
-    public function makeMainAction($id)
+    public function makeMainAction($id, MakeMainImageRequestHandler $request)
     {
         try {
-            $this->di->getAppServices('imageService')->makeMainImage($id, $this->productId);
+            /** @var MakeMainImageRequestHandler $request */
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
+            $this->service->makeMainImage($id, $request->productId);
             http_response_code(204);
             $this->response->send();
         } catch (\Throwable $exception) {
@@ -108,11 +122,11 @@ class ImagesController extends BaseController
     {
         try {
             /** @var UpdateOrderRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->di->getAppServices('imageService')->updateOrder($this->productId, $id, $request->order);
+            $this->service->updateOrder($request->productId, $id, $request->order);
             $request->successRequest(null, 204);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());

@@ -8,6 +8,7 @@
 namespace app\common\validators;
 
 
+use app\common\models\embedded\Segment;
 use Phalcon\Validation;
 use Phalcon\Validation\Message;
 use Phalcon\Validation\Validator;
@@ -34,14 +35,8 @@ class SegmentsValidator extends Validator implements ValidatorInterface
             return true;
         }
 
-        if (empty($segments) || !array_key_exists('countries', $segments)
-            || !array_key_exists('age', $segments)
-            || !array_key_exists('gender', $segments)
-        ) {
-            $validation->appendMessage(
-                new Message($this->getOption('message') ?? 'Invalid segments provided',
-                    $attribute)
-            );
+        if (!$segments instanceof Segment) {
+            $validation->appendMessage(new Message('Invalid segment format', 'segments'));
             return false;
         }
 
@@ -80,9 +75,9 @@ class SegmentsValidator extends Validator implements ValidatorInterface
         );
 
         $messages = $validator->validate([
-            'countries' => $segments['countries'],
-            'age' => $segments['age'],
-            'gender' => $segments['gender']
+            'countries' => $segments->countries,
+            'age' => $segments->age,
+            'gender' => $segments->gender
         ]);
 
         if (count($messages)) {

@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductImagesSizesMigration_101
+ * Class ProductImagesSizesMigration_102
  */
-class ProductImagesSizesMigration_101 extends Migration
+class ProductImagesSizesMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -25,7 +25,7 @@ class ProductImagesSizesMigration_101 extends Migration
                             'type' => Column::TYPE_INTEGER,
                             'notNull' => true,
                             'autoIncrement' => true,
-                            'size' => 11,
+                            'size' => 1,
                             'first' => true
                         ]
                     ),
@@ -100,7 +100,7 @@ class ProductImagesSizesMigration_101 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['row_id'], 'PRIMARY'),
-                    new Index('product_images_sizes_product_images_image_id_fk', ['image_id'])
+                    new Index('product_images_sizes_product_images_image_id_fk', ['image_id'], null)
                 ],
                 'references' => [
                     new Reference(
@@ -117,7 +117,7 @@ class ProductImagesSizesMigration_101 extends Migration
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',
-                    'AUTO_INCREMENT' => '1',
+                    'AUTO_INCREMENT' => '',
                     'ENGINE' => 'InnoDB',
                     'TABLE_COLLATION' => 'utf8mb4_0900_ai_ci'
                 ],

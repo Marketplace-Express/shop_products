@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductVariationsMigration_101
+ * Class ProductVariationsMigration_102
  */
-class ProductVariationsMigration_101 extends Migration
+class ProductVariationsMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -43,7 +43,7 @@ class ProductVariationsMigration_101 extends Migration
                             'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
-                            'size' => 11,
+                            'size' => 1,
                             'after' => 'product_id'
                         ]
                     ),
@@ -70,6 +70,7 @@ class ProductVariationsMigration_101 extends Migration
                             'type' => Column::TYPE_FLOAT,
                             'default' => "0",
                             'notNull' => true,
+                            'size' => 1,
                             'after' => 'image_id'
                         ]
                     ),
@@ -78,7 +79,17 @@ class ProductVariationsMigration_101 extends Migration
                         [
                             'type' => Column::TYPE_FLOAT,
                             'default' => "0",
+                            'size' => 1,
                             'after' => 'price'
+                        ]
+                    ),
+                    new Column(
+                        'sku',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'notNull' => true,
+                            'size' => 100,
+                            'after' => 'sale_price'
                         ]
                     ),
                     new Column(
@@ -86,7 +97,7 @@ class ProductVariationsMigration_101 extends Migration
                         [
                             'type' => Column::TYPE_DATETIME,
                             'notNull' => true,
-                            'after' => 'sale_price'
+                            'after' => 'sku'
                         ]
                     ),
                     new Column(
@@ -112,13 +123,22 @@ class ProductVariationsMigration_101 extends Migration
                             'size' => 1,
                             'after' => 'deleted_at'
                         ]
+                    ),
+                    new Column(
+                        'deletion_token',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'default' => "N/A",
+                            'size' => 36,
+                            'after' => 'is_deleted'
+                        ]
                     )
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['variation_id'], 'PRIMARY'),
-                    new Index('product_variations_variation_id_image_id_deleted_at_uindex', ['variation_id', 'image_id', 'deleted_at'], 'UNIQUE'),
-                    new Index('product_variations_product_product_id_fk', ['product_id']),
-                    new Index('product_variations_product_images_image_id_fk', ['image_id'])
+                    new Index('product_variations_uindex', ['product_id', 'sku', 'is_deleted', 'deletion_token'], 'UNIQUE'),
+                    new Index('product_variations_product_product_id_fk', ['product_id'], null),
+                    new Index('product_variations_product_images_image_id_fk', ['image_id'], null)
                 ],
                 'references' => [
                     new Reference(

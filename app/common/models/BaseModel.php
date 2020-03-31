@@ -31,33 +31,6 @@ abstract class BaseModel extends Model implements \ArrayAccess
         return !empty(self::$instance) && !$new ? self::$instance : new static;
     }
 
-    /**
-     * @param null $filter
-     * @return array|Model\MessageInterface[]
-     */
-    public function getMessages($filter = null)
-    {
-        // TODO: TO BE ENHANCED LATER
-        $messages = [];
-        $multiErrorFields = [];
-        $errorMessages = parent::getMessages() ?: [];
-        foreach ($errorMessages as $message) {
-            if (is_string($message)) {
-                return [$message];
-            }
-            $multiErrorFields[] = $message->getField();
-        }
-        $multiErrorFields = array_diff_assoc($multiErrorFields, array_unique($multiErrorFields));
-
-        foreach ($errorMessages as $message) {
-            if (in_array($message->getField(), $multiErrorFields)) {
-                $messages[$message->getField()][] = $message->getMessage();
-            } else {
-                $messages[$message->getField()] = $message->getMessage();
-            }
-        }
-        return $messages;
-    }
 
     /**
      * @return string

@@ -47,7 +47,7 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
      */
     public function validate(): Group
     {
-        $validator = parent::mainValidator();
+        $validator = $this->mainValidator();
 
         $validator->add(
             'digitalSize',
@@ -78,7 +78,7 @@ class CreateDownloadableProductRequestHandler extends AbstractCreateRequestHandl
     {
         return array_merge(parent::toArray(), [
             'productType' => ProductTypesEnum::TYPE_DOWNLOADABLE,
-            'productDigitalSize' => $this->digitalSize
+            'digitalSize' => $this->digitalSize
         ]);
     }
 }

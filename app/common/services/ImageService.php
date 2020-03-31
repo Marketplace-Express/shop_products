@@ -11,6 +11,7 @@ namespace app\common\services;
 use app\common\enums\AccessLevelsEnum;
 use app\common\exceptions\OperationNotPermitted;
 use app\common\services\cache\ImagesCache;
+use Mechpave\ImgurClient\Entity\Album;
 use Mechpave\ImgurClient\Entity\ImageInterface;
 use Phalcon\Di;
 use Phalcon\Http\Request\File;
@@ -26,17 +27,28 @@ class ImageService
      * @param File $image
      * @param string $albumId
      * @param string $productId
-     * @param bool $isVariationImage
      * @return array
      * @throws NotFound
      * @throws OperationFailed
      * @throws \Exception
      */
-    public function upload(File $image, string $albumId, string $productId, bool $isVariationImage)
+    public function upload(File $image, string $albumId, string $productId)
     {
         $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
             'productCategoryId', 'productVendorId', 'productAlbumId'
         ]);
+
+        if (empty($simpleProductData['productAlbumId']) && !empty($album = $this->createAlbum($productId))) {
+            ProductRepository::getInstance()->setAlbum($productId, $album);
+            // Override product data
+            $simpleProductData = [
+                'productCategoryId' => $simpleProductData['productCategoryId'],
+                'productVendorId' => $simpleProductData['productVendorId'],
+                'productAlbumId' => $album['albumId']
+            ];
+            // Override sent album id
+            $albumId = $album['albumId'];
+        }
 
         if ($albumId != $simpleProductData['productAlbumId']) {
             throw new \Exception('incorrect product album id', 400);
@@ -49,7 +61,7 @@ class ImageService
         );
 
         /** @var ImageInterface $uploaded */
-        $uploaded = (new ImgurUtil())
+        $uploaded = Di::getDefault()->getImageUploader()
             ->uploadImage(
                 $config->uploadDir . $newImageName,
                 $image->getName(),
@@ -68,8 +80,7 @@ class ImageService
                 $uploaded->getSize(),
                 $uploaded->getDeleteHash(),
                 $uploaded->getName(),
-                $uploaded->getLink(),
-                $isVariationImage
+                $uploaded->getLink()
             );
 
             ImageRepository::getInstance()->saveSizes($image, $image->imageLink);
@@ -111,7 +122,9 @@ class ImageService
      */
     public function makeMainImage(string $imageId, string $productId)
     {
-        $images = ImageRepository::getInstance()->makeMainImage($imageId, $productId);
+        $images = array_map(function ($image) {
+            return $image->toApiArray();
+        }, ImageRepository::getInstance()->makeMainImage($imageId, $productId));
         ImagesCache::getInstance()->invalidateProductImages($productId);
         ImagesCache::getInstance()->bulkProductSet($productId, $images);
     }
@@ -126,6 +139,25 @@ class ImageService
     public function updateOrder(string $productId, string $imageId, int $order = 0)
     {
         $image = ImageRepository::getInstance()->updateOrder($imageId, $order);
-        ImagesCache::getInstance()->set($productId, $image);
+        ImagesCache::getInstance()->set($productId, $image->toApiArray());
+    }
+
+
+    /**
+     * @param string $productId
+     * @return array
+     */
+    private function createAlbum(string $productId): array
+    {
+        $data = [];
+        /** @var Album $album */
+        $album = Di::getDefault()->getImageUploader()->createAlbum($productId);
+        if (!empty($album)) {
+            $data = [
+                'albumId' => $album->getAlbumId(),
+                'deleteHash' => $album->getDeleteHash()
+            ];
+        }
+        return $data;
     }
 }

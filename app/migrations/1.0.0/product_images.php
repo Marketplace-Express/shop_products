@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductImagesMigration_100
+ * Class ProductImagesMigration_102
  */
-class ProductImagesMigration_100 extends Migration
+class ProductImagesMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -50,7 +50,6 @@ class ProductImagesMigration_100 extends Migration
                         [
                             'type' => Column::TYPE_TEXT,
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'product_id'
                         ]
                     ),
@@ -60,7 +59,7 @@ class ProductImagesMigration_100 extends Migration
                             'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
-                            'size' => 11,
+                            'size' => 1,
                             'after' => 'image_link'
                         ]
                     ),
@@ -76,7 +75,7 @@ class ProductImagesMigration_100 extends Migration
                         'image_width',
                         [
                             'type' => Column::TYPE_INTEGER,
-                            'size' => 4,
+                            'size' => 1,
                             'after' => 'image_type'
                         ]
                     ),
@@ -84,7 +83,7 @@ class ProductImagesMigration_100 extends Migration
                         'image_height',
                         [
                             'type' => Column::TYPE_INTEGER,
-                            'size' => 4,
+                            'size' => 1,
                             'after' => 'image_width'
                         ]
                     ),
@@ -110,7 +109,7 @@ class ProductImagesMigration_100 extends Migration
                             'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
-                            'size' => 4,
+                            'size' => 1,
                             'after' => 'image_name'
                         ]
                     ),
@@ -120,7 +119,6 @@ class ProductImagesMigration_100 extends Migration
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'image_order'
                         ]
                     ),
@@ -128,7 +126,6 @@ class ProductImagesMigration_100 extends Migration
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'created_at'
                         ]
                     ),
@@ -174,7 +171,7 @@ class ProductImagesMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['image_id'], 'PRIMARY'),
-                    new Index('images_listing_index', ['product_id', 'is_deleted'])
+                    new Index('images_listing_index', ['product_id', 'is_deleted'], null)
                 ],
                 'references' => [
                     new Reference(

@@ -24,12 +24,14 @@ class PropertiesFactory
      * @param array $data
      * @return DownloadableProperties|PhysicalProperties
      */
-    static public function create(string $type, array $data)
+    static public function create(string $type, array $data = [])
     {
         /** @var PhysicalProperties|DownloadableProperties $properties */
         $properties = self::TYPES[$type];
         $properties = new $properties;
-        $properties->setAttributes($data);
+        if ($data) {
+            $properties->setAttributes($data);
+        }
         return $properties;
     }
 }

@@ -19,10 +19,14 @@ class SortProduct
     ];
 
     const FIELD_MAPPING = [
+        'id' => 'productId',
         'name' => 'productTitle',
         'price' => 'productPrice',
         'createdAt' => 'createdAt'
     ];
+
+    /** @var string */
+    public $id;
 
     /** @var int */
     public $name;

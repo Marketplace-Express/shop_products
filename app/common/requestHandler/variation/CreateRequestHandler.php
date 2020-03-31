@@ -11,9 +11,8 @@ namespace app\common\requestHandler\variation;
 use app\common\requestHandler\RequestAbstract;
 use app\common\services\user\UserService;
 use app\common\validators\rules\CommonVariationRules;
+use app\common\validators\SkuValidator;
 use app\common\validators\TypeValidator;
-use app\common\validators\UuidValidator;
-use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 
@@ -29,6 +28,9 @@ class CreateRequestHandler extends RequestAbstract
     public $salePrice;
 
     /** @var string */
+    public $sku;
+
+    /** @var string */
     public $imageId;
 
     /** @var array */
@@ -39,11 +41,10 @@ class CreateRequestHandler extends RequestAbstract
 
     /**
      * CreateRequestHandler constructor.
-     * @param Controller $controller
      */
-    public function __construct(Controller $controller)
+    public function __construct()
     {
-        parent::__construct($controller, new CommonVariationRules());
+        parent::__construct(new CommonVariationRules());
     }
 
     /**
@@ -72,7 +73,8 @@ class CreateRequestHandler extends RequestAbstract
         $validator->add(
             'price',
             new Validation\Validator\NumericValidator([
-                'min' => 0
+                'min' => 0,
+                'allowFloat' => true
             ])
         );
 
@@ -80,6 +82,7 @@ class CreateRequestHandler extends RequestAbstract
             'salePrice',
             new Validation\Validator\NumericValidator([
                 'min' => 0,
+                'allowFloat' => true,
                 'allowEmpty' => true
             ])
         );
@@ -91,12 +94,18 @@ class CreateRequestHandler extends RequestAbstract
             ])
         );
 
+        $validator->add(
+            'sku',
+            new SkuValidator()
+        );
+
         // TODO: validate attributes from categories service
 
         return $validator->validate([
             'quantity' => $this->quantity,
             'price' => $this->price,
-            'salePrice' => $this->salePrice
+            'salePrice' => $this->salePrice,
+            'sku' => $this->sku
         ]);
     }
 
@@ -111,7 +120,8 @@ class CreateRequestHandler extends RequestAbstract
             'price' => $this->price,
             'salePrice' => $this->salePrice,
             'imageId' => $this->imageId,
-            'attributes' => $this->attributes
+            'attributes' => $this->attributes,
+            'sku' => $this->sku
         ];
     }
 }

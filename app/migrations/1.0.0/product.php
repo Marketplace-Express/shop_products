@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductMigration_100
+ * Class ProductMigration_102
  */
-class ProductMigration_100 extends Migration
+class ProductMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -60,7 +60,6 @@ class ProductMigration_100 extends Migration
                         [
                             'type' => Column::TYPE_TEXT,
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'product_user_id'
                         ]
                     ),
@@ -68,7 +67,6 @@ class ProductMigration_100 extends Migration
                         'product_link_slug',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'size' => 1,
                             'after' => 'product_title'
                         ]
                     ),
@@ -94,18 +92,24 @@ class ProductMigration_100 extends Migration
                         'product_album_id',
                         [
                             'type' => Column::TYPE_VARCHAR,
-                            'notNull' => true,
                             'size' => 10,
                             'after' => 'product_custom_page_id'
+                        ]
+                    ),
+                    new Column(
+                        'product_brand_id',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'size' => 36,
+                            'after' => 'product_album_id'
                         ]
                     ),
                     new Column(
                         'product_album_delete_hash',
                         [
                             'type' => Column::TYPE_VARCHAR,
-                            'notNull' => true,
                             'size' => 20,
-                            'after' => 'product_album_id'
+                            'after' => 'product_brand_id'
                         ]
                     ),
                     new Column(
@@ -131,7 +135,6 @@ class ProductMigration_100 extends Migration
                         'product_sale_end_time',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'product_sale_price'
                         ]
                     ),
@@ -140,7 +143,7 @@ class ProductMigration_100 extends Migration
                         [
                             'type' => Column::TYPE_INTEGER,
                             'notNull' => true,
-                            'size' => 11,
+                            'size' => 1,
                             'after' => 'product_sale_end_time'
                         ]
                     ),
@@ -150,7 +153,6 @@ class ProductMigration_100 extends Migration
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'size' => 1,
                             'after' => 'product_quantity'
                         ]
                     ),
@@ -158,7 +160,6 @@ class ProductMigration_100 extends Migration
                         'updated_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'created_at'
                         ]
                     ),
@@ -166,7 +167,6 @@ class ProductMigration_100 extends Migration
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'updated_at'
                         ]
                     ),
@@ -193,7 +193,7 @@ class ProductMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['product_id'], 'PRIMARY'),
-                    new Index('product_listing_index', ['product_category_id', 'product_vendor_id', 'is_published', 'is_deleted'])
+                    new Index('product_listing_index', ['product_category_id', 'product_vendor_id', 'is_published', 'is_deleted'], null)
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',

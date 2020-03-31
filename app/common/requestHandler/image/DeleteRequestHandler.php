@@ -16,14 +16,10 @@ use Phalcon\Validation\Message\Group;
 
 class DeleteRequestHandler extends RequestAbstract
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $albumId;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $productId;
 
     /**
@@ -51,11 +47,7 @@ class DeleteRequestHandler extends RequestAbstract
 
         $validator->add(
             'albumId',
-            new Validation\Validator\Regex([
-                'pattern' => '/([a-z0-9]){7}/i',
-                'allowEmpty' => false,
-                'message' => 'Invalid album Id'
-            ])
+            new Validation\Validator\PresenceOf()
         );
 
         $validator->add(

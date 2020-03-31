@@ -9,8 +9,7 @@ namespace app\common\repositories;
 
 
 use app\common\enums\{
-    MongoQueryOperatorsEnum,
-    ProductTypesEnum
+    MongoQueryOperatorsEnum
 };
 use app\common\exceptions\{
     OperationFailed,
@@ -20,14 +19,14 @@ use app\common\models\{
     factory\PropertiesFactory,
     embedded\Properties,
     sorting\SortProduct,
-    DownloadableProperties,
-    PhysicalProperties,
     Product
 };
 use app\common\interfaces\DataSourceInterface;
 use app\common\enums\QuantityOperatorsEnum;
 use Phalcon\Mvc\Collection\Exception;
 use Phalcon\Mvc\Model\Resultset;
+use Phalcon\Mvc\Model\Transaction\Manager as TxManager;
+use Phalcon\Mvc\Model\Transaction\Exception as TxException;
 
 class ProductRepository extends BaseRepository implements DataSourceInterface
 {
@@ -45,12 +44,11 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
     /**
      * @param string $productId
      * @param array $columns
-     * @param bool $editMode
      * @return array
      * @throws NotFound
      * @throws \InvalidArgumentException
      */
-    public function getColumnsForProduct(string $productId, array $columns, bool $editMode = false)
+    public function getColumnsForProduct(string $productId, array $columns)
     {
         if (empty($columns)) {
             throw new \InvalidArgumentException('please provide columns to select', 400);
@@ -61,9 +59,9 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         }
 
         /** @var array $product */
-        $product = $this->getModel(true, false, $editMode)::findFirst([
+        $product = Product::findFirst([
             'columns' => $columns,
-            'conditions' => 'productId = :productId: AND isDeleted = false',
+            'conditions' => 'productId = :productId:',
             'bind' => [
                 'productId' => $productId
             ],
@@ -114,15 +112,6 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             throw new NotFound('product not found or maybe deleted');
         }
 
-        if ($getProperties) {
-            $productProperties = Properties::findFirst([
-                ['product_id' => $productId]
-            ]);
-            if (!empty($productProperties)) {
-                $product->assign(['properties' => $productProperties]);
-            }
-        }
-
         return $product;
     }
 
@@ -136,7 +125,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      * @param SortProduct $sort
      * @param bool $editMode
      * @param bool $attachRelations
-     * @param bool $getExtraInfo
+     * @param bool $getProperties
      * @return Product[]
      *
      * @throws \Exception
@@ -149,7 +138,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         SortProduct $sort,
         bool $editMode = false,
         bool $attachRelations = true,
-        bool $getExtraInfo = false
+        bool $getProperties = false
     ): array
     {
         $binds = [];
@@ -165,9 +154,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             $conditions .= ' AND isPublished = TRUE';
         }
 
-        $products = $this->getModel(
-            false, $attachRelations, $editMode
-        )::find([
+        $products = Product::find([
             'conditions' => $conditions,
             'bind' => array_merge([
                 'productVendorId' => $vendorId
@@ -180,25 +167,6 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         $result = [];
         foreach ($products as $product) {
             $result[] = $product;
-        }
-
-        if ($result && $getExtraInfo) {
-            $productsIds = array_column($products->toArray(), 'productId');
-            $productsExtraInfo = Properties::find([
-                'conditions' => [
-                    'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
-                ]
-            ]);
-            if (!empty($productsExtraInfo)) {
-                foreach ($result as $product) {
-                    /** @var Product $product */
-                    foreach ($productsExtraInfo as $extraInfo) {
-                        if ($product->productId == $extraInfo->product_id) {
-                            $product->assign(['extraInfo' => $extraInfo]);
-                        }
-                    }
-                }
-            }
         }
 
         return $result;
@@ -222,12 +190,16 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         if (!$productModel->create($data, $productModel::getWhiteList())) {
             throw new OperationFailed($productModel->getMessages(), 400);
         }
+
         $data['productId'] = $productModel->productId;
         $properties = PropertiesFactory::create($data['productType'], $data);
-        if (!$properties->save()) {
-            throw new OperationFailed($properties->getMessages(), 400);
+        if (count(array_intersect(array_keys($data), $properties->attributes()))) {
+            if (!$properties->save()) {
+                throw new OperationFailed($properties->getMessages(), 400);
+            }
+            $productModel->properties = $properties;
         }
-        $productModel->properties = $properties;
+
         return $productModel;
     }
 
@@ -239,39 +211,49 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      * @return Product
      * @throws NotFound
      * @throws OperationFailed
+     * @throws Exception
      */
     public function update(string $productId, array $data): Product
     {
-        $attachProperties = false;
-        if (count(array_intersect(
-                    array_keys($data), PhysicalProperties::WHITE_LIST
-                )
-            )
-            ||
-            count(array_intersect(
-                    array_keys($data), DownloadableProperties::WHITE_LIST
-                )
-            )
-        ) {
-            $attachProperties = true;
-        }
+        $product = $this->getById($productId, true, true, false);
 
-        $product = $this->getById($productId, true, false, false);
+        // Start a transaction
+        $txManager = new TxManager($product->getDI());
 
-        if ($attachProperties) {
-            if ($product->productType == ProductTypesEnum::TYPE_PHYSICAL) {
-                $relatedModelAlias = PhysicalProperties::MODEL_ALIAS;
-                $propertiesFields = array_intersect_key($data, array_flip(PhysicalProperties::WHITE_LIST));
-            } else {
-                $propertiesFields = array_intersect_key($data, array_flip(DownloadableProperties::WHITE_LIST));
-                $relatedModelAlias = DownloadableProperties::MODEL_ALIAS;
+        try {
+
+            $product->setTransaction($txManager->getOrCreateTransaction());
+            if (!$product->update($data, Product::getWhiteList())) {
+                throw new OperationFailed($product->getMessages(), 400);
             }
-            $product->{$relatedModelAlias}->assign($propertiesFields);
+
+            $data['productId'] = $productId;
+            $properties = PropertiesFactory::create($product->productType, $data);
+            if (count(array_intersect(array_keys($data), $properties->attributes()))) {
+                if ($product->properties) {
+                    $properties = $product->properties;
+                    $properties->setAttributes($data);
+                }
+
+                if (!$properties->save()) {
+                    $txManager->rollback();
+                    throw new OperationFailed($product->properties->getMessages(), 400);
+                }
+
+                $product->properties = $properties;
+            }
+
+            if (!$product->save()) {
+                $txManager->rollback();
+                throw new OperationFailed($product->properties->getMessages(), 400);
+            }
+
+            $txManager->commit();
+        } catch (TxException $exception) {
+            $txManager->rollback();
+            throw new OperationFailed('Cannot update product');
         }
 
-        if (!$product->update($data, Product::getWhiteList())) {
-            throw new OperationFailed($product->getMessages(), 400);
-        }
         return $product;
     }
 
@@ -308,5 +290,49 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
     {
         $product = $this->getById($productId);
         return $product->updateQuantity($amount, $operator);
+    }
+
+    /**
+     * @param string $productId
+     * @param array $album
+     * @return bool
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function setAlbum(string $productId, array $album)
+    {
+        $product = Product::findFirst([
+            'conditions' => 'productId = :productId:',
+            'bind' => ['productId' => $productId]
+        ]);
+
+        if (!$product) {
+            throw new NotFound('Product not found or maybe deleted');
+        }
+
+        $product->productAlbumId = $album['albumId'];
+        $product->productAlbumDeleteHash = $album['deleteHash'];
+
+        if (!$product->save()) {
+            throw new OperationFailed('Cannot create an album for product');
+        }
+
+        return true;
+    }
+
+    public function countAll(string $vendorId, ?string $categoryId = null)
+    {
+        $conditions = 'productVendorId = :vendorId:';
+        $bind = ['vendorId' => $vendorId];
+
+        if (!empty($categoryId)) {
+            $conditions .= ' AND productCategoryId = :categoryId:';
+            $bind['categoryId'] = $categoryId;
+        }
+
+        return Product::count([
+            'conditions' => $conditions,
+            'bind' => $bind
+        ]);
     }
 }

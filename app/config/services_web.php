@@ -119,13 +119,3 @@ $di->setShared('dispatcher', function() {
     $dispatcher->setEventsManager($evManager);
     return $dispatcher;
 });
-
-/**
- * Json Mapper Service
- */
-$di->setShared('jsonMapper', function () {
-    $jsonMapper = new JsonMapper();
-    $jsonMapper->bExceptionOnUndefinedProperty = false;
-    $jsonMapper->bEnforceMapType = false;
-    return $jsonMapper;
-});

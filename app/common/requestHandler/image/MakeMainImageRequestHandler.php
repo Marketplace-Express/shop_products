@@ -1,8 +1,8 @@
 <?php
 /**
  * User: Wajdi Jurry
- * Date: ٦‏/٩‏/٢٠١٩
- * Time: ٥:٢٢ م
+ * Date: 3/30/20
+ * Time: 7:23 PM
  */
 
 namespace app\common\requestHandler\image;
@@ -13,16 +13,13 @@ use app\common\validators\UuidValidator;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 
-class UpdateOrderRequestHandler extends RequestAbstract
+class MakeMainImageRequestHandler extends RequestAbstract
 {
     /** @var string */
     public $productId;
 
-    /** @var int */
-    public $order;
-
-    /** Validate request fields using \Phalcon\Validation\Validator
-     * @return Group
+    /**
+     * @inheritDoc
      */
     public function validate(): Group
     {
@@ -33,16 +30,8 @@ class UpdateOrderRequestHandler extends RequestAbstract
             new UuidValidator()
         );
 
-        $validator->add(
-            'order',
-            new Validation\Validator\NumericValidator([
-                'min' => 0
-            ])
-        );
-
         return $validator->validate([
-            'productId' => $this->productId,
-            'order' => $this->order
+            'productId' => $this->productId
         ]);
     }
 }

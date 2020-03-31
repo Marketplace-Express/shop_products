@@ -28,16 +28,25 @@ class WeightValidator extends Validator
         /** @var Weight $value */
         $value = $validation->getValue($attribute);
         $allowEmpty = (bool) $this->getOption('allowEmpty');
-        if ($allowEmpty && empty($value)) {
+
+        if ($allowEmpty && $value) {
             return true;
         }
 
-        if (!filter_var($value->amount, FILTER_VALIDATE_FLOAT)) {
+        if (!$value instanceof Weight) {
+            $validation->appendMessage(new Message('You should provide a valid weight', 'weight'));
+            return false;
+        }
+
+        $amount = $value->amount;
+        $unit = $value->unit;
+
+        if (!filter_var($amount, FILTER_VALIDATE_FLOAT)) {
             $validation->appendMessage(new Message('Invalid weight amount', 'amount'));
             return false;
         }
 
-        if (!in_array($value->unit, WeightUnitsEnum::getAll())) {
+        if (!in_array($unit, WeightUnitsEnum::getAll())) {
             $validation->appendMessage(new Message('Invalid weight unit', 'unit'));
             return false;
         }

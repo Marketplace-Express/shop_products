@@ -8,13 +8,13 @@
 namespace app\modules\api\controllers;
 
 
-use app\common\requestHandler\product\{
-    AbstractCreateRequestHandler,
-    GetRequestHandler,
+use app\common\requestHandler\product\{AbstractCreateRequestHandler,
+    GetAllForAdminRequestHandler,
+    GetAllRequestHandler,
     UpdateQuantityRequestHandler,
-    UpdateRequestHandler
-};
+    UpdateRequestHandler};
 use app\common\requestHandler\ProductRequestResolver;
+use app\common\services\ProductsService;
 use Phalcon\Http\Response\StatusCode;
 
 /**
@@ -24,19 +24,47 @@ use Phalcon\Http\Response\StatusCode;
  */
 class ProductsController extends BaseController
 {
+    /** @var ProductsService */
+    private $service;
+
+    /** @var \JsonMapper */
+    private $mapper;
+
+    /**
+     * @param ProductsService $service
+     */
+    protected function setService(ProductsService $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
+     * @param \JsonMapper $mapper
+     */
+    public function setMapper(\JsonMapper $mapper)
+    {
+        $this->mapper = $mapper;
+    }
+
+    public function initialize()
+    {
+        $this->setService($this->di->getAppServices('productsService'));
+        $this->setMapper($this->di->get('jsonMapper'));
+    }
+
     /**
      * @Get('/')
-     * @param GetRequestHandler $request
+     * @param GetAllRequestHandler $request
      */
-    public function getAllAction(GetRequestHandler $request)
+    public function getAllAction(GetAllRequestHandler $request)
     {
         try {
-            /** @var GetRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getQuery(), $request);
+            /** @var GetAllRequestHandler $request */
+            $request = $this->mapper->map($this->request->getQuery(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->di->getAppServices('productsService')->getAll($request->toArray()));
+            $request->successRequest($this->service->getAll($request->toArray()));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
@@ -51,7 +79,7 @@ class ProductsController extends BaseController
         try {
             $this->response->setJsonContent([
                 'status' => 200,
-                'message' => $this->di->getAppServices('productsService')->getProduct($id)
+                'message' => $this->service->getProduct($id)
             ]);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -61,17 +89,18 @@ class ProductsController extends BaseController
     /**
      * @Get('/owner')
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
-     * @param GetRequestHandler $request
+     * @param GetAllRequestHandler $request
      */
-    public function getAllForAdminsAction(GetRequestHandler $request)
+    public function getAllForAdminsAction(GetAllRequestHandler $request)
     {
         try {
-            /** @var GetRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getQuery(), $request);
+            /** @var GetAllRequestHandler $request */
+            $request = $this->mapper->map($this->request->getQuery(), $request);
+            $request->vendorId = $this->di->getUserService()->vendorId;
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->di->getAppServices('productsService')->getAll($request->toArray(), $request->getAccessLevel()));
+            $request->successRequest($this->service->getAll($request->toArray(), $request->getAccessLevel()));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
@@ -81,18 +110,14 @@ class ProductsController extends BaseController
      * @Get('/owner/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
-     * @param GetRequestHandler $request
      */
-    public function getForAdminsAction($id, GetRequestHandler $request)
+    public function getForAdminsAction($id)
     {
         try {
-            /** @var GetRequestHandler $request */
-            $request->requireCategoryId = true;
-            $request = $this->di->get('jsonMapper')->map($this->request->getQuery(), $request);
-            if(!$request->isValid()) {
-                $request->invalidRequest();
-            }
-            $request->successRequest($this->di->getAppServices('productsService')->getProduct($request->getVendorId(), $request->getCategoryId(), $id));
+            $this->response->setJsonContent([
+                'status' => 200,
+                'message' => $this->service->getProduct($id, true)
+            ]);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
@@ -107,13 +132,13 @@ class ProductsController extends BaseController
     {
         try {
             /** @var ProductRequestResolver $resolver */
-            $resolver = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
+            $resolver = $this->mapper->map($this->request->getJsonRawBody(), $request);
             /** @var AbstractCreateRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $resolver->resolve());
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $resolver->resolve());
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->di->getAppServices('productsService')->create($request->toArray()));
+            $request->successRequest($this->service->create($request->toArray()));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
@@ -129,11 +154,11 @@ class ProductsController extends BaseController
     {
         try {
             /** @var UpdateRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->di->getAppServices('productsService')->update($id, $request->toArray()));
+            $request->successRequest($this->service->update($id, $request->toArray()));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
@@ -147,7 +172,7 @@ class ProductsController extends BaseController
     public function deleteAction($id)
     {
         try {
-            $this->di->getAppServices('productsService')->delete($id);
+            $this->service->delete($id);
             http_response_code(StatusCode::NO_CONTENT);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -164,11 +189,11 @@ class ProductsController extends BaseController
     {
         try {
             /** @var UpdateQuantityRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->di->getAppServices('productsService')->updateQuantity($id, $request->toArray()));
+            $request->successRequest($this->service->updateQuantity($id, $request->toArray()));
 
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());

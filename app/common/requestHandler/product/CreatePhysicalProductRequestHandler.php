@@ -8,7 +8,7 @@
 namespace app\common\requestHandler\product;
 
 
-use app\common\validators\PackageDimensionsValidator;
+use app\common\validators\PackageValidator;
 use app\common\validators\rules\PhysicalProductRules;
 use app\common\validators\WeightValidator;
 use Phalcon\Validation\Message\Group;
@@ -23,9 +23,9 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler
     public $weight;
 
     /**
-     * @var \app\common\models\embedded\physical\Dimensions
+     * @var \app\common\models\embedded\physical\Package
      */
-    public $packageDimensions;
+    public $package;
 
     /**
      * @var PhysicalProductRules
@@ -48,7 +48,7 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler
         return array_merge(parent::fields(), [
             'brandId'  => $this->brandId,
             'weight' => $this->weight,
-            'packageDimensions' => $this->packageDimensions
+            'package' => $this->package
         ]);
     }
 
@@ -57,16 +57,20 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler
      */
     public function validate(): Group
     {
-        $validator = parent::mainValidator();
+        $validator = $this->mainValidator();
 
         $validator->add(
             'weight',
-            new WeightValidator()
+            new WeightValidator([
+                'allowEmpty' => true
+            ])
         );
 
         $validator->add(
-            'packageDimensions',
-            new PackageDimensionsValidator()
+            'package',
+            new PackageValidator([
+                'allowEmpty' => true
+            ])
         );
 
         return $validator->validate($this->fields());
@@ -81,8 +85,8 @@ class CreatePhysicalProductRequestHandler extends AbstractCreateRequestHandler
         return array_merge(parent::toArray(), [
             'productBrandId' => $this->brandId,
             'productType' => ProductTypesEnum::TYPE_PHYSICAL,
-            'productWeight' => $this->weight,
-            'productPackageDimensions' => $this->packageDimensions
+            'weight' => $this->weight,
+            'package' => $this->package
         ]);
     }
 }

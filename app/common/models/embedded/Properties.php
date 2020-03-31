@@ -10,7 +10,10 @@ namespace app\common\models\embedded;
 
 use app\common\models\BaseCollection;
 use Phalcon\Validation;
-use app\common\validators\{PackageDimensionsValidator, SegmentsValidator, TypeValidator, UuidValidator};
+use app\common\validators\{
+    SegmentsValidator,
+    UuidValidator
+};
 
 /**
  * Class Properties
@@ -19,13 +22,13 @@ use app\common\validators\{PackageDimensionsValidator, SegmentsValidator, TypeVa
 class Properties extends BaseCollection
 {
     /** @var string */
-    public $product_id;
+    public $productId;
 
     /** @var array */
-    public $keywords;
+    public $keywords = [];
 
-    /** @var Segment */
-    public $segments;
+    /** @var \app\common\models\embedded\Segment */
+    public $segment;
 
     /** @var bool */
     public $is_deleted = false;
@@ -43,7 +46,36 @@ class Properties extends BaseCollection
     public function initialize()
     {
         $this->defaultBehavior();
-        $this->segments = new Segment();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function update()
+    {
+        throw new \Exception('Update not supported. Use save() instead', 503);
+    }
+
+    /**
+     * @return Segment
+     */
+    protected function getSegment(): Segment
+    {
+        if (!$this->segment || !$this->segment instanceof Segment) {
+            $this->segment = new Segment();
+        }
+        return $this->segment;
+    }
+
+    /**
+     * @return array
+     */
+    public function attributes(): array
+    {
+        return [
+            'keywords',
+            'segment'
+        ];
     }
 
     /**
@@ -51,11 +83,11 @@ class Properties extends BaseCollection
      */
     public function setAttributes(array $data)
     {
-        $this->product_id = $data['productId'];
-        $this->keywords = $data['productKeywords'] ?? [];
-        if (!empty($data['productSegments'])) {
-            $this->segments->setAttributes($data['productSegments']);
+        if (!$this->productId) {
+            $this->productId = $data['productId'];
         }
+        $this->keywords = $data['keywords'] ?? [];
+        $this->getSegment()->setAttributes($data['segment']);
     }
 
     /**
@@ -79,24 +111,6 @@ class Properties extends BaseCollection
     }
 
     /**
-     * @param mixed $id
-     * @return Properties|bool
-     */
-    public static function findById($id)
-    {
-        return parent::findById($id);
-    }
-
-    /**
-     * @return bool|void
-     * @throws \Exception
-     */
-    public function update()
-    {
-        throw new \Exception('Update not supported. Use save() instead', 503);
-    }
-
-    /**
      * Over-ride operation made when deleting a document
      * To prevent execute validation
      *
@@ -117,8 +131,8 @@ class Properties extends BaseCollection
     public function toApiArray(): array
     {
         return [
-            'productKeywords' => $this->keywords,
-            'productSegments' => $this->segments->toApiArray()
+            'keywords' => $this->keywords,
+            'segment' => $this->segment
         ];
     }
 
@@ -135,15 +149,8 @@ class Properties extends BaseCollection
         $validation = new Validation();
 
         $validation->add(
-            'product_id',
+            'productId',
             new UuidValidator()
-        );
-
-        $validation->add(
-            'packageDimensions',
-            new PackageDimensionsValidator([
-                'allowEmpty' => true
-            ])
         );
 
         $validation->add(
@@ -165,9 +172,9 @@ class Properties extends BaseCollection
         );
 
         $this->_errorMessages = $validation->validate([
-            'product_id' => $this->product_id,
+            'productId' => $this->productId,
             'keywords' => $this->keywords,
-            'segments' => $this->segments
+            'segments' => $this->segment
         ]);
 
         return !$this->_errorMessages->count();

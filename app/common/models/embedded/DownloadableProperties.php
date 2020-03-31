@@ -8,8 +8,8 @@
 namespace app\common\models\embedded;
 
 
-use app\common\validators\rules\DownloadableProductRules;
 use Phalcon\Validation;
+use app\common\validators\rules\DownloadableProductRules;
 use app\common\utils\DigitalUnitsConverterUtil;
 
 /**
@@ -19,7 +19,7 @@ use app\common\utils\DigitalUnitsConverterUtil;
 class DownloadableProperties extends Properties
 {
     /** @var float */
-    public $productDigitalSize;
+    public $digitalSize;
 
     /**
      * @var DownloadableProductRules
@@ -27,12 +27,22 @@ class DownloadableProperties extends Properties
     private $validationRules;
 
     /**
+     * @return array
+     */
+    public function attributes(): array
+    {
+        return array_merge(parent::attributes(), [
+            'digitalSize'
+        ]);
+    }
+
+    /**
      * @param array $data
      */
     public function setAttributes(array $data): void
     {
         parent::setAttributes($data);
-        $this->productDigitalSize = $data['productDigitalSize'];
+        $this->digitalSize = $data['digitalSize'];
     }
 
     /**
@@ -41,7 +51,7 @@ class DownloadableProperties extends Properties
     public function toApiArray(): array
     {
         return array_merge(parent::toApiArray(), [
-            'productDigitalSize' => DigitalUnitsConverterUtil::bytesToMb($this->productDigitalSize)
+            'digitalSize' => DigitalUnitsConverterUtil::bytesToMb($this->digitalSize)
         ]);
     }
 
@@ -61,7 +71,7 @@ class DownloadableProperties extends Properties
         $validation = new Validation();
 
         $validation->add(
-            'productDigitalSize',
+            'digitalSize',
             new Validation\Validator\NumericValidator([
                 'min' => 1,
                 'max' => $this->getValidationRules()->maxDigitalSize,
@@ -73,7 +83,7 @@ class DownloadableProperties extends Properties
         );
 
         $messages = $validation->validate([
-            'productDigitalSize' => $this->productDigitalSize
+            'digitalSize' => $this->digitalSize
         ]);
 
         $this->_errorMessages = $messages;

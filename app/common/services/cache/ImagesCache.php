@@ -77,7 +77,7 @@ class ImagesCache
      */
     public function invalidateProductImages(string $productId)
     {
-        return self::$cacheInstance->delete(sprintf(self::$cacheKey, $productId));
+        return self::$cacheInstance->del(sprintf(self::$cacheKey, $productId));
     }
 
     /**

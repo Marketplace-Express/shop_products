@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class RateImagesMigration_101
+ * Class RateImagesMigration_102
  */
-class RateImagesMigration_101 extends Migration
+class RateImagesMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -74,8 +74,8 @@ class RateImagesMigration_101 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['image_id'], 'PRIMARY'),
-                    new Index('rate_images_product_rates_rate_id_fk', ['rate_id']),
-                    new Index('rate_images_index', ['is_deleted', 'rate_id'])
+                    new Index('rate_images_product_rates_rate_id_fk', ['rate_id'], null),
+                    new Index('rate_images_index', ['is_deleted', 'rate_id'], null)
                 ],
                 'references' => [
                     new Reference(

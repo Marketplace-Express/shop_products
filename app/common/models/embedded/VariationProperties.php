@@ -39,14 +39,14 @@ class VariationProperties extends BaseCollection
     public $is_deleted = false;
 
     /**
-     * @var UTCDateTime
+     * @var \MongoDB\BSON\UTCDateTime
      */
     public $created_at;
 
     /**
-     * @var UTCDateTime
+     * @var \MongoDB\BSON\UTCDateTime|null
      */
-    public $deleted_at;
+    public $deleted_at = null;
 
     /**
      * @return string

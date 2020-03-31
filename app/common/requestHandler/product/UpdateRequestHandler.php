@@ -9,8 +9,11 @@ declare(strict_types=1);
 namespace app\common\requestHandler\product;
 
 use app\common\requestHandler\RequestAbstract;
+use app\common\validators\PackageValidator;
 use app\common\validators\rules\DownloadableProductRules;
 use app\common\validators\rules\PhysicalProductRules;
+use app\common\validators\SegmentsValidator;
+use app\common\validators\WeightValidator;
 use Phalcon\Utils\Slug;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
@@ -20,17 +23,43 @@ use app\common\validators\UuidValidator;
 
 class UpdateRequestHandler extends RequestAbstract
 {
+    /** @var string */
     public $title;
+
+    /** @var string */
     public $categoryId;
+
+    /** @var string */
     public $customPageId;
+
+    /** @var float */
     public $price;
+
+    /** @var float */
     public $salePrice;
+
+    /** @var string */
     public $endSaleTime;
+
+    /** @var array */
     public $keywords;
+
+    /** @var bool */
     public $isPublished;
+
+    /** @var string */
     public $brandId;
+
+    /** @var \app\common\models\embedded\physical\Weight */
     public $weight;
-    public $packageDimensions;
+
+    /** @var \app\common\models\embedded\physical\Package */
+    public $package;
+
+    /** @var \app\common\models\embedded\Segment */
+    public $segment;
+
+    /** @var int */
     public $digitalSize;
 
     /** @var PhysicalProductRules */
@@ -159,18 +188,22 @@ class UpdateRequestHandler extends RequestAbstract
 
         $validator->add(
             'weight',
-            new Validation\Validator\NumericValidator([
-                'allowFloat' => true,
+            new WeightValidator([
                 'allowEmpty' => true
             ])
         );
 
         $validator->add(
-            'packageDimensions',
-            new TypeValidator([
-                'type' => TypeValidator::TYPE_FLOAT,
-                'allowEmpty' => true,
-                'message' => 'Invalid dimensions'
+            'package',
+            new PackageValidator([
+                'allowEmpty' => true
+            ])
+        );
+
+        $validator->add(
+            'segment',
+            new SegmentsValidator([
+                'allowEmpty' => true
             ])
         );
 
@@ -206,7 +239,8 @@ class UpdateRequestHandler extends RequestAbstract
             'keywords' => $this->keywords,
             'brandId' => $this->brandId,
             'weight' => $this->weight,
-            'packageDimensions' => $this->packageDimensions,
+            'package' => $this->package,
+            'segment' => $this->segment,
             'digitalSize' => $this->digitalSize,
             'isPublished' => $this->isPublished
         ]);
@@ -246,28 +280,22 @@ class UpdateRequestHandler extends RequestAbstract
         }
 
         if (!empty($this->keywords)) {
-            $result['productKeywords'] = implode(',', $this->keywords);
+            $result['keywords'] = $this->keywords;
         }
 
         if (!empty($this->brandId)) {
             $result['productBrandId'] = $this->brandId;
         }
 
-        if (!empty($this->weight)) {
-            $result['productWeight'] = $this->weight;
-        }
-
-        if (!empty($this->packageDimensions)) {
-            $result['productPackageDimensions'] = $this->packageDimensions;
-        }
-
-        if (!empty($this->digitalSize)) {
-            $result['productDigitalSize'] = $this->digitalSize;
-        }
-
         if (in_array($this->isPublished, [true, false], true)) {
             $result['isPublished'] = $this->isPublished;
         }
+
+        $result['weight'] = $this->weight;
+        $result['package'] = $this->package;
+        $result['segment'] = $this->segment;
+        $result['digitalSize'] = $this->digitalSize;
+
 
         if (empty($result)) {
             throw new \Exception('Nothing to be updated', 400);

@@ -15,7 +15,11 @@ use Phalcon\Validation\Message\Group;
 use app\common\services\user\UserService;
 use app\common\validators\UuidValidator;
 
-class GetRequestHandler extends RequestAbstract implements IArrayData
+/**
+ * Class GetAllRequestHandler
+ * @package app\common\requestHandler\product
+ */
+class GetAllRequestHandler extends RequestAbstract implements IArrayData
 {
     /** @var string */
     public $categoryId;
@@ -29,18 +33,19 @@ class GetRequestHandler extends RequestAbstract implements IArrayData
     /** @var int */
     public $page;
 
-    /** @var bool */
-    public $requireCategoryId = false;
-
     /** @var SortProduct */
-    private $sort;
+    protected $sort;
 
     /**
      * GetRequestHandler constructor.
-     * @throws \JsonMapper_Exception
      */
     public function __construct()
     {
+        // Initialize sort param
+        $sort = new SortProduct();
+        $sort->createdAt = -1;
+        $this->sort = $sort;
+
         if ($this->request->get('sort')) {
             $this->sort = $this->di->getJsonMapper()->map(
                 json_decode($this->request->get('sort')),
@@ -60,7 +65,7 @@ class GetRequestHandler extends RequestAbstract implements IArrayData
     /**
      * @return UserService
      */
-    private function getUserService(): UserService
+    protected function getUserService(): UserService
     {
         return $this->di->getUserService();
     }
@@ -80,7 +85,7 @@ class GetRequestHandler extends RequestAbstract implements IArrayData
         $validator->add(
             'categoryId',
             new UuidValidator([
-                'allowEmpty' => !$this->requireCategoryId
+                'allowEmpty' => true
             ])
         );
 

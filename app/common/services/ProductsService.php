@@ -9,15 +9,14 @@ namespace app\common\services;
 
 
 use app\common\models\embedded\Properties;
+use app\common\services\user\UserService;
 use app\common\repositories\{ProductRepository,
     ImageRepository,
     QuestionRepository,
     RateRepository,
     VariationRepository};
 use app\common\services\cache\ProductCache;
-use app\common\exceptions\{
-    OperationFailed, NotFound
-};
+use app\common\exceptions\{OperationFailed, NotFound, OperationNotPermitted};
 use app\common\enums\{
     AccessLevelsEnum, QueueNamesEnum
 };
@@ -72,46 +71,47 @@ class ProductsService
      */
     public function getAll(array $params, int $accessLevel = AccessLevelsEnum::NORMAL_USER)
     {
-        $editMode = false;
-        if ($accessLevel > 0) {
-            $editMode = true;
-        }
-
         $page = $params['page'];
         $limit = $params['limit'];
         $sort = $params['sort'];
-
         $vendorId = array_key_exists('vendorId', $params) ? $params['vendorId'] : null;
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
-        // get by category id or vendor id or both
-        if ($editMode) {
-            $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, true, false, false);
-        } else {
-            $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
-        }
+        $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
+        $totalCount = ProductRepository::getInstance()->countAll($vendorId, $categoryId);
 
         $result = [];
         foreach ($products as $product) {
             $result[] = $product->toApiArray();
         }
 
-        return $result;
+        return [
+            'products' => $result,
+            'total' => $totalCount
+        ];
     }
 
     /**
      * Get product by id
      *
      * @param string|null $productId
+     * @param bool $forOwner
      * @return array
      *
      * @throws NotFound
-     * @throws \Exception
+     * @throws OperationNotPermitted
      */
-    public function getProduct(string $productId): array
+    public function getProduct(string $productId, bool $forOwner = false): array
     {
-        $product = ProductRepository::getInstance()->getById($productId, false, true, true)->toApiArray();
-        return $product;
+        $product = ProductRepository::getInstance()->getById($productId, false, true, true);
+        if ($forOwner) {
+            /** @var UserService $userService */
+            $userService = \Phalcon\Di::getDefault()->getUserService();
+            if ($product->productVendorId != $userService->vendorId) {
+                throw new OperationNotPermitted('You are not allowed to view this entity');
+            }
+        }
+        return $product->toApiArray();
     }
 
     /**
@@ -127,17 +127,8 @@ class ProductsService
     {
         $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
 
-//        if (!empty($album = $this->createAlbum($data['productId']))) {
-//            $data['productAlbumId'] = $album['albumId'];
-//            $data['productAlbumDeleteHash'] = $album['deleteHash'];
-//        }
-        $data['productAlbumId'] = 1234;
-        $data['productAlbumDeleteHash'] = 1234;
-
         // Create product
         $product = ProductRepository::getInstance()->create($data);
-
-        // TODO: Mark product images as used
 
         $productAsArray = $product->toApiArray();
         try {
@@ -235,24 +226,6 @@ class ProductsService
     }
 
     /**
-     * @param string $productId
-     * @return array
-     */
-    public function createAlbum(string $productId): array
-    {
-        $data = [];
-        /** @var Album $album */
-        $album = (new ImgurUtil())->createAlbum($productId);
-        if (!empty($album)) {
-            $data = [
-                'albumId' => $album->getAlbumId(),
-                'deleteHash' => $album->getDeleteHash()
-            ];
-        }
-        return $data;
-    }
-
-    /**
      * Update entity quantity. It could be product or variation
      *
      * @param string $entityId
@@ -287,6 +260,7 @@ class ProductsService
         $imageId = array_key_exists('imageId', $data) ? $data['imageId'] : null;
         $attributes = array_key_exists('attributes', $data) ? $data['attributes'] : [];
         $salePrice = array_key_exists('salePrice', $data) ? $data['salePrice'] : 0;
+        $sku = $data['sku'];
 
         if ($imageId) {
             // Throw NotFound exception if image does not exist
@@ -294,7 +268,7 @@ class ProductsService
         }
 
         $variation = VariationRepository::getInstance()
-            ->create($productId, $userId, $imageId, $quantity, $price, $salePrice, $attributes)
+            ->create($productId, $userId, $imageId, $quantity, $sku, $price, $salePrice, $attributes)
             ->toApiArray();
 
         // Mark image as used

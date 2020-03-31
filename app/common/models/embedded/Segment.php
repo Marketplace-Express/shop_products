@@ -11,22 +11,24 @@ namespace app\common\models\embedded;
 class Segment
 {
     /** @var array */
-    public $countries;
+    public $countries = [];
 
     /** @var array */
-    public $age;
+    public $age = [];
 
     /** @var array */
-    public $gender;
+    public $gender = [];
 
     /**
-     * @param array $data
+     * @param mixed $data
      */
-    public function setAttributes(array $data): void
+    public function setAttributes($data): void
     {
-        $this->countries = $data['countries'] ?? [];
-        $this->age = $data['age'] ?? [];
-        $this->gender = $data['gender'] ?? [];
+        if (!empty($data)) {
+            $this->countries = $data->countries;
+            $this->age = $data->age;
+            $this->gender = $data->gender;
+        }
     }
 
     /**

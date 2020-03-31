@@ -71,34 +71,38 @@ $di->setShared('db', function () {
     /** @var \Phalcon\Db\Adapter\Pdo $connection */
     $connection = new $class($params);
 
+    // Initialize event manager
+    $eventsManager = new EventManager();
+
     /**
      * @var Profiler $profiler
      */
-    $profiler = $this->getProfiler();
-    $eventsManager = new EventManager();
-    $eventsManager->attach('db', function ($event, $connection) use ($profiler, $config) {
-        /**
-         * @var Event $event
-         * @var \Phalcon\Db\Adapter\Pdo $connection
-         */
-        if ($event->getType() == 'beforeQuery') {
-            $profiler->startProfile($connection->getSQLStatement());
-        }
-
-        if ($event->getType() == 'afterQuery') {
-            $profiler->stopProfile();
-
-            if (!file_exists($config->application->logsDir . 'db.log')) {
-                touch($config->application->logsDir . 'db.log');
+    if ($config->application->debugSql) {
+        $profiler = $this->getProfiler();
+        $eventsManager->attach('db', function ($event, $connection) use ($profiler, $config) {
+            /**
+             * @var Event $event
+             * @var \Phalcon\Db\Adapter\Pdo $connection
+             */
+            if ($event->getType() == 'beforeQuery') {
+                $profiler->startProfile($connection->getSQLStatement());
             }
 
-            // Log last SQL statement
-            Factory::load([
-                'name' => $config->application->logsDir . 'db.log',
-                'adapter' => 'file'
-            ])->info($profiler->getLastProfile()->getSqlStatement());
-        }
-    });
+            if ($event->getType() == 'afterQuery') {
+                $profiler->stopProfile();
+
+                if (!file_exists($config->application->logsDir . 'db.log')) {
+                    touch($config->application->logsDir . 'db.log');
+                }
+
+                // Log last SQL statement
+                Factory::load([
+                    'name' => $config->application->logsDir . 'db.log',
+                    'adapter' => 'file'
+                ])->info($profiler->getLastProfile()->getSqlStatement());
+            }
+        });
+    }
 
     $connection->setEventsManager($eventsManager);
 
@@ -231,4 +235,21 @@ $di->set('appServices', function($serviceName) {
     }
 
     return new $services[$serviceName];
+});
+
+/**
+ * Image Uploading Tool
+ */
+$di->set('imageUploader', function () {
+    return new \app\common\utils\ImgurUtil();
+});
+
+/**
+ * Json Mapper Service
+ */
+$di->setShared('jsonMapper', function () {
+    $jsonMapper = new JsonMapper();
+    $jsonMapper->bExceptionOnUndefinedProperty = false;
+    $jsonMapper->bEnforceMapType = false;
+    return $jsonMapper;
 });

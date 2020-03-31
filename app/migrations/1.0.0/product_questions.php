@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductQuestionsMigration_100
+ * Class ProductQuestionsMigration_102
  */
-class ProductQuestionsMigration_100 extends Migration
+class ProductQuestionsMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -90,8 +90,8 @@ class ProductQuestionsMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['id'], 'PRIMARY'),
-                    new Index('product_questions_product_product_id_fk', ['product_id']),
-                    new Index('product_questions_index', ['is_deleted', 'product_id'])
+                    new Index('product_questions_product_product_id_fk', ['product_id'], null),
+                    new Index('product_questions_index', ['is_deleted', 'product_id'], null)
                 ],
                 'references' => [
                     new Reference(

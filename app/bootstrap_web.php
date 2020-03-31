@@ -32,6 +32,15 @@ try {
     $config = $di->getConfig();
 
     /**
+     * Error reporting
+     */
+    if ($config->application->debug) {
+        error_reporting(E_ALL);
+    } else {
+        error_reporting(E_ERROR);
+    }
+
+    /**
      * Include Autoloader
      */
     include APP_PATH . '/config/loader.php';

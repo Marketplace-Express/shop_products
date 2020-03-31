@@ -29,9 +29,6 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
     /** @var string */
     public $productId;
 
-    /** @var bool */
-    public $isVariationImage = false;
-
     /** @var ImagesRules */
     protected $validationRules;
 
@@ -58,7 +55,7 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
         );
 
         $validator->add(
-            ['albumId', 'productId'],
+            'productId',
             new Validation\Validator\PresenceOf([
                 'allowEmpty' => false
             ])
@@ -76,13 +73,6 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
             ])
         );
 
-        $validator->add(
-            'isVariationImage',
-            new TypeValidator([
-                'type' => TypeValidator::TYPE_BOOLEAN
-            ])
-        );
-
         return $validator->validate([
             'image' => [
                 'name' => $this->image->getName(),
@@ -91,9 +81,7 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
                 'type' => $this->image->getType(),
                 'size' => $this->image->getSize()
             ],
-            'albumId' => $this->albumId,
-            'productId' => $this->productId,
-            'isVariationImage' => $this->isVariationImage
+            'productId' => $this->productId
         ]);
     }
 
@@ -117,8 +105,7 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
         return [
             'image' => $this->image,
             'albumId' => $this->albumId,
-            'productId' => $this->productId,
-            'isVariationImage' => $this->isVariationImage
+            'productId' => $this->productId
         ];
     }
 }

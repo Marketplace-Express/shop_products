@@ -39,7 +39,6 @@ class ImageRepository extends BaseRepository
      * @param string $deleteHash
      * @param string $name
      * @param string $link
-     * @param bool $isVariationImage
      * @return ProductImages
      * @throws OperationFailed
      */
@@ -53,8 +52,7 @@ class ImageRepository extends BaseRepository
         string $size,
         string $deleteHash,
         string $name,
-        string $link,
-        bool $isVariationImage
+        string $link
     )
     {
         $model = $this->getModel(true);
@@ -68,8 +66,7 @@ class ImageRepository extends BaseRepository
             'imageHeight' => $height,
             'imageSize' => $size,
             'imageDeleteHash' => $deleteHash,
-            'imageName' => $name,
-            'isVariationImage' => $isVariationImage
+            'imageName' => $name
         ];
         if (!$model->save($data)) {
             throw new OperationFailed($model->getMessages(), 500);
@@ -186,7 +183,7 @@ class ImageRepository extends BaseRepository
      * @return ProductImages[]
      * @throws OperationNotPermitted
      */
-    public function makeMainImage(string $imageId, string $productId): array
+    public function makeMainImage(string $imageId, string $productId)
     {
         $productImages = $this->getModel()::find([
             'conditions' => 'productId = :productId:',
@@ -204,7 +201,7 @@ class ImageRepository extends BaseRepository
             } elseif($image->isMain) {
                 $image->update(['isMain' => false]);
             }
-            $result[] = $image->toApiArray();
+            $result[] = $image;
         }
 
         return $result;
@@ -213,7 +210,7 @@ class ImageRepository extends BaseRepository
     /**
      * @param string $imageId
      * @param int $order
-     * @return array
+     * @return ProductImages
      * @throws NotFound
      * @throws OperationFailed
      */
@@ -232,7 +229,7 @@ class ImageRepository extends BaseRepository
             throw new OperationFailed($image->getMessages());
         }
 
-        return $image->toApiArray();
+        return $image;
     }
 
     /**

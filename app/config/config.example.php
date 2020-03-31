@@ -86,7 +86,9 @@ return new \Phalcon\Config([
         'token' => [
             'saltKey' => 'abc@123456789012',
             'allowedAlg' => 'HS512'
-        ]
+        ],
+        'debug' => 1,
+        'debugSql' => 1,
     ],
     'printNewLine' => true
 ]);
