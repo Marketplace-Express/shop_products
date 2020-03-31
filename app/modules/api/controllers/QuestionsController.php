@@ -13,7 +13,6 @@ use app\common\requestHandler\question\{
     CreateRequestHandler,
     DeleteRequestHandler,
     GetByIdRequestHandler,
-    GetForProductRequestHandler,
     UpdateRequestHandler
 };
 
