@@ -234,23 +234,16 @@ class ImageRepository extends BaseRepository
 
     /**
      * @param string $imageId
-     * @param bool $isVariation
      * @return ProductImages
      * @throws NotFound
      * @throws \Exception
      */
-    public function getUnused(string $imageId, bool $isVariation = false): ProductImages
+    public function getUnused(string $imageId): ProductImages
     {
-        $query = $this->getModel()::query()
-            ->andWhere('imageId = :imageId:', ['imageId' => $imageId])
-            ->andWhere('isDeleted  = false');
-
-        if ($isVariation) {
-            $query->andWhere('isVariationImage = true');
-        }
-
-        /** @var ProductImages $image */
-        $image = $query->execute()->getFirst();
+        $image = ProductImages::findFirst([
+            'conditions' => 'imageId = :imageId:',
+            'bind' => ['imageId' => $imageId]
+        ]);
 
         if (!$image) {
             throw new NotFound('image not found');

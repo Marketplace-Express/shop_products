@@ -8,6 +8,7 @@
 namespace app\modules\api\controllers;
 
 
+use app\common\services\QuestionsService;
 use app\common\requestHandler\question\{
     CreateRequestHandler,
     DeleteRequestHandler,
@@ -23,6 +24,34 @@ use app\common\requestHandler\question\{
  */
 class QuestionsController extends BaseController
 {
+    /** @var QuestionsService */
+    private $service;
+
+    /** @var \JsonMapper */
+    private $mapper;
+
+    /**
+     * @param QuestionsService $service
+     */
+    public function setService(QuestionsService $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
+     * @param \JsonMapper $mapper
+     */
+    public function setMapper(\JsonMapper $mapper)
+    {
+        $this->mapper = $mapper;
+    }
+
+    public function initialize()
+    {
+        $this->setService($this->di->getAppServices('questionService'));
+        $this->setMapper($this->di->get('jsonMapper'));
+    }
+
     /**
      * @Post('/')
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
@@ -32,11 +61,11 @@ class QuestionsController extends BaseController
     {
         try {
             /** @var CreateRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $question = $this->di->getAppServices('questionService')->create($request->productId, $request->text);
+            $question = $this->service->create($request->productId, $request->text);
             $request->successRequest($question);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -53,11 +82,11 @@ class QuestionsController extends BaseController
     {
         try {
             /** @var UpdateRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map($this->request->getJsonRawBody(), $request);
+            $request = $this->mapper->map($this->request->getJsonRawBody(), $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $question = $this->di->getAppServices('questionService')->update($id, $request->text);
+            $question = $this->service->update($id, $request->text);
             $request->successRequest($question);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -74,11 +103,11 @@ class QuestionsController extends BaseController
     {
         try {
             /** @var DeleteRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map(['id' => $id], $request);
+            $request = $this->mapper->map(['id' => $id], $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $this->di->getAppServices('questionService')->delete($id);
+            $this->service->delete($id);
             $request->successRequest('Deleted');
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
@@ -86,20 +115,17 @@ class QuestionsController extends BaseController
     }
 
     /**
-     * @param $id
-     * @param GetForProductRequestHandler $request
-     * @Get('/product/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
+     * @param $productId
+     * @Get('/product/{productId:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
      */
-    public function getAllAction($id, GetForProductRequestHandler $request)
+    public function getAllAction($productId)
     {
         try {
-            /** @var GetForProductRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map(['id' => $id], $request);
-            if (!$request->isValid()) {
-                $request->invalidRequest();
-            }
-            $questions = $this->di->getAppServices('questionService')->getAll($id);
-            $request->successRequest($questions);
+            $questions = $this->service->getAll($productId);
+            $this->response->setJsonContent([
+                'status' => 200,
+                'message' => $this->service->getAll($productId)
+            ]);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
@@ -114,11 +140,11 @@ class QuestionsController extends BaseController
     {
         try {
             /** @var GetByIdRequestHandler $request */
-            $request = $this->di->get('jsonMapper')->map(['id' => $id], $request);
+            $request = $this->mapper->map(['id' => $id], $request);
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $question = $this->di->getAppServices('questionService')->getById($id);
+            $question = $this->service->getById($id);
             $request->successRequest($question);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());

@@ -11,7 +11,6 @@ namespace app\common\requestHandler\question;
 use app\common\requestHandler\RequestAbstract;
 use app\common\validators\rules\QuestionRules;
 use app\common\validators\UuidValidator;
-use Phalcon\Mvc\Controller;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
 
@@ -26,9 +25,12 @@ class CreateRequestHandler extends RequestAbstract
     /** @var QuestionRules */
     protected $validationRules;
 
-    public function __construct(Controller $controller)
+    /**
+     * CreateRequestHandler constructor.
+     */
+    public function __construct()
     {
-        parent::__construct($controller, new QuestionRules());
+        parent::__construct(new QuestionRules());
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator
@@ -55,13 +57,5 @@ class CreateRequestHandler extends RequestAbstract
             'text' => $this->text,
             'productId' => $this->productId
         ]);
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [];
     }
 }

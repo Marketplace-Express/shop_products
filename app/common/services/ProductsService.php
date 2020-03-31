@@ -264,7 +264,7 @@ class ProductsService
 
         if ($imageId) {
             // Throw NotFound exception if image does not exist
-            ImageRepository::getInstance()->getUnused($imageId, true);
+            ImageRepository::getInstance()->getUnused($imageId);
         }
 
         $variation = VariationRepository::getInstance()
