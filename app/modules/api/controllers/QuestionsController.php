@@ -15,6 +15,7 @@ use app\common\requestHandler\question\{
     GetByIdRequestHandler,
     UpdateRequestHandler
 };
+use Phalcon\Http\Response\StatusCode;
 
 /**
  * Class QuestionsController
@@ -94,20 +95,14 @@ class QuestionsController extends BaseController
 
     /**
      * @param $id
-     * @param DeleteRequestHandler $request
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
      * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
-    public function deleteAction($id, DeleteRequestHandler $request)
+    public function deleteAction($id)
     {
         try {
-            /** @var DeleteRequestHandler $request */
-            $request = $this->mapper->map(['id' => $id], $request);
-            if (!$request->isValid()) {
-                $request->invalidRequest();
-            }
             $this->service->delete($id);
-            $request->successRequest('Deleted');
+            http_response_code(StatusCode::NO_CONTENT);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }
