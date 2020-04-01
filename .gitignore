@@ -1,3 +1,11 @@
-# Exlude directories
-.idea/
-.phalcon/
+# .idea PHPSTORM
+.idea
+
+# phalcon aut generated folder
+.phalcon
+
+# exclude php extensions
+php_extensions
+
+# dotfiles
+.*
