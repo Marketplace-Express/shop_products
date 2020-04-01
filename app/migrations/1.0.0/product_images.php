@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductImagesMigration_102
+ * Class ProductImagesMigration_100
  */
-class ProductImagesMigration_102 extends Migration
+class ProductImagesMigration_100 extends Migration
 {
     /**
      * Define the table structure
