@@ -9,3 +9,6 @@ php_extensions
 
 # dotfiles
 .*
+
+composer.phar
+index.html
