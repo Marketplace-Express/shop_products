@@ -24,7 +24,7 @@ abstract class BaseModel extends Model implements \ArrayAccess
 
     /**
      * @param bool $new
-     * @return mixed
+     * @return static
      */
     public static function model(bool $new = false)
     {

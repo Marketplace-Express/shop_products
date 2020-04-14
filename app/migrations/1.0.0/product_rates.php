@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductRatesMigration_100
+ * Class ProductRatesMigration_102
  */
-class ProductRatesMigration_100 extends Migration
+class ProductRatesMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -29,7 +29,7 @@ class ProductRatesMigration_100 extends Migration
                         ]
                     ),
                     new Column(
-                        'rate_user_id',
+                        'user_id',
                         [
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
@@ -43,7 +43,7 @@ class ProductRatesMigration_100 extends Migration
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'after' => 'rate_user_id'
+                            'after' => 'user_id'
                         ]
                     ),
                     new Column(
@@ -95,19 +95,30 @@ class ProductRatesMigration_100 extends Migration
                             'size' => 1,
                             'after' => 'deleted_at'
                         ]
+                    ),
+                    new Column(
+                        'deletion_token',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'default' => "N/A",
+                            'notNull' => true,
+                            'size' => 36,
+                            'after' => 'is_deleted'
+                        ]
                     )
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['rate_id'], 'PRIMARY'),
                     new Index('product_rated_rate_id_uindex', ['rate_id'], 'UNIQUE'),
+                    new Index('product_uindex', ['user_id', 'product_id', 'is_deleted', 'deletion_token'], 'UNIQUE'),
                     new Index('product_rated_product_product_id_fk', ['product_id'], null),
                     new Index('product_rates_index', ['is_deleted', 'product_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'product_rated_product_product_id_fk',
+                        'product_rated_products_product_id_fk',
                         [
-                            'referencedTable' => 'product',
+                            'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],

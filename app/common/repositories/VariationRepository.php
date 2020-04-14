@@ -88,8 +88,9 @@ class VariationRepository extends BaseRepository
                 'conditions' => 'imageId = :imageId:',
                 'bind' => ['imageId' => $imageId]
             ]);
+
             if ($image) {
-                $image->update(['isVariationImage' => true, 'isUsed' => true]);
+                $image->update(['isUsed' => true]);
             }
 
             /** @var VariationProperties $properties */

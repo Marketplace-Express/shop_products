@@ -17,7 +17,6 @@ use Phalcon\Di;
 use Phalcon\Http\Request\File;
 use app\common\repositories\ImageRepository;
 use app\common\repositories\ProductRepository;
-use app\common\utils\ImgurUtil;
 use app\common\exceptions\OperationFailed;
 use app\common\exceptions\NotFound;
 
@@ -25,14 +24,15 @@ class ImageService
 {
     /**
      * @param File $image
-     * @param string|null $albumId
      * @param string $productId
+     * @param string $entity
+     * @param string|null $albumId
      * @return array
      * @throws NotFound
      * @throws OperationFailed
      * @throws \Exception
      */
-    public function upload(File $image, ?string $albumId, string $productId)
+    public function upload(File $image, string $productId, string $entity, ?string $albumId = null)
     {
         $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
             'productCategoryId', 'productVendorId', 'productAlbumId'
@@ -69,8 +69,12 @@ class ImageService
             );
 
         $data = [];
+
         if (!empty($uploaded)) {
-            $image = ImageRepository::getInstance()->create(
+
+            $repository = ImageRepository::getInstance();
+
+            $image = $repository->create(
                 $productId,
                 $uploaded->getImageId(),
                 $albumId,
@@ -80,10 +84,11 @@ class ImageService
                 $uploaded->getSize(),
                 $uploaded->getDeleteHash(),
                 $uploaded->getName(),
-                $uploaded->getLink()
+                $uploaded->getLink(),
+                $entity
             );
 
-            ImageRepository::getInstance()->saveSizes($image, $image->imageLink);
+            $repository->saveSizes($image, $image->imageLink);
 
             $data = $image->toApiArray();
 

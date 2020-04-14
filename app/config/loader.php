@@ -9,7 +9,8 @@ $loader = new Loader();
  */
 $loader->registerNamespaces([
     'app\common\models' => APP_PATH . '/common/models/',
-    'app\common\models\Behavior' => APP_PATH . '/common/models/behaviors/',
+    'app\common\models\behavior' => APP_PATH . '/common/models/behaviors/',
+    'app\common\models\resultset' => APP_PATH . '/common/models/resultset/',
     'app\common\models\embedded\physical' => APP_PATH . '/common/models/embedded/physical',
     'app\common\models\embedded\downloadable' => APP_PATH . '/common/models/embedded/downloadable',
     'app\common\models\sorting' => APP_PATH . '/common/models/sorting',

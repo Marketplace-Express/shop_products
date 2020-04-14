@@ -8,7 +8,7 @@ use Phalcon\Mvc\Model\Migration;
 /**
  * Class ProductImagesSizesMigration_101
  */
-class ProductImagesSizesMigration_101 extends Migration
+class ImagesSizesMigration_101 extends Migration
 {
     /**
      * Define the table structure
@@ -17,7 +17,7 @@ class ProductImagesSizesMigration_101 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product_images_sizes', [
+        $this->morphTable('images_sizes', [
                 'columns' => [
                     new Column(
                         'row_id',
@@ -100,13 +100,13 @@ class ProductImagesSizesMigration_101 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['row_id'], 'PRIMARY'),
-                    new Index('product_images_sizes_product_images_image_id_fk', ['image_id'], null)
+                    new Index('images_sizes_images_image_id_fk', ['image_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'product_images_sizes_product_images_image_id_fk',
+                        'images_sizes_images_image_id_fk',
                         [
-                            'referencedTable' => 'product_images',
+                            'referencedTable' => 'images',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['image_id'],
                             'referencedColumns' => ['image_id'],

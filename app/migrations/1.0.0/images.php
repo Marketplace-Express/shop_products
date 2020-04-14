@@ -8,7 +8,7 @@ use Phalcon\Mvc\Model\Migration;
 /**
  * Class ProductImagesMigration_100
  */
-class ProductImagesMigration_100 extends Migration
+class ImagesMigration_100 extends Migration
 {
     /**
      * Define the table structure
@@ -17,7 +17,7 @@ class ProductImagesMigration_100 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product_images', [
+        $this->morphTable('images', [
                 'columns' => [
                     new Column(
                         'image_id',
@@ -149,13 +149,23 @@ class ProductImagesMigration_100 extends Migration
                         ]
                     ),
                     new Column(
-                        'is_used',
+                        'is_rate_image',
                         [
                             'type' => Column::TYPE_INTEGER,
                             'default' => "0",
                             'notNull' => true,
                             'size' => 1,
                             'after' => 'is_variation_image'
+                        ]
+                    ),
+                    new Column(
+                        'is_used',
+                        [
+                            'type' => Column::TYPE_INTEGER,
+                            'default' => "0",
+                            'notNull' => true,
+                            'size' => 1,
+                            'after' => 'is_rate_image'
                         ]
                     ),
                     new Column(
@@ -175,9 +185,9 @@ class ProductImagesMigration_100 extends Migration
                 ],
                 'references' => [
                     new Reference(
-                        'product_images_product_product_id_fk',
+                        'images_products_product_id_fk',
                         [
-                            'referencedTable' => 'product',
+                            'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],

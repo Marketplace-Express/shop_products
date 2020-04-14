@@ -17,7 +17,7 @@ class ProductMigration_100 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product', [
+        $this->morphTable('products', [
                 'columns' => [
                     new Column(
                         'product_id',

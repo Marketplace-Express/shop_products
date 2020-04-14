@@ -8,24 +8,23 @@
 namespace app\common\repositories;
 
 
+use app\common\enums\ImagesTypesEnum;
 use app\common\exceptions\OperationFailed;
 use app\common\exceptions\NotFound;
 use app\common\exceptions\OperationNotPermitted;
-use app\common\models\ProductImages;
-use app\common\models\ProductImagesSizes;
+use app\common\models\Image;
+use app\common\models\ImageSizes;
+use app\common\models\RateImage;
 
 class ImageRepository extends BaseRepository
 {
-    /** @var ProductImages */
-    private $model;
-
     /**
      * @param bool $new
-     * @return ProductImages
+     * @return Image
      */
-    public function getModel(bool $new = false): ProductImages
+    public function getModel(bool $new = false): Image
     {
-        return ProductImages::model($new);
+        return Image::model($new);
     }
 
     /**
@@ -39,7 +38,8 @@ class ImageRepository extends BaseRepository
      * @param string $deleteHash
      * @param string $name
      * @param string $link
-     * @return ProductImages
+     * @param string $entity
+     * @return Image
      * @throws OperationFailed
      */
     public function create(
@@ -52,10 +52,11 @@ class ImageRepository extends BaseRepository
         string $size,
         string $deleteHash,
         string $name,
-        string $link
+        string $link,
+        string $entity
     )
     {
-        $model = $this->getModel(true);
+        $model = new Image();
         $data = [
             'imageId' => $imageId,
             'imageAlbumId' => $albumId,
@@ -68,21 +69,32 @@ class ImageRepository extends BaseRepository
             'imageDeleteHash' => $deleteHash,
             'imageName' => $name
         ];
+
+        switch ($entity) {
+            case ImagesTypesEnum::TYPE_VARIATION:
+                $data['isVariationImage'] = true;
+                break;
+            case ImagesTypesEnum::TYPE_RATE:
+                $data['isRateImage'] = true;
+                break;
+        }
+
         if (!$model->save($data)) {
             throw new OperationFailed($model->getMessages(), 500);
         }
+
         return $model;
     }
 
     /**
-     * @param ProductImages $image
+     * @param Image $image
      * @param string $imageLink
      * @return bool
      * @throws OperationFailed
      */
-    public function saveSizes(ProductImages $image, string $imageLink)
+    public function saveSizes(Image $image, string $imageLink)
     {
-        $sizes = ProductImagesSizes::model(true);
+        $sizes = new ImageSizes();
         $imageLinkArr = explode('.', $imageLink);
         $small = implode('.', [$imageLinkArr[0], $imageLinkArr[1], $imageLinkArr[2].'s', $imageLinkArr[3]]);
         $big = implode('.', [$imageLinkArr[0], $imageLinkArr[1], $imageLinkArr[2].'b', $imageLinkArr[3]]);
@@ -116,7 +128,7 @@ class ImageRepository extends BaseRepository
      */
     public function delete(string $imageId, string $albumId, string $productId): bool
     {
-        $image = $this->getModel()::findFirst([
+        $image = Image::findFirst([
             'conditions' => 'imageId = :imageId: AND imageAlbumId = :albumId: AND productId = :productId:',
             'bind' => [
                 'productId' => $productId,
@@ -143,49 +155,45 @@ class ImageRepository extends BaseRepository
     public function deleteProductImages(string $productId)
     {
         $allDeleted = false;
-        $allProductImages = $this->getModel()->find([
+        $allProductImages = Image::find([
             'conditions' => 'productId = :productId:',
-            'bind' => [
-                'productId' => $productId
-            ]
+            'bind' => ['productId' => $productId]
         ]);
 
-        if (!count($allProductImages)) {
-            return false;
+        foreach ($allProductImages as $productImage) {
+            $allDeleted = $productImage->delete();
         }
 
-        if ($allProductImages) {
-            foreach ($allProductImages as $productImage) {
-                $allDeleted = $productImage->delete();
-            }
-        }
-
-        $imagesIds = array_column($allProductImages->toArray(), 'imageId');
-        $imageSizeModel = new ProductImagesSizes();
-        $allImagesVersions = $imageSizeModel::find([
-            'conditions' => 'imageId IN  ({imagesIds:array})',
-            'bind' => [
-                'imagesIds' => $imagesIds
-            ]
-        ]);
-
-        if ($allImagesVersions) {
-            foreach ($allImagesVersions as $imageVersion) {
-                $allDeleted = $imageVersion->delete();
-            }
-        }
         return $allDeleted;
+    }
+
+    /**
+     * @param array $imagesIds
+     * @throws OperationFailed
+     */
+    public function deleteImagesByIds(array $imagesIds)
+    {
+        $images = Image::find([
+            'conditions' => 'imageId IN ({imagesIds:array})',
+            'bind' => ['imagesIds' => $imagesIds]
+        ]);
+
+        foreach ($images as $image) {
+            if (!$image->delete()) {
+                throw new OperationFailed('Failed to delete image', 500);
+            }
+        }
     }
 
     /**
      * @param string $imageId
      * @param string $productId
-     * @return ProductImages[]
+     * @return Image[]
      * @throws OperationNotPermitted
      */
     public function makeMainImage(string $imageId, string $productId)
     {
-        $productImages = $this->getModel()::find([
+        $productImages = Image::find([
             'conditions' => 'productId = :productId:',
             'bind' => ['productId' => $productId]
         ]);
@@ -210,13 +218,13 @@ class ImageRepository extends BaseRepository
     /**
      * @param string $imageId
      * @param int $order
-     * @return ProductImages
+     * @return Image
      * @throws NotFound
      * @throws OperationFailed
      */
     public function updateOrder(string $imageId, int $order = 0)
     {
-        $image = $this->getModel()::findFirst([
+        $image = Image::findFirst([
             'conditions' => 'imageId = :imageId:',
             'bind' => ['imageId' => $imageId]
         ]);
@@ -234,13 +242,13 @@ class ImageRepository extends BaseRepository
 
     /**
      * @param string $imageId
-     * @return ProductImages
+     * @return Image
      * @throws NotFound
      * @throws \Exception
      */
-    public function getUnused(string $imageId): ProductImages
+    public function getUnused(string $imageId): Image
     {
-        $image = ProductImages::findFirst([
+        $image = Image::findFirst([
             'conditions' => 'imageId = :imageId:',
             'bind' => ['imageId' => $imageId]
         ]);
@@ -263,8 +271,8 @@ class ImageRepository extends BaseRepository
      */
     public function markAsUsed(array $imagesIds): bool
     {
-        /** @var ProductImages[] $images */
-        $images = $this->getModel(true)::find([
+        /** @var Image[] $images */
+        $images = Image::find([
             'conditions' => 'imageId IN ({imagesIds:array})',
             'bind' => ['imagesIds' => $imagesIds]
         ]);

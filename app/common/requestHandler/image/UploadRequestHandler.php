@@ -8,10 +8,10 @@
 namespace app\common\requestHandler\image;
 
 
+use app\common\enums\ImagesTypesEnum;
 use app\common\requestHandler\IArrayData;
 use app\common\requestHandler\RequestAbstract;
 use app\common\validators\rules\ImagesRules;
-use app\common\validators\TypeValidator;
 use Phalcon\Http\Request\File;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
@@ -28,6 +28,9 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
 
     /** @var string */
     public $productId;
+
+    /** @var string */
+    public $entity = ImagesTypesEnum::TYPE_PRODUCT;
 
     /** @var ImagesRules */
     protected $validationRules;
@@ -73,6 +76,13 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
             ])
         );
 
+        $validator->add(
+            'entity',
+            new Validation\Validator\InclusionIn([
+                'domain' => ImagesTypesEnum::getValues()
+            ])
+        );
+
         return $validator->validate([
             'image' => [
                 'name' => $this->image->getName(),
@@ -81,7 +91,8 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
                 'type' => $this->image->getType(),
                 'size' => $this->image->getSize()
             ],
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'entity' => $this->entity
         ]);
     }
 
@@ -104,8 +115,9 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
     {
         return [
             'image' => $this->image,
-            'albumId' => $this->albumId,
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'entity' => $this->entity,
+            'albumId' => $this->albumId
         ];
     }
 }

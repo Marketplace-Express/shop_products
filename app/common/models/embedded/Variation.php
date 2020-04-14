@@ -12,7 +12,7 @@ use app\common\validators\SkuValidator;
 use app\common\models\{
     BaseModel,
     Product,
-    ProductImages
+    Image
 };
 use app\common\validators\UuidValidator;
 use Phalcon\Mvc\Model\ResultsetInterface;
@@ -21,7 +21,7 @@ use Phalcon\Validation;
 /**
  * Class Variation
  * @package app\common\models\embedded
- * @property ProductImages $image
+ * @property Image $image
  */
 class Variation extends BaseModel
 {
@@ -152,7 +152,7 @@ class Variation extends BaseModel
 
         $this->hasOne(
             'imageId',
-            ProductImages::class,
+            Image::class,
             'imageId',
             [
                 'alias' => 'image',
@@ -267,7 +267,7 @@ class Variation extends BaseModel
 
     /**
      * @param bool $assoc
-     * @return ProductImages|array
+     * @return Image|array
      */
     private function getImage(bool $assoc = false)
     {
@@ -344,14 +344,19 @@ class Variation extends BaseModel
             new SkuValidator()
         );
 
-        if ($this->operationMode != self::OP_DELETE) {
-            $validation->add(
-                ['productId', 'sku', 'isDeleted'],
-                new Validation\Validator\Uniqueness([
-                    'message' => 'SKU should be unique per variation'
-                ])
-            );
-        }
+        $validation->add(
+            ['productId', 'sku', 'isDeleted'],
+            new Validation\Validator\Uniqueness([
+                'message' => 'SKU should be unique per variation'
+            ])
+        );
+
+        $validation->add(
+            ['imageId', 'deletionToken'],
+            new Validation\Validator\Uniqueness([
+                'message' => 'The image is already used'
+            ])
+        );
 
         $this->_errorMessages = $validation->validate([
             'productId' => $this->productId,

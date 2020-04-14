@@ -12,7 +12,6 @@ services:
       bash -c "chmod +x utilities/start_service.sh
       && utilities/start_service.sh
       && ./run consumer syncConsumer"
-
   products-async:
     build: .
     image: 'shop/products'
@@ -25,7 +24,6 @@ services:
       bash -c "chmod +x utilities/start_service.sh
       && utilities/start_service.sh
       && ./run consumer asyncConsumer"
-
   products-api:
     build: .
     image: 'shop/products'

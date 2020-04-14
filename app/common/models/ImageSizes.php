@@ -9,7 +9,7 @@ namespace app\common\models;
 
 use Phalcon\Mvc\Model\Resultset;
 
-class ProductImagesSizes extends BaseModel
+class ImageSizes extends BaseModel
 {
 
     /**
@@ -79,7 +79,7 @@ class ProductImagesSizes extends BaseModel
      */
     public function getSource()
     {
-        return 'product_images_sizes';
+        return 'images_sizes';
     }
 
     /**
@@ -91,7 +91,7 @@ class ProductImagesSizes extends BaseModel
 
         $this->belongsTo(
             'imageId',
-            ProductImages::class,
+            Image::class,
             'imageId',
             [
                 'reusable' => true
@@ -110,7 +110,7 @@ class ProductImagesSizes extends BaseModel
 
     /**
      * @param null $parameters
-     * @return \Phalcon\Mvc\Model\ResultsetInterface|ProductImagesSizes[]
+     * @return \Phalcon\Mvc\Model\ResultsetInterface|ImageSizes[]
      */
     static public function find($parameters = null)
     {
@@ -130,7 +130,7 @@ class ProductImagesSizes extends BaseModel
      * Allows to query the first record that match the specified conditions
      *
      * @param mixed $parameters
-     * @return ProductImagesSizes
+     * @return ImageSizes
      */
     public static function findFirst($parameters = null)
     {

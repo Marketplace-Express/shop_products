@@ -95,9 +95,9 @@ class ProductQuestionsMigration_100 extends Migration
                 ],
                 'references' => [
                     new Reference(
-                        'product_questions_product_product_id_fk',
+                        'product_questions_products_product_id_fk',
                         [
-                            'referencedTable' => 'product',
+                            'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],

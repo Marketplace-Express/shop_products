@@ -3,6 +3,7 @@
 use app\common\services\ImageService;
 use app\common\services\ProductsService;
 use app\common\services\QuestionsService;
+use app\common\services\RateService;
 use app\common\services\SearchService;
 use app\common\services\user\UserService;
 use app\common\utils\AMQPHandler;
@@ -227,7 +228,8 @@ $di->set('appServices', function($serviceName) {
         'productsService' => ProductsService::class,
         'imageService' => ImageService::class,
         'questionService' => QuestionsService::class,
-        'searchService' => SearchService::class
+        'searchService' => SearchService::class,
+        'rateService' => RateService::class
     ];
 
     if (!array_key_exists($serviceName, $services)) {

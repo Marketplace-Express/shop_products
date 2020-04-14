@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductVariationsMigration_101
+ * Class ProductVariationsMigration_102
  */
-class ProductVariationsMigration_101 extends Migration
+class ProductVariationsMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -137,6 +137,7 @@ class ProductVariationsMigration_101 extends Migration
                 'indexes' => [
                     new Index('PRIMARY', ['variation_id'], 'PRIMARY'),
                     new Index('product_variations_uindex', ['product_id', 'sku', 'is_deleted', 'deletion_token'], 'UNIQUE'),
+                    new Index('product_variations_image_id_deletion_token_uindex', ['image_id', 'deletion_token'], 'UNIQUE'),
                     new Index('product_variations_product_product_id_fk', ['product_id'], null),
                     new Index('product_variations_product_images_image_id_fk', ['image_id'], null)
                 ],
@@ -144,7 +145,7 @@ class ProductVariationsMigration_101 extends Migration
                     new Reference(
                         'product_variations_product_images_image_id_fk',
                         [
-                            'referencedTable' => 'product_images',
+                            'referencedTable' => 'images',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['image_id'],
                             'referencedColumns' => ['image_id'],
@@ -155,7 +156,7 @@ class ProductVariationsMigration_101 extends Migration
                     new Reference(
                         'product_variations_product_product_id_fk',
                         [
-                            'referencedTable' => 'product',
+                            'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],

@@ -7,19 +7,25 @@
 
 namespace app\modules\api\controllers;
 
+use app\common\enums\HttpStatusesEnum;
+use Phalcon\Http\Response\StatusCode;
 use Phalcon\Mvc\Controller;
 
 class ExceptionhandlerController extends Controller
 {
     /**
      * @param $errors
-     * @param int $code
+     * @param $code
      * @return \Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
      */
-    public function raiseErrorAction($errors, int $code)
+    public function raiseErrorAction($errors, $code)
     {
         if (!is_array($errors) && !is_object($errors) && ($jsonError = json_decode($errors, true)) != null) {
             $errors = $jsonError;
+        }
+
+        if (!in_array($code, HttpStatusesEnum::getValues())) {
+            $code = 500;
         }
 
         /**

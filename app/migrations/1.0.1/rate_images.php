@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class RateImagesMigration_101
+ * Class RateImagesMigration_102
  */
-class RateImagesMigration_101 extends Migration
+class RateImagesMigration_102 extends Migration
 {
     /**
      * Define the table structure
@@ -20,29 +20,31 @@ class RateImagesMigration_101 extends Migration
         $this->morphTable('rate_images', [
                 'columns' => [
                     new Column(
+                        'row_id',
+                        [
+                            'type' => Column::TYPE_BIGINTEGER,
+                            'notNull' => true,
+                            'autoIncrement' => true,
+                            'size' => 1,
+                            'first' => true
+                        ]
+                    ),
+                    new Column(
                         'image_id',
                         [
-                            'type' => Column::TYPE_CHAR,
+                            'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'first' => true
+                            'after' => 'row_id'
                         ]
                     ),
                     new Column(
                         'rate_id',
                         [
-                            'type' => Column::TYPE_CHAR,
+                            'type' => Column::TYPE_VARCHAR,
                             'notNull' => true,
                             'size' => 36,
                             'after' => 'image_id'
-                        ]
-                    ),
-                    new Column(
-                        'image_link',
-                        [
-                            'type' => Column::TYPE_TEXT,
-                            'notNull' => true,
-                            'after' => 'rate_id'
                         ]
                     ),
                     new Column(
@@ -51,33 +53,27 @@ class RateImagesMigration_101 extends Migration
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'after' => 'image_link'
-                        ]
-                    ),
-                    new Column(
-                        'deleted_at',
-                        [
-                            'type' => Column::TYPE_DATETIME,
-                            'after' => 'created_at'
-                        ]
-                    ),
-                    new Column(
-                        'is_deleted',
-                        [
-                            'type' => Column::TYPE_INTEGER,
-                            'default' => "0",
-                            'notNull' => true,
-                            'size' => 1,
-                            'after' => 'deleted_at'
+                            'after' => 'rate_id'
                         ]
                     )
                 ],
                 'indexes' => [
-                    new Index('PRIMARY', ['image_id'], 'PRIMARY'),
-                    new Index('rate_images_product_rates_rate_id_fk', ['rate_id'], null),
-                    new Index('rate_images_index', ['is_deleted', 'rate_id'], null)
+                    new Index('PRIMARY', ['row_id'], 'PRIMARY'),
+                    new Index('rate_images_image_id_uindex', ['image_id'], 'UNIQUE'),
+                    new Index('rate_images_product_rates_rate_id_fk', ['rate_id'], null)
                 ],
                 'references' => [
+                    new Reference(
+                        'rate_images_images_image_id_fk',
+                        [
+                            'referencedTable' => 'images',
+                            'referencedSchema' => 'shop_products',
+                            'columns' => ['image_id'],
+                            'referencedColumns' => ['image_id'],
+                            'onUpdate' => 'NO ACTION',
+                            'onDelete' => 'CASCADE'
+                        ]
+                    ),
                     new Reference(
                         'rate_images_product_rates_rate_id_fk',
                         [
@@ -92,7 +88,7 @@ class RateImagesMigration_101 extends Migration
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',
-                    'AUTO_INCREMENT' => '',
+                    'AUTO_INCREMENT' => '23',
                     'ENGINE' => 'InnoDB',
                     'TABLE_COLLATION' => 'utf8mb4_0900_ai_ci'
                 ],

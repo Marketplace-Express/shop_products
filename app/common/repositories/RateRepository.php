@@ -8,17 +8,87 @@
 namespace app\common\repositories;
 
 
+use app\common\exceptions\NotFound;
+use app\common\exceptions\OperationFailed;
 use app\common\models\ProductRates;
-use app\common\models\RateImages;
 
 class RateRepository extends BaseRepository
 {
     /**
+     * @param string $userId
+     * @param string $productId
+     * @param int $stars
+     * @param string|null $text
      * @return ProductRates
+     * @throws OperationFailed
      */
-    public function getModel(): ProductRates
+    public function create(string $userId, string $productId, int $stars, ?string $text): ProductRates
     {
-        return new ProductRates();
+        $rate = ProductRates::model(true);
+
+        $rate->userId = $userId;
+        $rate->rateText = $text;
+        $rate->rateStars = $stars;
+        $rate->productId = $productId;
+
+        if (!$rate->save()) {
+            throw new OperationFailed($rate->getMessages(), 400);
+        }
+
+        return $rate;
+    }
+
+    /**
+     * @param string $rateId
+     * @param int $stars
+     * @param string|null $text
+     * @return ProductRates
+     * @throws OperationFailed
+     * @throws NotFound
+     */
+    public function update(string $rateId, int $stars, ?string $text): ProductRates
+    {
+        $rate = ProductRates::findFirst([
+            'conditions' => 'rateId = :rateId:',
+            'bind' => ['rateId' => $rateId]
+        ]);
+
+        if (!$rate) {
+            throw new NotFound();
+        }
+
+        $rate->rateStars = $stars;
+        $rate->rateText = $text;
+
+        if (!$rate->update()) {
+            throw new OperationFailed($rate->getMessages(), 400);
+        }
+
+        return $rate;
+    }
+
+    /**
+     * @param string $rateId
+     * @return bool
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function delete(string $rateId): bool
+    {
+        $rate = ProductRates::model()::findFirst([
+            'conditions' => 'rateId = :rateId:',
+            'bind' => ['rateId' => $rateId]
+        ]);
+
+        if (!$rate) {
+            throw new NotFound('Rate not found or maybe deleted');
+        }
+
+        if (!$rate->delete()) {
+            throw new OperationFailed($rate->getMessages(), 400);
+        }
+
+        return true;
     }
 
     /**
@@ -28,7 +98,7 @@ class RateRepository extends BaseRepository
     public function deleteProductRates(string $productId)
     {
         $allDeleted = false;
-        $allProductRates = $this->getModel()::find([
+        $allProductRates = ProductRates::model()::find([
             'conditions' => 'productId = :productId:',
             'bind' => [
                 'productId' => $productId
@@ -43,19 +113,6 @@ class RateRepository extends BaseRepository
             foreach ($allProductRates as $productRate) {
                 $allDeleted = $productRate->delete();
             }
-        }
-
-        $ratesIds = array_column($allProductRates->toArray(), 'rateId');
-        $rateImagesModel = new RateImages();
-        $allRatesImages = $rateImagesModel::find([
-            'conditions' => 'rateId IN ({ratesIds:array})',
-            'bind' => [
-                'ratesIds' => $ratesIds
-            ]
-        ]);
-
-        foreach ($allRatesImages as $rateImages) {
-            $allDeleted = $rateImages->delete();
         }
 
         return $allDeleted;
