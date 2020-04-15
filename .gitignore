@@ -7,5 +7,5 @@
 # exclude router file
 .htrouter.php
 
-composer.phar
+composer.lock
 index.html
