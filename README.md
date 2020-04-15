@@ -58,5 +58,5 @@ docker-compose up --scale products-async=3 -d
 ### Unit test
 To run the unit test, just run this command:
 ```bash
-docker-compose up categories-unit-test
+docker-compose up products-unit-test
 ```
