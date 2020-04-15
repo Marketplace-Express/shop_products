@@ -73,7 +73,7 @@ return new \Phalcon\Config([
         ]
     ],
     'application' => [
-        'modelsDir' => APP_PATH . '/models/',
+        'modelsDir' => APP_PATH . '/common/models/',
         'controllersDir' => APP_PATH . '/modules/api/controllers/',
         'migrationsDir' => APP_PATH . '/migrations/',
         'logsDir' => APP_PATH . '/logs/',
