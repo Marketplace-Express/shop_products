@@ -4,9 +4,6 @@
 # phalcon aut generated folder
 .phalcon
 
-# exclude php extensions
-php_extensions
-
 # dotfiles
 .*
 
