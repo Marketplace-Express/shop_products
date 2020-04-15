@@ -20,39 +20,38 @@ class ProductQuestionsMigration_100 extends Migration
         $this->morphTable('product_questions', [
                 'columns' => [
                     new Column(
-                        'question_id',
+                        'id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
                             'first' => true
                         ]
                     ),
                     new Column(
-                        'question_product_id',
+                        'product_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'after' => 'question_id'
+                            'after' => 'id'
                         ]
                     ),
                     new Column(
-                        'question_user_id',
+                        'user_id',
                         [
-                            'type' => Column::TYPE_VARCHAR,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'after' => 'question_product_id'
+                            'after' => 'product_id'
                         ]
                     ),
                     new Column(
-                        'question_text',
+                        'text',
                         [
                             'type' => Column::TYPE_TEXT,
                             'notNull' => true,
-                            'size' => 1,
-                            'after' => 'question_user_id'
+                            'after' => 'user_id'
                         ]
                     ),
                     new Column(
@@ -61,15 +60,13 @@ class ProductQuestionsMigration_100 extends Migration
                             'type' => Column::TYPE_DATETIME,
                             'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'size' => 1,
-                            'after' => 'question_text'
+                            'after' => 'text'
                         ]
                     ),
                     new Column(
                         'updated_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'created_at'
                         ]
                     ),
@@ -77,7 +74,6 @@ class ProductQuestionsMigration_100 extends Migration
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'size' => 1,
                             'after' => 'updated_at'
                         ]
                     ),
@@ -93,20 +89,20 @@ class ProductQuestionsMigration_100 extends Migration
                     )
                 ],
                 'indexes' => [
-                    new Index('PRIMARY', ['question_id'], 'PRIMARY'),
-                    new Index('product_questions_question_id_uindex', ['question_id'], 'UNIQUE'),
-                    new Index('product_questions_product_product_id_fk', ['question_product_id'], null)
+                    new Index('PRIMARY', ['id'], 'PRIMARY'),
+                    new Index('product_questions_product_product_id_fk', ['product_id'], null),
+                    new Index('product_questions_index', ['is_deleted', 'product_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'product_questions_product_product_id_fk',
+                        'product_questions_products_product_id_fk',
                         [
-                            'referencedTable' => 'product',
+                            'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
-                            'columns' => ['question_product_id'],
+                            'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],
                             'onUpdate' => 'NO ACTION',
-                            'onDelete' => 'NO ACTION'
+                            'onDelete' => 'CASCADE'
                         ]
                     )
                 ],

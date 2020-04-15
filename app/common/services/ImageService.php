@@ -5,50 +5,53 @@
  * Time: 02:46 م
  */
 
-namespace Shop_products\Services;
+namespace app\common\services;
 
 
+use app\common\enums\AccessLevelsEnum;
+use app\common\exceptions\OperationNotPermitted;
+use app\common\services\cache\ImagesCache;
+use Mechpave\ImgurClient\Entity\Album;
+use Mechpave\ImgurClient\Entity\ImageInterface;
 use Phalcon\Di;
 use Phalcon\Http\Request\File;
-use Shop_products\Exceptions\NotFoundException;
-use Shop_products\Repositories\ImageRepository;
-use Shop_products\Utils\ImgurUtil;
+use app\common\repositories\ImageRepository;
+use app\common\repositories\ProductRepository;
+use app\common\exceptions\OperationFailed;
+use app\common\exceptions\NotFound;
 
 class ImageService
 {
-    /** @var ImageRepository */
-    private $imageRepository;
-
-    /** @var ProductsService */
-    private $productsService;
-
-    /**
-     * @return ProductsService
-     */
-    public function getProductsService(): ProductsService
-    {
-        return $this->productsService ?? $this->productsService = new ProductsService();
-    }
-
-    public function getRepository(): ImageRepository
-    {
-        return $this->imageRepository ??
-            $this->imageRepository = new ImageRepository();
-    }
-
     /**
      * @param File $image
-     * @param string $albumId
      * @param string $productId
+     * @param string $entity
+     * @param string|null $albumId
      * @return array
-     * @throws NotFoundException
-     * @throws \Shop_products\Exceptions\ArrayOfStringsException
+     * @throws NotFound
+     * @throws OperationFailed
      * @throws \Exception
      */
-    public function upload(File $image, string $albumId, string $productId)
+    public function upload(File $image, string $productId, string $entity, ?string $albumId = null)
     {
-        if (!$this->getProductsService()->checkProductExistence($productId)) {
-            throw new NotFoundException('product not found or maybe deleted');
+        $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
+            'productCategoryId', 'productVendorId', 'productAlbumId'
+        ]);
+
+        if (empty($simpleProductData['productAlbumId']) && !empty($album = $this->createAlbum($productId))) {
+            ProductRepository::getInstance()->setAlbum($productId, $album);
+            // Override product data
+            $simpleProductData = [
+                'productCategoryId' => $simpleProductData['productCategoryId'],
+                'productVendorId' => $simpleProductData['productVendorId'],
+                'productAlbumId' => $album['albumId']
+            ];
+            // Override sent album id
+            $albumId = $album['albumId'];
+        }
+
+        if ($albumId != $simpleProductData['productAlbumId']) {
+            throw new \Exception('incorrect product album id', 400);
         }
 
         $config = Di::getDefault()->getConfig()->application;
@@ -56,7 +59,9 @@ class ImageService
         $image->moveTo(
             $config->uploadDir . $newImageName
         );
-        $uploaded = (new ImgurUtil())
+
+        /** @var ImageInterface $uploaded */
+        $uploaded = Di::getDefault()->getImageUploader()
             ->uploadImage(
                 $config->uploadDir . $newImageName,
                 $image->getName(),
@@ -64,21 +69,100 @@ class ImageService
             );
 
         $data = [];
+
         if (!empty($uploaded)) {
-            $image = $this->getRepository()->create(
+
+            $repository = ImageRepository::getInstance();
+
+            $image = $repository->create(
                 $productId,
                 $uploaded->getImageId(),
+                $albumId,
                 $uploaded->getType(),
                 $uploaded->getWidth(),
                 $uploaded->getHeight(),
                 $uploaded->getSize(),
                 $uploaded->getDeleteHash(),
                 $uploaded->getName(),
-                $uploaded->getLink()
+                $uploaded->getLink(),
+                $entity
             );
+
+            $repository->saveSizes($image, $image->imageLink);
+
             $data = $image->toApiArray();
+
+            ImagesCache::getInstance()->set($productId, $data);
         }
         unlink($config->uploadDir . $newImageName);
+        return $data;
+    }
+
+    /**
+     * @param string $productId
+     * @param string $imageId
+     * @param string $albumId
+     * @param int $accessLevel
+     * @throws OperationFailed
+     * @throws NotFound
+     * @throws OperationNotPermitted
+     * @throws \RedisException
+     * @throws \Exception
+     */
+    public function delete(string $productId, string $imageId, string $albumId, int $accessLevel = AccessLevelsEnum::NORMAL_USER): void
+    {
+        if ($accessLevel < 1) {
+            throw new OperationNotPermitted('Not allowed action');
+        }
+        if (ImageRepository::getInstance()->delete($imageId, $albumId, $productId)) {
+            ImagesCache::getInstance()->invalidate($productId, $imageId);
+        }
+    }
+
+    /**
+     * @param string $imageId
+     * @param string $productId
+     * @return void
+     * @throws OperationNotPermitted
+     */
+    public function makeMainImage(string $imageId, string $productId)
+    {
+        $images = array_map(function ($image) {
+            return $image->toApiArray();
+        }, ImageRepository::getInstance()->makeMainImage($imageId, $productId));
+        ImagesCache::getInstance()->invalidateProductImages($productId);
+        ImagesCache::getInstance()->bulkProductSet($productId, $images);
+    }
+
+    /**
+     * @param string $productId
+     * @param string $imageId
+     * @param int $order
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateOrder(string $productId, string $imageId, int $order = 0)
+    {
+        $image = ImageRepository::getInstance()->updateOrder($imageId, $order);
+        ImagesCache::getInstance()->set($productId, $image->toApiArray());
+    }
+
+
+    /**
+     * @param string $productId
+     * @return array
+     */
+    private function createAlbum(string $productId): array
+    {
+        $data = [];
+        /** @var Album $album */
+        $album = Di::getDefault()->getImageUploader()->createAlbum($productId);
+        if (!empty($album)) {
+            $data = [
+                'albumId' => $album->getAlbumId(),
+                'deleteHash' => $album->getDeleteHash()
+            ];
+        }
         return $data;
     }
 }

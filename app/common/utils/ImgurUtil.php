@@ -5,8 +5,9 @@
  * Time: 11:36 م
  */
 
-namespace Shop_products\Utils;
+namespace app\common\utils;
 
+use Mechpave\ImgurClient\Entity\AlbumInterface;
 use Mechpave\ImgurClient\Entity\Token;
 use Mechpave\ImgurClient\ImgurClient;
 use Mechpave\ImgurClient\Model\ImageModel;
@@ -29,7 +30,7 @@ class ImgurUtil
 
     /**
      * @param string $title
-     * @return mixed
+     * @return AlbumInterface
      */
     public function createAlbum(string $title)
     {

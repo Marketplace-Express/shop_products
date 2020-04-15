@@ -5,49 +5,32 @@
  * Time: 11:25 ص
  */
 
-namespace Shop_products\Models;
+namespace app\common\models;
 
 use Phalcon\Mvc\Model;
-use Shop_products\Traits\ModelCollectionBehaviorTrait;
+use app\common\traits\ModelCollectionBehaviorTrait;
 
-abstract class BaseModel extends Model
+abstract class BaseModel extends Model implements \ArrayAccess
 {
     use ModelCollectionBehaviorTrait;
 
     protected static $instance;
 
     /**
+     * @var int
+     * Override default _operationMode
+     */
+    protected $operationMode;
+
+    /**
      * @param bool $new
-     * @return BaseModel|Product|PhysicalProduct|DownloadableProduct
+     * @return static
      */
     public static function model(bool $new = false)
     {
         return !empty(self::$instance) && !$new ? self::$instance : new static;
     }
 
-    /**
-     * @param null $filter
-     * @return array|Model\MessageInterface[]
-     */
-    public function getMessages($filter = null)
-    {
-        // TODO: TO BE ENHANCED LATER
-        $messages = [];
-        $multiErrorFields = [];
-        foreach (parent::getMessages() as $message) {
-            $multiErrorFields[] = $message->getField();
-        }
-        $multiErrorFields = array_diff_assoc($multiErrorFields, array_unique($multiErrorFields));
-
-        foreach (parent::getMessages() as $message) {
-            if (in_array($message->getField(), $multiErrorFields)) {
-                $messages[$message->getField()][] = $message->getMessage();
-            } else {
-                $messages[$message->getField()] = $message->getMessage();
-            }
-        }
-        return $messages;
-    }
 
     /**
      * @return string
@@ -56,4 +39,70 @@ abstract class BaseModel extends Model
     {
         return Model::class;
     }
+
+    /**
+     * Assign attributes to the model
+     * @param array $data
+     * @param null $dataColumnMap
+     * @param null|array $whiteList
+     * @return $this|Model
+     *
+     * @throws \Exception
+     */
+    public function assign($data, $dataColumnMap = null, $whiteList = null)
+    {
+        if (in_array($this->_operationMade, [self::OP_CREATE, self::OP_UPDATE]) && empty($whiteList)) {
+            throw new \Exception('You should provide a whitelist', 400);
+        }
+        foreach ($data as $attribute => $value) {
+            if (!empty($whiteList) && !in_array($attribute, $whiteList)) {
+                continue;
+            }
+            $this->writeAttribute($attribute, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * @param mixed $offset
+     * @return bool
+     */
+    public function offsetExists($offset): bool
+    {
+        return property_exists($this, $offset);
+    }
+
+    /**
+     * @param mixed $offset
+     * @return mixed
+     */
+    public function offsetGet($offset)
+    {
+        if ($this->offsetExists($offset)) {
+            return $this->$offset;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->$offset = $value;
+    }
+
+    /**
+     * @param mixed $offset
+     */
+    public function offsetUnset($offset)
+    {
+        if ($this->offsetExists($offset)) {
+            unset($this->$offset);
+        }
+    }
+
+    abstract public function toApiArray(): array;
 }

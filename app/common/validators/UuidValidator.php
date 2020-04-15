@@ -5,14 +5,14 @@
  * Time: 12:15 م
  */
 
-namespace Shop_products\Validators;
+namespace app\common\validators;
 
 
 use Phalcon\Validation;
 use Phalcon\Validation\Message;
 use Phalcon\Validation\Validator;
 use Phalcon\Validation\ValidatorInterface;
-use Shop_products\Utils\UuidUtil;
+use app\common\utils\UuidUtil;
 
 class UuidValidator extends Validator implements ValidatorInterface
 {

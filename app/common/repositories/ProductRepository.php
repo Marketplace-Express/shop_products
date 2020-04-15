@@ -5,23 +5,30 @@
  * Time: 08:58 م
  */
 
-namespace Shop_products\Repositories;
+namespace app\common\repositories;
 
+
+use app\common\enums\{
+    MongoQueryOperatorsEnum
+};
+use app\common\exceptions\{
+    OperationFailed,
+    NotFound
+};
+use app\common\models\{
+    factory\PropertiesFactory,
+    embedded\Properties,
+    sorting\SortProduct,
+    Product
+};
+use app\common\interfaces\DataSourceInterface;
+use app\common\enums\QuantityOperatorsEnum;
 use Phalcon\Mvc\Collection\Exception;
-use Phalcon\Mvc\ModelInterface;
-use Shop_products\Enums\MongoQueryOperatorsEnum;
-use Shop_products\Enums\ProductTypesEnums;
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Exceptions\NotFoundException;
-use Shop_products\Interfaces\DataSourceInterface;
-use Shop_products\Collections\Product as ProductCollection;
-use Shop_products\Models\DownloadableProduct;
-use Shop_products\Models\PhysicalProduct;
-use Shop_products\Models\Product;
-use Shop_products\RequestHandler\Queue\QueueRequestHandler;
+use Phalcon\Mvc\Model\Resultset;
+use Phalcon\Mvc\Model\Transaction\Manager as TxManager;
+use Phalcon\Mvc\Model\Transaction\Exception as TxException;
 
-class ProductRepository implements DataSourceInterface
+class ProductRepository extends BaseRepository implements DataSourceInterface
 {
     /**
      * @param bool $new
@@ -29,339 +36,137 @@ class ProductRepository implements DataSourceInterface
      * @param bool $editMode
      * @return Product
      */
-    public function getModel(bool $new = false, bool $attachRelations = true, bool $editMode = false)
+    public function getModel(bool $new = false, bool $attachRelations = false, bool $editMode = false)
     {
          return Product::model($new, $attachRelations, $editMode);
     }
 
     /**
-     * @param bool $new
-     * @return ProductCollection
-     */
-    public function getCollection(bool $new = false): ProductCollection
-    {
-        return ProductCollection::model($new);
-    }
-
-    /**
-     * @return ProductRepository
-     */
-    public static function getInstance()
-    {
-        return new self;
-    }
-
-    /**
      * @param string $productId
-     * @return mixed
-     * @throws \Exception
+     * @param array $columns
+     * @return array
+     * @throws NotFound
+     * @throws \InvalidArgumentException
      */
-    public function isExists(string $productId)
+    public function getColumnsForProduct(string $productId, array $columns)
     {
-        return $this->getModel(true)::count([
+        if (empty($columns)) {
+            throw new \InvalidArgumentException('please provide columns to select', 400);
+        }
+
+        if (array_diff($columns, $this->getModel()->columnMap())) {
+            throw new \InvalidArgumentException('invalid provided columns', 400);
+        }
+
+        /** @var array $product */
+        $product = Product::findFirst([
+            'columns' => $columns,
             'conditions' => 'productId = :productId:',
-            'bind' => ['productId' => $productId]
-        ]);
-    }
-
-    /**
-     * @param array $products
-     */
-    private function attachDownloadableProperties(array &$products): void
-    {
-        if (empty($products)) {
-            return;
-        }
-
-        $productsIds = [];
-
-        /** @var Product $product */
-        foreach ($products as $index => $product) {
-            if ($product->productType == ProductTypesEnums::TYPE_DOWNLOADABLE) {
-                $productsIds[$index] = $product->productId;
-            }
-        }
-
-        if (!count($productsIds)) {
-            return;
-        }
-
-        $properties = DownloadableProduct::find([
-            'conditions' => 'productId IN ({productsIds:array})',
-            'bind' => ['productsIds' => array_values($productsIds)]
+            'bind' => [
+                'productId' => $productId
+            ],
+            'hydrate' => Resultset::HYDRATE_ARRAYS
         ]);
 
-        if (count($properties)) {
-            /** @var DownloadableProduct $property */
-            foreach ($properties as $property) {
-                $productIndex = array_search($property->productId, $productsIds);
-                /** @var Product $product */
-                $product = $products[$productIndex];
-                $product->assign($property->toApiArray(), null, DownloadableProduct::WHITE_LIST);
-            }
-        }
-    }
-
-    /**
-     * @param array $products
-     */
-    private function attachPhysicalProperties(array &$products): void
-    {
-        if (empty($products)) {
-            return;
+        if (!$product) {
+            throw new NotFound('product not found or maybe deleted');
         }
 
-        $productsIds = [];
-
-        /** @var Product $product */
-        foreach ($products as $index => $product) {
-            if ($product->productType == ProductTypesEnums::TYPE_PHYSICAL) {
-                $productsIds[$index] = $product->productId;
-            }
-        }
-
-        if (!count($productsIds)) {
-            return;
-        }
-
-        $properties = PhysicalProduct::find([
-            'conditions' => 'productId IN ({productsIds:array})',
-            'bind' => ['productsIds' => array_values($productsIds)]
-        ]);
-
-        if (count($properties)) {
-            /** @var PhysicalProduct $property */
-            foreach ($properties as $property) {
-                $productIndex = array_search($property->productId, $productsIds);
-                /** @var Product $product */
-                $product = $products[$productIndex];
-                $product->assign($property->toApiArray(), null, PhysicalProduct::WHITE_LIST);
-            }
-        }
+        return $product;
     }
 
     /**
      * Get product by id
      *
      * @param string $productId
-     * @param string $vendorId
      * @param bool $editMode
-     * @param bool|null $getExtraInfo
+     * @param bool $getProperties
      * @param bool $attachRelations
-     * @param bool $returnModel
-     * @return Product|ModelInterface|array
+     * @return Product
      *
-     * @throws NotFoundException
+     * @throws NotFound
+     * @throws \Exception
      */
     public function getById(
         string $productId,
-        string $vendorId,
         bool $editMode = false,
-        bool $getExtraInfo = true,
-        bool $attachRelations = true,
-        bool $returnModel = false
+        bool $getProperties = true,
+        bool $attachRelations = false
     )
     {
-        $conditions = 'productId = :productId: AND productVendorId = :vendorId:';
+        $conditions = 'productId = :productId:';
         if ($editMode) {
             $conditions .= ' AND isPublished IN (true, false)';
         } else {
             $conditions .= ' AND isPublished = true';
         }
 
-        /** @var Product $product */
-        $product = $this->getModel(true, $attachRelations, $editMode)::findFirst([
+        $product = $this->getModel(false, $attachRelations, $editMode)::findFirst([
             'conditions' => $conditions,
-            'bind' => ['productId' => $productId, 'vendorId' => $vendorId]
+            'bind' => [
+                'productId' => $productId
+            ]
         ]);
 
-        if (empty($product)) {
-            throw new NotFoundException('product not found or maybe deleted');
+        if (!$product) {
+            throw new NotFound('product not found or maybe deleted');
         }
 
-        if ($product->productType == ProductTypesEnums::TYPE_PHYSICAL) {
-            $whitelist = PhysicalProduct::getWhiteList();
-        } elseif ($product->productType == ProductTypesEnums::TYPE_DOWNLOADABLE) {
-            $whitelist = DownloadableProduct::getWhiteList();
-        }
-
-        if ($getExtraInfo) {
-            $productExtraInfo = $this->getCollection()::findFirst([
-                ['product_id' => $productId]
-            ]);
-            if (!empty($productExtraInfo)) {
-                $product->assign($productExtraInfo->toApiArray(), null, $whitelist);
-            }
-        }
-
-        $product = [$product];
-
-        $this->attachDownloadableProperties($product);
-        $this->attachPhysicalProperties($product);
-
-        $product = array_shift($product);
-
-        return $returnModel ? $product : $product->toApiArray();
+        return $product;
     }
 
     /**
      * Get products by category id
      *
+     * @param string $vendorId
      * @param string $categoryId
-     * @param string $vendorId
+     * @param null|int $limit
+     * @param null|int $page
+     * @param SortProduct $sort
      * @param bool $editMode
      * @param bool $attachRelations
-     * @param bool $getExtraInfo
-     * @param bool $returnModels
-     * @return array|null
+     * @param bool $getProperties
+     * @return Product[]
      *
      * @throws \Exception
      */
-    public function getByCategoryId(
-        string $categoryId,
+    public function getByIdentifier(
         string $vendorId,
+        ?string $categoryId,
+        int $limit,
+        int $page,
+        SortProduct $sort,
         bool $editMode = false,
         bool $attachRelations = true,
-        bool $getExtraInfo = false,
-        bool $returnModels = false): ?array
+        bool $getProperties = false
+    ): array
     {
-        $conditions = 'productCategoryId = :productCategoryId:';
-        $conditions .= ' AND productVendorId = :productVendorId:';
+        $binds = [];
 
-        if ($editMode) {
-            $conditions .= ' AND isPublished IN (true, false)';
-        } else {
-            $conditions .= ' AND isPublished = true';
-        }
-
-        $products = $this->getModel(false, $attachRelations, $editMode)::find([
-            'conditions' => $conditions,
-            'bind' => [
-                'productCategoryId' => $categoryId,
-                'productVendorId' => $vendorId
-            ]
-        ]);
-
-        if (!$products->count()) {
-            throw new \Exception('no products found', 404);
-        }
-
-        $result = [];
-
-        if ($getExtraInfo) {
-            $productsIds = array_column($products->toArray(), 'productId');
-            $productsExtraInfo = $this->getCollection()::find([
-                'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
-            ]);
-            if (!empty($productsExtraInfo)) {
-                /** @var ProductCollection $productExtraInfo */
-                foreach ($productsExtraInfo as $productExtraInfo) {
-                    $productIndex = array_search($productExtraInfo->product_id, $productsIds);
-                    $product = $products[$productIndex];
-                    if ($product->productType == ProductTypesEnums::TYPE_PHYSICAL) {
-                        $whitelist = PhysicalProduct::getWhiteList();
-                    } elseif ($product->productType == ProductTypesEnums::TYPE_DOWNLOADABLE) {
-                        $whitelist = DownloadableProduct::getWhiteList();
-                    }
-                    $product->assign($productExtraInfo->toApiArray(), null, $whitelist);
-                    $result[] = $product;
-                }
-            }
-        } else {
-            foreach ($products as $product) {
-                $result[] = $product;
-            }
-        }
-
-        $this->attachPhysicalProperties($result);
-        $this->attachDownloadableProperties($result);
-
-        if (!$returnModels) {
-            foreach ($result as &$product) {
-                $product = $product->toApiArray();
-            }
-        }
-        return $result;
-    }
-
-    /**
-     * Get products by vendor id
-     *
-     * @param string $vendorId
-     * @param bool $editMode
-     * @param bool $attachRelations
-     * @param bool $getExtraInfo
-     * @param bool $returnModels
-     * @return array|null
-     *
-     * @throws \Exception
-     */
-    public function getByVendorId(
-        string $vendorId,
-        bool $editMode = false,
-        bool $attachRelations = true,
-        bool $getExtraInfo = false,
-        bool $returnModels = false): ?array
-    {
         $conditions = 'productVendorId = :productVendorId:';
 
-        if ($editMode) {
-            $conditions .= ' AND isPublished IN (true, false)';
-        } else {
-            $conditions .= ' AND isPublished = true';
+        if ($categoryId) {
+            $conditions .= ' AND productCategoryId = :productCategoryId:';
+            $binds['productCategoryId'] = $categoryId;
         }
 
-        if ($editMode) {
-            $conditions .= ' AND isPublished IN (true, false)';
-        } else {
-            $conditions .= ' AND isPublished = true';
+        if (!$editMode) {
+            $conditions .= ' AND isPublished = TRUE';
         }
 
-        $products = $this->getModel(false, $attachRelations, $editMode)::find([
+        $products = $this->getModel(true, $attachRelations, $getProperties)::find([
             'conditions' => $conditions,
-            'bind' => [
+            'bind' => array_merge([
                 'productVendorId' => $vendorId
-            ]
+            ], $binds),
+            'limit' => $limit,
+            'offset' => ($page - 1) * $limit,
+            'order' => $sort->getSqlSort()
         ]);
 
-        if (!$products->count()) {
-            throw new \Exception('no products found', 404);
-        }
-
         $result = [];
-
-        if ($getExtraInfo) {
-            $productsIds = array_column($products->toArray(), 'productId');
-            $productsExtraInfo = $this->getCollection()::find([
-                'product_id' => [MongoQueryOperatorsEnum::OP_IN => $productsIds]
-            ]);
-            if (!empty($productsExtraInfo)) {
-                /** @var ProductCollection $productExtraInfo */
-                foreach ($productsExtraInfo as $productExtraInfo) {
-                    $productIndex = array_search($productExtraInfo->product_id, $productsIds);
-                    $product = $products[$productIndex];
-                    if ($product->productType == ProductTypesEnums::TYPE_PHYSICAL) {
-                        $whitelist = PhysicalProduct::getWhiteList();
-                    } elseif ($product->productType == ProductTypesEnums::TYPE_DOWNLOADABLE) {
-                        $whitelist = DownloadableProduct::getWhiteList();
-                    }
-                    $product->assign($productExtraInfo->toApiArray(), null, $whitelist);
-                    $result[] = $product;
-                }
-            }
-        } else {
-            foreach ($products as $product) {
-                $result[] = $product;
-            }
-        }
-
-        $this->attachPhysicalProperties($result);
-        $this->attachDownloadableProperties($result);
-
-        if (!$returnModels) {
-            foreach ($result as &$product) {
-                $product = $product->toApiArray();
-            }
+        foreach ($products as $product) {
+            $result[] = $product;
         }
 
         return $result;
@@ -371,102 +176,168 @@ class ProductRepository implements DataSourceInterface
      * Create new product
      *
      * @param array $data
-     * @return array
+     * @return Product
      *
-     * @throws ArrayOfStringsException
      * @throws Exception
+     * @throws OperationFailed
      * @throws \Exception
      */
-    public function create(array $data): array
+    public function create(array $data): Product
     {
-        $productCollectionData = [];
-        if (!empty($data['productKeywords']) || !empty($data['productSegments'] || !empty($data['productPackageDimensions']))) {
-            $productCollectionData = [
-                'packageDimensions' => $data['productPackageDimensions'] ?? null,
-                'keywords' => $data['productKeywords'] ?? null,
-                'segments' => $data['productSegments'] ?? null,
-                'product_id' => $data['productId']
-            ];
-            unset($data['productKeywords'], $data['productSegments'], $data['productPackageDimensions']);
-        }
-
-        $productModel = $this->getModel(true, true, true);
-
-        if ($data['productType'] == ProductTypesEnums::TYPE_PHYSICAL) {
-            $properties = PhysicalProduct::model(true);
-            $properties->productWeight = $data['productWeight'];
-            $properties->productBrandId = $data['productBrandId'];
-            $productModel->physicalProperties = $properties;
-        } elseif ($data['productType'] == ProductTypesEnums::TYPE_DOWNLOADABLE) {
-            $properties = DownloadableProduct::model(true);
-            $properties->productDigitalSize = $data['productDigitalSize'];
-            $productModel->downloadableProperties = $properties;
-        } else {
-            throw new \Exception('unknown product type', 400);
-        }
+        /** @var Product $productModel */
+        $productModel = Product::model(true, false, true);
 
         if (!$productModel->create($data, $productModel::getWhiteList())) {
-            throw new ArrayOfStringsException($productModel->getMessages(), 400);
+            throw new OperationFailed($productModel->getMessages(), 400);
         }
 
-        $productModel->assign($properties->toApiArray(), null);
-
-        if (!empty($productCollectionData)) {
-            $productCollection = $this->getCollection(true);
-            $productCollection->setAttributes($productCollectionData);
-            if (!$productCollection->save()) {
-                throw new ArrayOfStringsException($productCollection->getMessages(), 400);
+        $data['productId'] = $productModel->productId;
+        $properties = PropertiesFactory::create($data['productType'], $data);
+        if (count(array_intersect(array_keys($data), $properties->attributes()))) {
+            if (!$properties->save()) {
+                throw new OperationFailed($properties->getMessages(), 400);
             }
-            unset($productCollectionData['product_id']);
-            $productModel->assign($productCollection->toApiArray(), null);
+            $productModel->properties = $properties;
         }
-        return $productModel->toApiArray();
+
+        return $productModel;
     }
 
     /**
      * Update product
      *
      * @param string $productId
-     * @param string $vendorId
      * @param array $data
-     * @return array
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
+     * @return Product
+     * @throws NotFound
+     * @throws OperationFailed
+     * @throws Exception
      */
-    public function update(string $productId, string $vendorId, array $data): array
+    public function update(string $productId, array $data): Product
     {
-        $product = $this->getById($productId, $vendorId, true, true, true, true);
-        if (!$product->update($data, $product::getWhiteList())) {
-            throw new ArrayOfStringsException($product->getMessages(), 400);
+        $product = $this->getById($productId, true, true, false);
+
+        // Start a transaction
+        $txManager = new TxManager($product->getDI());
+
+        try {
+
+            $product->setTransaction($txManager->getOrCreateTransaction());
+            if (!$product->update($data, Product::getWhiteList())) {
+                throw new OperationFailed($product->getMessages(), 400);
+            }
+
+            $data['productId'] = $productId;
+            $properties = PropertiesFactory::create($product->productType, $data);
+            if (count(array_intersect(array_keys($data), $properties->attributes()))) {
+                if ($product->properties) {
+                    $properties = $product->properties;
+                    $properties->setAttributes($data);
+                }
+
+                if (!$properties->save()) {
+                    $txManager->rollback();
+                    throw new OperationFailed($product->properties->getMessages(), 400);
+                }
+
+                $product->properties = $properties;
+            }
+
+            if (!$product->save()) {
+                $txManager->rollback();
+                throw new OperationFailed($product->properties->getMessages(), 400);
+            }
+
+            $txManager->commit();
+        } catch (TxException $exception) {
+            $txManager->rollback();
+            throw new OperationFailed('Cannot update product');
         }
-        return $product->toApiArray();
+
+        return $product;
     }
 
     /**
      * Delete product
      *
      * @param string $productId
-     * @param string $vendorId
-     * @return array
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
-     * @throws \Exception
+     * @return Product
+     * @throws NotFound
+     * @throws OperationFailed
      */
-    public function delete(string $productId, string $vendorId)
+    public function delete(string $productId): Product
     {
-        $product = $this->getById($productId, $vendorId, true, false, false, true);
-        if (!$product || !$product->delete()) {
-            throw new \Exception('Product not found or maybe deleted', 404);
+        $product = $this->getById($productId, true, false, false);
+        if (!$product) {
+            throw new NotFound('Product not found or maybe deleted');
+        }
+        if (!$product->delete()) {
+            throw new OperationFailed($product->getMessages());
         }
 
-        (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
-            ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
-            ->setService('products')
-            ->setMethod('deleteExtraInfo')
-            ->setData([
-                'product_id' => $product->productId
-            ])->sendAsync();
+        return $product;
+    }
 
-        return $product->toApiArray();
+    /**
+     * @param string $productId
+     * @param int $amount
+     * @param string $operator
+     * @return Product
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateQuantity(string $productId, int $amount, string $operator = QuantityOperatorsEnum::OPERATOR_INCREMENT): Product
+    {
+        $product = $this->getById($productId);
+        return $product->updateQuantity($amount, $operator);
+    }
+
+    /**
+     * @param string $productId
+     * @param array $album
+     * @return bool
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function setAlbum(string $productId, array $album)
+    {
+        $product = Product::findFirst([
+            'conditions' => 'productId = :productId:',
+            'bind' => ['productId' => $productId]
+        ]);
+
+        if (!$product) {
+            throw new NotFound('Product not found or maybe deleted');
+        }
+
+        $product->productAlbumId = $album['albumId'];
+        $product->productAlbumDeleteHash = $album['deleteHash'];
+
+        if (!$product->save()) {
+            throw new OperationFailed('Cannot create an album for product');
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $vendorId
+     * @param string|null $categoryId
+     * @return mixed
+     */
+    public function countAll(string $vendorId, ?string $categoryId = null): int
+    {
+        $conditions = 'productVendorId = :vendorId:';
+        $bind = ['vendorId' => $vendorId];
+
+        if (!empty($categoryId)) {
+            $conditions .= ' AND productCategoryId = :categoryId:';
+            $bind['categoryId'] = $categoryId;
+        }
+
+        return Product::count([
+            'conditions' => $conditions,
+            'bind' => $bind
+        ]);
     }
 }

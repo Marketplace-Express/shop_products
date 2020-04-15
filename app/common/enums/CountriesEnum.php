@@ -5,7 +5,7 @@
  * Time: 04:01 م
  */
 
-namespace Shop_products\Enums;
+namespace app\common\enums;
 
 
 class CountriesEnum
@@ -257,14 +257,21 @@ class CountriesEnum
         'YE' => 'Yemen',
         'ZM' => 'Zambia',
         'ZW' => 'Zimbabwe',
+        'all' => 'all'
     );
 
-    public static function getKeys()
+    /**
+     * @return array
+     */
+    public static function getKeys(): array
     {
         return array_keys(self::$countries);
     }
 
-    public static function getValues()
+    /**
+     * @return array
+     */
+    public static function getValues(): array
     {
         return self::$countries;
     }

@@ -5,7 +5,7 @@
  * Time: 03:48 م
  */
 
-namespace Shop_products\Enums;
+namespace app\common\enums;
 
 
 class AgeRangeEnum

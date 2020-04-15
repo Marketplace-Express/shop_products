@@ -5,60 +5,34 @@
  * Time: 08:54 م
  */
 
-namespace Shop_products\Services;
+namespace app\common\services;
 
 
+use app\common\models\embedded\Properties;
+use app\common\services\user\UserService;
+use app\common\repositories\{ProductRepository,
+    ImageRepository,
+    QuestionRepository,
+    RateRepository,
+    VariationRepository};
+use app\common\services\cache\ProductCache;
+use app\common\exceptions\{OperationFailed, NotFound, OperationNotPermitted};
+use app\common\enums\{
+    AccessLevelsEnum, QueueNamesEnum
+};
 use Mechpave\ImgurClient\Entity\Album;
-use Phalcon\Mvc\ModelInterface;
-use Shop_products\Enums\AccessLevelsEnum;
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Exceptions\ArrayOfStringsException;
-use Shop_products\Exceptions\NotFoundException;
-use Shop_products\Models\Product;
-use Shop_products\Repositories\ProductRepository;
-use Shop_products\RequestHandler\Queue\QueueRequestHandler;
-use Shop_products\Services\Cache\ProductCache;
-use Shop_products\Utils\ImgurUtil;
-use RedisException;
-use Exception;
-use Throwable;
+use app\common\requestHandler\queue\QueueRequestHandler;
+use app\common\utils\ImgurUtil;
 
 class ProductsService
 {
-    /** @var QueueRequestHandler */
-    private $queueRequestHandler;
-
-    /**
-     * @return ProductCache|ProductRepository
-     * @throws Exception
-     */
-    private function getDataSource()
-    {
-        try {
-            return ProductCache::getInstance();
-        } catch (RedisException $exception) {
-            return $this->getRepository();
-        } catch (Throwable $exception) {
-            throw new Exception('No data source available');
-        }
-    }
-
-    /**
-     * @return ProductRepository
-     */
-    private function getRepository(): ProductRepository
-    {
-        return ProductRepository::getInstance();
-    }
-
     /**
      * @param string $requestType
      * @return QueueRequestHandler
      */
     public function getQueueRequestHandler($requestType = QueueRequestHandler::REQUEST_TYPE_SYNC): QueueRequestHandler
     {
-        return $this->queueRequestHandler ??
-            $this->queueRequestHandler = new QueueRequestHandler($requestType);
+        return new QueueRequestHandler($requestType);
     }
 
     /**
@@ -68,132 +42,76 @@ class ProductsService
      * @param string $vendorId
      *
      * @throws \ErrorException
-     * @throws Exception
+     * @throws \Exception
      */
     public function checkCategoryExistence(string $categoryId, string $vendorId)
     {
         $exists = $this->getQueueRequestHandler()
             ->setQueueName(QueueNamesEnum::CATEGORY_SYNC_QUEUE)
             ->setService('category')
-            ->setMethod('getCategory')
+            ->setMethod('getCategories')
             ->setData([
-                'categoryId' => $categoryId
+                'ids' => [$categoryId]
             ])
             ->setServiceArgs([
                 'vendorId' => $vendorId
             ])
             ->sendSync();
 
-        if (empty($exists)) {
-            throw new Exception('Category not found or maybe deleted', 404);
+        if (empty($exists) || false === $exists) {
+            throw new NotFound('Category not found or maybe deleted');
         }
     }
 
     /**
-     * @param string $productId
-     * @return bool
-     * @throws Exception
-     */
-    public function checkProductExistence(string $productId): bool
-    {
-        return (bool) $this->getRepository()->isExists($productId);
-    }
-
-    /**
-     * @param array $identifier
+     * @param array $params
      * @param int $accessLevel
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
-    public function getAll(array $identifier, int $accessLevel = AccessLevelsEnum::NORMAL_USER)
+    public function getAll(array $params, int $accessLevel = AccessLevelsEnum::NORMAL_USER)
     {
-        $editMode = false;
-        if ($accessLevel > 0) {
-            $editMode = true;
+        $page = $params['page'];
+        $limit = $params['limit'];
+        $sort = $params['sort'];
+        $vendorId = array_key_exists('vendorId', $params) ? $params['vendorId'] : null;
+        $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
+
+        $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
+        $totalCount = ProductRepository::getInstance()->countAll($vendorId, $categoryId);
+
+        $result = [];
+        foreach ($products as $product) {
+            $result[] = $product->toApiArray();
         }
 
-        $vendorId = $identifier['vendorId'];
-
-        if (!empty($identifier['vendorId']) && empty($identifier['categoryId'])) {
-            // get by vendor id
-            try {
-                if (!$editMode) {
-                    // normal user
-                    $products = ProductCache::getInstance()->getByVendorId($vendorId);
-                    if (empty($products)) {
-                        $products = ProductRepository::getInstance()->getByVendorId($vendorId);
-                        ProductCache::getInstance()->setInCacheByVendorId($vendorId, $products);
-                    }
-                } else {
-                    // admins
-                    $products = ProductRepository::getInstance()->getByVendorId($vendorId, true, true, true);
-                }
-            } catch (\RedisException $exception) {
-                $products = ProductRepository::getInstance()->getByVendorId($vendorId);
-            }
-            return $products;
-        } elseif (!empty($identifier['vendorId']) && !empty($identifier['categoryId'])) {
-            // get by category id and vendor id
-            $categoryId = $identifier['categoryId'];
-            try {
-                if (!$editMode) {
-                    // normal user
-                    $products = ProductCache::getInstance()->getByCategoryId($categoryId, $vendorId);
-                    if (empty($products)) {
-                        $products = ProductRepository::getInstance()->getByCategoryId($categoryId, $vendorId, false, true, true);
-                        ProductCache::getInstance()->setInCacheByVendorId($vendorId, $products);
-                    }
-                } else {
-                    // admins
-                    $products = ProductRepository::getInstance()->getByCategoryId($categoryId, $vendorId, true, true, true);
-                }
-            } catch (\RedisException $exception) {
-                $products = ProductRepository::getInstance()->getByCategoryId($categoryId, $vendorId, $editMode, true, true);
-            }
-            return $products;
-        } else {
-            throw new Exception('Unknown identifier');
-        }
+        return [
+            'products' => $result,
+            'total' => $totalCount
+        ];
     }
 
     /**
      * Get product by id
      *
-     * @param string $vendorId
-     * @param string $categoryId
-     * @param string $productId
-     * @param int $accessLevel
+     * @param string|null $productId
+     * @param bool $forOwner
      * @return array
      *
-     * @throws NotFoundException
-     * @throws Exception
+     * @throws NotFound
+     * @throws OperationNotPermitted
      */
-    public function getProduct(
-        string $vendorId,
-        string $categoryId,
-        string $productId,
-        int $accessLevel = AccessLevelsEnum::NORMAL_USER
-    ): array
+    public function getProduct(string $productId, bool $forOwner = false): array
     {
-        $editMode = false;
-        if ($accessLevel > 0) {
-            $editMode = true;
-        }
-
-        try {
-            if (!$editMode) {
-                $product = ProductCache::getInstance()->getById($productId, $vendorId, $categoryId, $editMode, true);
-                if (empty($product)) {
-                    $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true);
-                    ProductCache::getInstance()->setInCache($vendorId, $categoryId, $product);
-                }
-            } else {
-                $product = ProductRepository::getInstance()->getById($productId, $vendorId, true, true, true);
+        $product = ProductRepository::getInstance()->getById($productId, false, true, true);
+        if ($forOwner) {
+            /** @var UserService $userService */
+            $userService = \Phalcon\Di::getDefault()->getUserService();
+            if ($product->productVendorId != $userService->vendorId) {
+                throw new OperationNotPermitted('You are not allowed to view this entity');
             }
-        } catch (\RedisException $exception) {
-            $product = ProductRepository::getInstance()->getById($productId, $vendorId, false, true, true);
         }
-        return $product;
+        return $product->toApiArray();
     }
 
     /**
@@ -202,27 +120,27 @@ class ProductsService
      * @param array $data
      * @return array
      *
-     * @throws ArrayOfStringsException
-     * @throws Exception
+     * @throws OperationFailed
+     * @throws \Exception
      */
     public function create(array $data)
     {
         $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
-        if (!empty($album = $this->createAlbum($data['productId']))) {
-            $data['productAlbumId'] = $album['albumId'];
-            $data['productAlbumDeleteHash'] = $album['deleteHash'];
-        }
-        $product = $this->getRepository()->create($data);
+
+        // Create product
+        $product = ProductRepository::getInstance()->create($data);
+
+        $productAsArray = $product->toApiArray();
         try {
             if ($product['isPublished']) {
-                ProductCache::getInstance()->setInCache($data['productVendorId'], $data['productCategoryId'], $data);
-                ProductCache::indexProduct($product);
+                ProductCache::getInstance()->setInCache($product['productVendorId'], $product['productCategoryId'], $productAsArray);
+                ProductCache::indexProduct($productAsArray);
             }
-        } catch (RedisException $exception) {
+        } catch (\RedisException $exception) {
             // do nothing
         }
 
-        return $product;
+        return $productAsArray;
     }
 
     /**
@@ -230,25 +148,24 @@ class ProductsService
      *
      * @param string $productId
      * @param array $data
-     * @param string $vendorId
      * @return array
      *
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
-     * @throws Exception
+     * @throws OperationFailed
+     * @throws NotFound
+     * @throws \Exception
      */
-    public function update(string $productId, array $data, string $vendorId)
+    public function update(string $productId, array $data)
     {
-        $product = self::getRepository()->update($productId, $vendorId, $data);
+        $product = ProductRepository::getInstance()->update($productId, $data)->toApiArray();
         try {
             if ($product['isPublished']) {
                 unset($product['isPublished']);
-                ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $productId, $product);
+                ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $product);
                 ProductCache::indexProduct($product);
             } else {
                 ProductCache::getInstance()->invalidateCache($product['productVendorId'], $product['productCategoryId'], [$productId]);
             }
-        } catch (RedisException $exception) {
+        } catch (\RedisException $exception) {
             // do nothing
         }
         return $product;
@@ -258,19 +175,25 @@ class ProductsService
      * Delete product
      *
      * @param string $productId
-     * @param string $vendorId
      * @return bool
      *
-     * @throws ArrayOfStringsException
-     * @throws NotFoundException
-     * @throws Exception
+     * @throws OperationFailed
+     * @throws NotFound
+     * @throws \Exception
      */
-    public function delete(string $productId, string $vendorId)
+    public function delete(string $productId)
     {
-        $deletedProduct = self::getRepository()->delete($productId, $vendorId);
+        $deletedProduct = ProductRepository::getInstance()->delete($productId)->toApiArray();
         try {
             ProductCache::getInstance()->invalidateCache($deletedProduct['productVendorId'], $deletedProduct['productCategoryId'], [$productId]);
-        } catch (RedisException $exception) {
+            (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
+                ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
+                ->setService('products')
+                ->setMethod('deleteExtraInfo')
+                ->setData([
+                    'product_id' => $deletedProduct['productId']
+                ])->sendAsync();
+        } catch (\RedisException $exception) {
             // do nothing
         }
         return true;
@@ -278,36 +201,90 @@ class ProductsService
 
     /**
      * @param string $productId
-     * @throws Exception
-     * @throws ArrayOfStringsException
+     * @throws \Exception
+     * @throws OperationFailed
+     * @throws \Phalcon\Mvc\Collection\Exception
      */
     public function deleteExtraInfo(string $productId): void
     {
         /** Delete product related document */
-        ProductRepository::getInstance()
-            ->getCollection()::findFirst([
+        Properties::findFirst([
                 ['product_id' => $productId]
             ])->delete();
 
         /** Delete product cache index */
         ProductCache::deleteProductIndex($productId);
+
+        /** Delete product images, rates and questions */
+        ImageRepository::getInstance()->deleteProductImages($productId);
+
+        /** Delete product questions */
+        QuestionRepository::getInstance()->deleteProductQuestions($productId);
+
+        /** Delete product rates */
+        RateRepository::getInstance()->deleteProductRates($productId);
+    }
+
+    /**
+     * Update entity quantity. It could be product or variation
+     *
+     * @param string $entityId
+     * @param array $data
+     * @return array
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function updateQuantity(string $entityId, array $data): array
+    {
+        $amount = $data['amount'];
+        $operator = $data['operator'];
+        return ProductRepository::getInstance()->updateQuantity($entityId, $amount, $operator)->toApiArray();
     }
 
     /**
      * @param string $productId
+     * @param array $data
      * @return array
+     * @throws OperationFailed
+     * @throws NotFound
      */
-    public function createAlbum(string $productId): array
+    public function createVariation(string $productId, array $data): array
     {
-        $data = [];
-        /** @var Album $album */
-        $album = (new ImgurUtil())->createAlbum($productId);
-        if (!empty($album)) {
-            $data = [
-                'albumId' => $album->getAlbumId(),
-                'deleteHash' => $album->getDeleteHash()
-            ];
+        if (empty($data['userId']) || empty($data['quantity']) || empty($data['price'])) {
+            throw new \InvalidArgumentException('variation has invalid input', 400);
         }
-        return $data;
+
+        $userId = $data['userId'];
+        $quantity = $data['quantity'];
+        $price = $data['price'];
+        $imageId = array_key_exists('imageId', $data) ? $data['imageId'] : null;
+        $attributes = array_key_exists('attributes', $data) ? $data['attributes'] : [];
+        $salePrice = array_key_exists('salePrice', $data) ? $data['salePrice'] : 0;
+        $sku = $data['sku'];
+
+        if ($imageId) {
+            // Throw NotFound exception if image does not exist
+            ImageRepository::getInstance()->getUnused($imageId);
+        }
+
+        $variation = VariationRepository::getInstance()
+            ->create($productId, $userId, $imageId, $quantity, $sku, $price, $salePrice, $attributes)
+            ->toApiArray();
+
+        // Mark image as used
+        ImageRepository::getInstance()->markAsUsed([$imageId]);
+
+        return $variation;
+    }
+
+    /**
+     * @param string $variationId
+     * @return bool
+     * @throws OperationFailed
+     * @throws NotFound
+     */
+    public function deleteVariation(string $variationId)
+    {
+        return VariationRepository::getInstance()->deleteVariation($variationId);
     }
 }

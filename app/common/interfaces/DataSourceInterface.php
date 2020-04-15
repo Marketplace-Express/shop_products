@@ -5,14 +5,20 @@
  * Time: 11:11 ص
  */
 
-namespace Shop_products\Interfaces;
+namespace app\common\interfaces;
 
+
+use app\common\exceptions\NotFound;
+use app\common\models\sorting\SortProduct;
 
 interface DataSourceInterface
 {
-    public function getByCategoryId(string $categoryId, string $vendorId): ?array;
+    public function getByIdentifier(string $categoryId, string $vendorId, int $page, int $limit, SortProduct $sort);
 
-    public function getByVendorId(string $vendorId): ?array;
-
-    public function getById(string $productId, string $vendorId);
+    /**
+     * @param string $productId
+     * @return mixed
+     * @throws NotFound
+     */
+    public function getById(string $productId);
 }

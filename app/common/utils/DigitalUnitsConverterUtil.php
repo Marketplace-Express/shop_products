@@ -5,7 +5,7 @@
  * Time: 01:27 ص
  */
 
-namespace Shop_products\Utils;
+namespace app\common\utils;
 
 
 class DigitalUnitsConverterUtil

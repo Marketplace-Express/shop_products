@@ -5,7 +5,7 @@
  * Time: 01:03 ص
  */
 
-namespace Shop_products\Services\User;
+namespace app\common\services\user;
 
 
 class Token

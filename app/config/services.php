@@ -1,33 +1,52 @@
 <?php
 
+use app\common\services\ImageService;
+use app\common\services\ProductsService;
+use app\common\services\QuestionsService;
+use app\common\services\RateService;
+use app\common\services\SearchService;
+use app\common\services\user\UserService;
+use app\common\utils\AMQPHandler;
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
 use Phalcon\Db\Adapter\MongoDB\Client;
 use Phalcon\Db\Profiler;
 use Phalcon\Events\Event;
-use Phalcon\Events\Manager;
+use Phalcon\Events\Manager as EventManager;
 use Phalcon\Logger\Factory;
+use Phalcon\Mvc\Collection\Manager as CollectionManager;
 use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
+use Phalcon\Mvc\Model\MetaData\Strategy\Annotations;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Wire\AMQPTable;
-use Shop_products\Enums\ProductsCacheIndexesEnum;
-use Shop_products\Logger\ApplicationLogger;
-use Shop_products\Redis\Connector;
-use Shop_products\Services\User\UserService;
+use app\common\enums\ProductsCacheIndexesEnum;
+use app\common\logger\ApplicationLogger;
+use app\common\redis\Connector;
+
+/**
+ * Remote config (global config among all services)
+ */
+$di->set('remoteConfig', function() {
+    if (!file_exists(APP_PATH . '/config/remote_config.json')) {
+        throw new \Exception('Could not fetch global config');
+    }
+    return new \Phalcon\Config\Adapter\Json(APP_PATH . '/config/remote_config.json');
+});
+
 
 /**
  * Shared configuration service
  */
 $di->setShared('config', function () {
-    return include APP_PATH . "/config/config.php";
+    $remoteConfig = $this->getRemoteConfig();
+    /** @var \Phalcon\Config $localConfig */
+    $localConfig = require(APP_PATH . '/config/config.php');
+    return $localConfig->merge($remoteConfig);
 });
 
 /**
  * Profiler service
  */
-$di->setShared('profiler', function () {
-    return new Phalcon\Db\Profiler();
-});
+$di->setShared('profiler', Profiler::class);
 
 
 /**
@@ -39,6 +58,7 @@ $di->setShared('db', function () {
     $class = 'Phalcon\Db\Adapter\Pdo\\' . $config->database->adapter;
     $params = [
         'host'     => $config->database->host,
+        'port'     => $config->database->port,
         'username' => $config->database->username,
         'password' => $config->database->password,
         'dbname'   => $config->database->dbname,
@@ -52,34 +72,38 @@ $di->setShared('db', function () {
     /** @var \Phalcon\Db\Adapter\Pdo $connection */
     $connection = new $class($params);
 
+    // Initialize event manager
+    $eventsManager = new EventManager();
+
     /**
      * @var Profiler $profiler
      */
-    $profiler = $this->getProfiler();
-    $eventsManager = new Manager();
-    $eventsManager->attach('db', function ($event, $connection) use ($profiler, $config) {
-        /**
-         * @var Event $event
-         * @var \Phalcon\Db\Adapter\Pdo $connection
-         */
-        if ($event->getType() == 'beforeQuery') {
-            $profiler->startProfile($connection->getSQLStatement());
-        }
-
-        if ($event->getType() == 'afterQuery') {
-            $profiler->stopProfile();
-
-            if (!file_exists($config->application->logsDir . 'db.log')) {
-                touch($config->application->logsDir . 'db.log');
+    if ($config->application->debugSql) {
+        $profiler = $this->getProfiler();
+        $eventsManager->attach('db', function ($event, $connection) use ($profiler, $config) {
+            /**
+             * @var Event $event
+             * @var \Phalcon\Db\Adapter\Pdo $connection
+             */
+            if ($event->getType() == 'beforeQuery') {
+                $profiler->startProfile($connection->getSQLStatement());
             }
 
-            // Log last SQL statement
-            Factory::load([
-                'name' => $config->application->logsDir . 'db.log',
-                'adapter' => 'file'
-            ])->info($profiler->getLastProfile()->getSqlStatement());
-        }
-    });
+            if ($event->getType() == 'afterQuery') {
+                $profiler->stopProfile();
+
+                if (!file_exists($config->application->logsDir . 'db.log')) {
+                    touch($config->application->logsDir . 'db.log');
+                }
+
+                // Log last SQL statement
+                Factory::load([
+                    'name' => $config->application->logsDir . 'db.log',
+                    'adapter' => 'file'
+                ])->info($profiler->getLastProfile()->getSqlStatement());
+            }
+        });
+    }
 
     $connection->setEventsManager($eventsManager);
 
@@ -100,59 +124,68 @@ $di->setShared('mongo', function () {
     return $mongo->selectDatabase($config->mongodb->dbname);
 });
 
-$di->setShared('collectionManager', function () {
-    return new \Phalcon\Mvc\Collection\Manager();
-});
+/**
+ * Collection Manager
+ */
+$di->setShared('collectionManager', CollectionManager::class);
 
 /**
  * Register Redis as a service
  */
-$di->setShared('cache', function (){
+$di->set('cache', function ($instance){
     $config = $this->getConfig()->cache;
-    $redisInstance = new Connector();
-    $redisInstance->connect(
-        $config->products_cache->host,
-        $config->products_cache->port,
-        $config->products_cache->database,
-        $config->products_cache->auth
+    $connector = new Connector();
+    $connector->connect(
+        $config->$instance->host,
+        $config->$instance->port,
+        $config->$instance->database,
+        $config->$instance->auth
     );
-    return ['adapter' => $redisInstance, 'instance' => $redisInstance->redis];
+    return ['adapter' => $connector, 'instance' => $connector->redis];
 });
 
 /**
  * Redis instance for product cache
  */
 $di->setShared('productsCache', function () {
-    return $this->getCache()['instance'];
+    return $this->getCache('products_cache')['instance'];
 });
 
-$di->setShared('productsCacheIndex', function (){
-    return new Index($this->getCache()['adapter'],
+$di->set('productsCacheIndex', function (){
+    return new Index($this->getCache('products_cache')['adapter'],
         ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
 });
 
 $di->set('productsCacheSuggestion', function (){
-    return new Suggestion($this->getCache()['adapter'],
+    return new Suggestion($this->getCache('products_cache')['adapter'],
         ProductsCacheIndexesEnum::PRODUCT_INDEX_NAME
     );
 });
 
 /**
- * Redis instance for product variation cache
+ * Redis instance for product images
  */
-$di->setShared('productsVariationsCache', function () {
-    $config = $this->getConfig();
-    $redis = new Redis();
-    if (!empty($auth = $config->cache->productsVariationsCache->auth)) {
-        $redis->auth($auth);
-    }
-    $redis->pconnect(
-        $config->cache->productsVariationsCache->host,
-        $config->cache->productsVariationsCache->port
+$di->set('imagesCache', function () {
+    $cache = $this->getCache('images_cache');
+    return $cache['instance'];
+});
+
+/**
+ * Redis instance of product questions
+ */
+$di->set('questionsCache', function () {
+    $cache = $this->getCache('questions_cache');
+    return $cache['instance'];
+});
+
+/**
+ * Register questions suggestions cache
+ */
+$di->set('questionsCacheSuggestion', function (){
+    return new Suggestion($this->getCache('questions_cache')['adapter'],
+        ProductsCacheIndexesEnum::QUESTIONS_INDEX_NAME
     );
-    $redis->select($config->cache->productsVariationsCache->database);
-    return $redis;
 });
 
 /**
@@ -162,11 +195,7 @@ $di->setShared('modelsMetadata', function () {
     $metadata = new MetaDataAdapter([
         'lifetime' => 1
     ]);
-
-    $metadata->setStrategy(
-        new \Phalcon\Mvc\Model\MetaData\Strategy\Annotations()
-    );
-
+    $metadata->setStrategy(new Annotations());
     return $metadata;
 });
 
@@ -175,7 +204,7 @@ $di->setShared('logger', function() {
 });
 
 /** RabbitMQ service */
-$di->setShared('queue', function () {
+$di->setShared('amqp', function () {
     $config = $this->getConfig();
     $connection = new AMQPStreamConnection(
         $config->rabbitmq->host,
@@ -183,21 +212,46 @@ $di->setShared('queue', function () {
         $config->rabbitmq->username,
         $config->rabbitmq->password
     );
-    $channel = $connection->channel();
-    $channel->queue_declare(
-        $config->rabbitmq->sync_queue->queue_name,
-        false, false, false, false, false,
-        new AMQPTable(['x-message-ttl' => $config->rabbitmq->sync_queue->message_ttl])
-    );
-    $channel->queue_declare(
-        $config->rabbitmq->async_queue->queue_name,
-        false, false, false, false, false,
-        new AMQPTable(['x-message-ttl' => $config->rabbitmq->async_queue->message_ttl])
-    );
-    return $channel;
+    return new AMQPHandler($connection->channel(), $config);
 });
 
-$di->setShared(
-    'userService',
-    UserService::class
-);
+/**
+ * UserService should be shared among application
+ */
+$di->setShared('userService', UserService::class);
+
+/**
+ * AppServices
+ */
+$di->set('appServices', function($serviceName) {
+    $services = [
+        'productsService' => ProductsService::class,
+        'imageService' => ImageService::class,
+        'questionService' => QuestionsService::class,
+        'searchService' => SearchService::class,
+        'rateService' => RateService::class
+    ];
+
+    if (!array_key_exists($serviceName, $services)) {
+        throw new Exception(sprintf('DI: service "%s" not found', $serviceName));
+    }
+
+    return new $services[$serviceName];
+});
+
+/**
+ * Image Uploading Tool
+ */
+$di->set('imageUploader', function () {
+    return new \app\common\utils\ImgurUtil();
+});
+
+/**
+ * Json Mapper Service
+ */
+$di->setShared('jsonMapper', function () {
+    $jsonMapper = new JsonMapper();
+    $jsonMapper->bExceptionOnUndefinedProperty = false;
+    $jsonMapper->bEnforceMapType = false;
+    return $jsonMapper;
+});

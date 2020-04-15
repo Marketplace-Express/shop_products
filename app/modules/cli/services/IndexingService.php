@@ -5,14 +5,14 @@
  * Time: 12:11 م
  */
 
-namespace Shop_products\Modules\Cli\Services;
+namespace app\modules\cli\services;
 
 
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
 use Phalcon\Di\Injectable;
-use Shop_products\Redis\DocumentMapper;
-use Shop_products\Enums\ProductsCacheIndexesEnum;
+use app\common\redis\DocumentMapper;
+use app\common\enums\ProductsCacheIndexesEnum;
 
 class IndexingService extends Injectable
 {

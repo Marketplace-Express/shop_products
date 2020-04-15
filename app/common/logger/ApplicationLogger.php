@@ -5,7 +5,7 @@
  * Time: 09:29 م
  */
 
-namespace Shop_products\Logger;
+namespace app\common\logger;
 
 use Phalcon\Di\Injectable;
 use Phalcon\Logger\Adapter\File;
@@ -17,6 +17,7 @@ class ApplicationLogger extends Injectable
      */
     const LOG_FILE = 'app.log';
 
+    /** @var File */
     private $file;
 
     /**
@@ -24,7 +25,11 @@ class ApplicationLogger extends Injectable
      */
     public function getFile()
     {
-        $this->file = new File($this->getDI()->get('config')->application->logsDir . self::LOG_FILE);
+        $config = $this->di->getConfig();
+        if (!file_exists($config->application->logsDir . self::LOG_FILE)) {
+            touch($config->application->logsDir . self::LOG_FILE);
+        }
+        $this->file = new File($config->application->logsDir . self::LOG_FILE);
         return $this->file;
     }
 

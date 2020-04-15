@@ -5,16 +5,17 @@
  * Time: 03:55 م
  */
 
-namespace Shop_products\Validators;
+namespace app\common\validators;
 
 
+use app\common\models\embedded\Segment;
 use Phalcon\Validation;
 use Phalcon\Validation\Message;
 use Phalcon\Validation\Validator;
 use Phalcon\Validation\ValidatorInterface;
-use Shop_products\Enums\AgeRangeEnum;
-use Shop_products\Enums\CountriesEnum;
-use Shop_products\Enums\GenderEnum;
+use app\common\enums\AgeRangeEnum;
+use app\common\enums\CountriesEnum;
+use app\common\enums\GenderEnum;
 
 class SegmentsValidator extends Validator implements ValidatorInterface
 {
@@ -30,14 +31,12 @@ class SegmentsValidator extends Validator implements ValidatorInterface
     {
         $segments = $validation->getValue($attribute);
 
-        if (!property_exists($segments, 'countries')
-            || !property_exists($segments, 'age')
-            || !property_exists($segments, 'gender')
-        ) {
-            $validation->appendMessage(
-                new Message($this->getOption('message') ?? 'Invalid segments provided',
-                    $attribute)
-            );
+        if (empty($segments) && $this->getOption('allowEmpty')) {
+            return true;
+        }
+
+        if (!$segments instanceof Segment) {
+            $validation->appendMessage(new Message('Invalid segment format', 'segments'));
             return false;
         }
 

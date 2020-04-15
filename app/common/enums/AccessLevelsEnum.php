@@ -5,7 +5,7 @@
  * Time: 01:25 ص
  */
 
-namespace Shop_products\Enums;
+namespace app\common\enums;
 
 
 class AccessLevelsEnum

@@ -5,33 +5,29 @@
  * Time: 01:11 م
  */
 
-namespace Shop_products\Modules\Cli\Tasks;
+namespace app\modules\cli\tasks;
 
 
+use app\common\utils\AMQPHandler;
+use Phalcon\Cli\Task;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Message\AMQPMessage;
-use Shop_products\Enums\QueueNamesEnum;
-use Shop_products\Logger\ApplicationLogger;
-use Shop_products\Modules\Cli\Request\Handler as RequestHandler;
+use app\common\enums\QueueNamesEnum;
+use app\modules\cli\request\Handler as RequestHandler;
 
-class ConsumerTask extends MainTask
+class ConsumerTask extends Task
 {
 
     const SYNC_QUEUE_NAME = QueueNamesEnum::PRODUCT_SYNC_QUEUE;
     const ASYNC_QUEUE_NAME = QueueNamesEnum::PRODUCT_ASYNC_QUEUE;
 
-    /** @var ApplicationLogger */
-    private $logger;
-
-    public function onConstruct()
-    {
-        $this->logger = new ApplicationLogger();
-    }
-
     public function syncConsumerAction()
     {
-        /** @var AMQPChannel $channel */
-        $channel = $this->getDI()->get('queue');
+        /** @var AMQPHandler $amqpHandler */
+        $amqpHandler = $this->di->getAmqp();
+        $amqpHandler->declareSync();
+
+        $channel = $amqpHandler->getChannel();
 
         try {
             $channel->basic_qos(null, 1, null);
@@ -44,18 +40,22 @@ class ConsumerTask extends MainTask
                     try {
 
                         // handle request
-                        $response = (new RequestHandler($payload['service'], $payload['service_args'], $payload['action'], $payload['data']))
-                            ->call();
+                        $response = RequestHandler::process(
+                            $payload['service'],
+                            $payload['service_args'],
+                            $payload['action'],
+                            $payload['data']
+                        );
 
                         // send response
                         $message = json_encode($response);
 
                     } catch (\Throwable $exception) {
-                        $this->logger->logError($exception->getMessage());
+                        $this->di->getLogger()->logError($exception->getMessage());
                         $message = json_encode([
                             'hasError' => true,
                             'message' => $exception->getMessage(),
-                            'code' => $exception->getCode() ?: 500
+                            'code' => $exception->getCode()
                         ]);
                     }
                     $amqpRequest->basic_ack($request->delivery_info['delivery_tag']);
@@ -71,22 +71,29 @@ class ConsumerTask extends MainTask
             }
 
         } catch (\Throwable $exception) {
-            $this->logger->logError($exception->getMessage());
+            $this->di->getLogger()->logError($exception->getMessage());
         }
     }
 
     public function asyncConsumerAction()
     {
-        /** @var AMQPChannel $channel */
-        $channel = $this->getDI()->get('queue');
+        /** @var AMQPHandler $amqpHandler */
+        $amqpHandler = $this->getDI()->getAmqp();
+        $amqpHandler->declareAsync();
+
+        $channel = $amqpHandler->getChannel();
 
         try {
             $channel->basic_qos(null, 1, null);
             $channel->basic_consume(self::ASYNC_QUEUE_NAME, '', false, true, false, false,
                 function (AMQPMessage $message) {
                     $payload = json_decode($message->getBody(), true);
-                    (new RequestHandler($payload['service'], $payload['service_args'], $payload['method'], $payload['data']))
-                        ->call();
+                    RequestHandler::process(
+                        $payload['service'],
+                        $payload['service_args'],
+                        $payload['method'],
+                        $payload['data']
+                    );
                 }
             );
 
@@ -94,7 +101,7 @@ class ConsumerTask extends MainTask
                 $channel->wait();
             }
         } catch (\Throwable $exception) {
-            $this->logger->logError($exception->getMessage());
+            $this->di->getLogger()->logError($exception->getMessage());
         }
     }
 }

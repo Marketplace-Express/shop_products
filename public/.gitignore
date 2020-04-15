@@ -1,0 +1,9 @@
+# Exclude Phalcon webtools
+webtools.*
+
+# Exclude directories
+css/
+js/
+
+# Exclude uploads folder
+uploads/

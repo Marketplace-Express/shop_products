@@ -5,8 +5,8 @@ use Phalcon\Mvc\Application;
 
 error_reporting(E_ALL);
 
-define('BASE_PATH', dirname(__DIR__));
-define('APP_PATH', BASE_PATH . '/app');
+defined('BASE_PATH') || define('BASE_PATH', dirname(__DIR__));
+defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
 try {
 
@@ -32,6 +32,15 @@ try {
     $config = $di->getConfig();
 
     /**
+     * Error reporting
+     */
+    if ($config->application->debug) {
+        error_reporting(E_ALL);
+    } else {
+        error_reporting(E_ERROR);
+    }
+
+    /**
      * Include Autoloader
      */
     include APP_PATH . '/config/loader.php';
@@ -45,8 +54,8 @@ try {
      * Register application modules
      */
     $application->registerModules([
-        'api' => ['className' => 'Shop_products\Modules\Api\Module'],
-        'cli' => ['className' => 'Shop_products\Modules\Cli\Module']
+        'api' => ['className' => 'app\modules\api\Module'],
+        'cli' => ['className' => 'app\modules\cli\Module']
     ]);
 
     /**
