@@ -10,7 +10,6 @@
     "ext-json": "*",
     "ext-redis": "*",
     "ext-mongodb": "*",
-    "ext-yaml": "*",
     "netresearch/jsonmapper": "^1.4",
     "ramsey/uuid": "^3.8",
     "phalcon/incubator": "^3.4",
