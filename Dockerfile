@@ -38,7 +38,7 @@ RUN set -xe && \
                                          --with-jpeg-dir=/usr/include/ && \
         docker-php-ext-install intl gettext gd bcmath zip pdo_mysql sockets && \
         # Install extra extensions
-        echo '' | pecl install redis mongodb yaml xdebug
+        echo '' | pecl install redis mongodb xdebug
 # Copy PHP extensions to config directory
 COPY php_extensions/*.ini /usr/local/etc/php/conf.d/
 # Return working directory to its default state
