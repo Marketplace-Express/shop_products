@@ -4,5 +4,8 @@
 # phalcon aut generated folder
 .phalcon
 
+# exclude router file
+.htrouter.php
+
 composer.phar
 index.html
