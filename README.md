@@ -32,7 +32,16 @@ And so on for Redis and RabbitMQ...
        
 4- Run 
 ```bash
-docker build --rm -t shop/products:latest . && docker-compose up -d
+docker build --rm -t shop/products:latest .
+```
+Or, you can pull ready-built image from the source (built for x64 arch):
+```bash
+docker pull registry.gitlab.com/shop_ecommerce/shop_products:latest
+```
+
+5- Then, run:
+```bash
+docker-compose up -d
 ```
 This command will create new containers:
 ```
