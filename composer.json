@@ -1,7 +1,7 @@
 {
   "config": {
-    "vendor-dir": "app/common/library/vendor",
-    "bin-dir": "app/common/library/vendor/bin"
+    "vendor-dir": "app/vendor",
+    "bin-dir": "app/vendor/bin"
   },
   "require": {
     "ext-phalcon": "^3.4",
