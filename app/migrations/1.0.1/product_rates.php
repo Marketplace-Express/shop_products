@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductImagesSizesMigration_101
+ * Class ProductRatesMigration_101
  */
-class ImagesSizesMigration_101 extends Migration
+class ProductRatesMigration_101 extends Migration
 {
     /**
      * Define the table structure
@@ -17,74 +17,73 @@ class ImagesSizesMigration_101 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('images_sizes', [
+        $this->morphTable('product_rates', [
                 'columns' => [
                     new Column(
-                        'row_id',
+                        'rate_id',
                         [
-                            'type' => Column::TYPE_INTEGER,
+                            'type' => Column::TYPE_CHAR,
                             'notNull' => true,
-                            'autoIncrement' => true,
-                            'size' => 1,
+                            'size' => 36,
                             'first' => true
                         ]
                     ),
                     new Column(
-                        'image_id',
+                        'user_id',
                         [
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
-                            'size' => 10,
-                            'after' => 'row_id'
+                            'size' => 36,
+                            'after' => 'rate_id'
                         ]
                     ),
                     new Column(
-                        'small',
+                        'product_id',
                         [
-                            'type' => Column::TYPE_TEXT,
-                            'after' => 'image_id'
+                            'type' => Column::TYPE_CHAR,
+                            'notNull' => true,
+                            'size' => 36,
+                            'after' => 'user_id'
                         ]
                     ),
                     new Column(
-                        'big',
+                        'rate_text',
                         [
                             'type' => Column::TYPE_TEXT,
-                            'after' => 'small'
+                            'after' => 'product_id'
                         ]
                     ),
                     new Column(
-                        'thumb',
+                        'rate_stars',
                         [
-                            'type' => Column::TYPE_TEXT,
-                            'after' => 'big'
+                            'type' => Column::TYPE_INTEGER,
+                            'default' => "1",
+                            'notNull' => true,
+                            'size' => 1,
+                            'after' => 'rate_text'
                         ]
                     ),
                     new Column(
-                        'medium',
+                        'created_at',
                         [
-                            'type' => Column::TYPE_TEXT,
-                            'after' => 'thumb'
+                            'type' => Column::TYPE_DATETIME,
+                            'default' => "CURRENT_TIMESTAMP",
+                            'notNull' => true,
+                            'after' => 'rate_stars'
                         ]
                     ),
                     new Column(
-                        'large',
+                        'updated_at',
                         [
-                            'type' => Column::TYPE_TEXT,
-                            'after' => 'medium'
-                        ]
-                    ),
-                    new Column(
-                        'huge',
-                        [
-                            'type' => Column::TYPE_TEXT,
-                            'after' => 'large'
+                            'type' => Column::TYPE_DATETIME,
+                            'after' => 'created_at'
                         ]
                     ),
                     new Column(
                         'deleted_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'after' => 'huge'
+                            'after' => 'updated_at'
                         ]
                     ),
                     new Column(
@@ -96,20 +95,33 @@ class ImagesSizesMigration_101 extends Migration
                             'size' => 1,
                             'after' => 'deleted_at'
                         ]
+                    ),
+                    new Column(
+                        'deletion_token',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'default' => "N/A",
+                            'notNull' => true,
+                            'size' => 36,
+                            'after' => 'is_deleted'
+                        ]
                     )
                 ],
                 'indexes' => [
-                    new Index('PRIMARY', ['row_id'], 'PRIMARY'),
-                    new Index('images_sizes_images_image_id_fk', ['image_id'], null)
+                    new Index('PRIMARY', ['rate_id'], 'PRIMARY'),
+                    new Index('product_rated_rate_id_uindex', ['rate_id'], 'UNIQUE'),
+                    new Index('product_uindex', ['user_id', 'product_id', 'is_deleted', 'deletion_token'], 'UNIQUE'),
+                    new Index('product_rated_product_product_id_fk', ['product_id'], null),
+                    new Index('product_rates_index', ['is_deleted', 'product_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'images_sizes_images_image_id_fk',
+                        'product_rated_products_product_id_fk',
                         [
-                            'referencedTable' => 'images',
+                            'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
-                            'columns' => ['image_id'],
-                            'referencedColumns' => ['image_id'],
+                            'columns' => ['product_id'],
+                            'referencedColumns' => ['product_id'],
                             'onUpdate' => 'NO ACTION',
                             'onDelete' => 'CASCADE'
                         ]
