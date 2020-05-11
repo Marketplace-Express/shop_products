@@ -8,7 +8,7 @@
 namespace app\common\models\sorting;
 
 /**
- * Class Product
+ * Class SortProduct
  * @package app\common\models\sorting
  */
 class SortProduct
