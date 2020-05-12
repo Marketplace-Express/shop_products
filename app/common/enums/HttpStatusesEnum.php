@@ -18,6 +18,7 @@ class HttpStatusesEnum
     const ACCEPTED = StatusCode::ACCEPTED;
     const UNAUTHORIZED = StatusCode::BAD_UNAUTHORIZED;
     const UNAVAILABLE = StatusCode::SERVICE_UNAVAILABLE;
+    const NOT_FOUND = StatusCode::NOT_FOUND;
 
     /**
      * @return array
@@ -30,7 +31,8 @@ class HttpStatusesEnum
             self::BAD_REQUEST,
             self::ACCEPTED,
             self::UNAUTHORIZED,
-            self::UNAVAILABLE
+            self::UNAVAILABLE,
+            self::NOT_FOUND
         ];
     }
 }
