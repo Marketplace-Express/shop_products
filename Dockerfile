@@ -52,6 +52,5 @@ RUN rm -rf app/vendor composer.lock && \
     composer install --ignore-platform-reqs
 # Create symlink for phalcon bin
 RUN ln -fs /src/app/vendor/bin/phalcon /usr/local/bin
-# Rin migrations
-RUN echo 'y' | phalcon migration --action=run --migrations=app/migrations/
+
 ENTRYPOINT ["/bin/bash", "utilities/docker-entrypoint.sh"]
