@@ -6,9 +6,9 @@ use Phalcon\Db\Reference;
 use Phalcon\Mvc\Model\Migration;
 
 /**
- * Class ProductRatesMigration_102
+ * Class ProductVariationsMigration_103
  */
-class ProductRatesMigration_102 extends Migration
+class ProductVariationsMigration_103 extends Migration
 {
     /**
      * Define the table structure
@@ -17,10 +17,10 @@ class ProductRatesMigration_102 extends Migration
      */
     public function morph()
     {
-        $this->morphTable('product_rates', [
+        $this->morphTable('product_variations', [
                 'columns' => [
                     new Column(
-                        'rate_id',
+                        'variation_id',
                         [
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
@@ -29,47 +29,75 @@ class ProductRatesMigration_102 extends Migration
                         ]
                     ),
                     new Column(
-                        'user_id',
-                        [
-                            'type' => Column::TYPE_CHAR,
-                            'notNull' => true,
-                            'size' => 36,
-                            'after' => 'rate_id'
-                        ]
-                    ),
-                    new Column(
                         'product_id',
                         [
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'after' => 'user_id'
+                            'after' => 'variation_id'
                         ]
                     ),
                     new Column(
-                        'rate_text',
+                        'quantity',
                         [
-                            'type' => Column::TYPE_TEXT,
+                            'type' => Column::TYPE_INTEGER,
+                            'default' => "0",
+                            'notNull' => true,
+                            'size' => 1,
                             'after' => 'product_id'
                         ]
                     ),
                     new Column(
-                        'rate_stars',
+                        'user_id',
                         [
-                            'type' => Column::TYPE_INTEGER,
-                            'default' => "1",
+                            'type' => Column::TYPE_CHAR,
+                            'notNull' => true,
+                            'size' => 36,
+                            'after' => 'quantity'
+                        ]
+                    ),
+                    new Column(
+                        'image_id',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'size' => 36,
+                            'after' => 'user_id'
+                        ]
+                    ),
+                    new Column(
+                        'price',
+                        [
+                            'type' => Column::TYPE_FLOAT,
+                            'default' => "0",
                             'notNull' => true,
                             'size' => 1,
-                            'after' => 'rate_text'
+                            'after' => 'image_id'
+                        ]
+                    ),
+                    new Column(
+                        'sale_price',
+                        [
+                            'type' => Column::TYPE_FLOAT,
+                            'default' => "0",
+                            'size' => 1,
+                            'after' => 'price'
+                        ]
+                    ),
+                    new Column(
+                        'sku',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'notNull' => true,
+                            'size' => 100,
+                            'after' => 'sale_price'
                         ]
                     ),
                     new Column(
                         'created_at',
                         [
                             'type' => Column::TYPE_DATETIME,
-                            'default' => "CURRENT_TIMESTAMP",
                             'notNull' => true,
-                            'after' => 'rate_stars'
+                            'after' => 'sku'
                         ]
                     ),
                     new Column(
@@ -101,29 +129,39 @@ class ProductRatesMigration_102 extends Migration
                         [
                             'type' => Column::TYPE_VARCHAR,
                             'default' => "N/A",
-                            'notNull' => true,
                             'size' => 36,
                             'after' => 'is_deleted'
                         ]
                     )
                 ],
                 'indexes' => [
-                    new Index('PRIMARY', ['rate_id'], 'PRIMARY'),
-                    new Index('product_rated_rate_id_uindex', ['rate_id'], 'UNIQUE'),
-                    new Index('product_uindex', ['user_id', 'product_id', 'is_deleted', 'deletion_token'], 'UNIQUE'),
-                    new Index('product_rated_product_product_id_fk', ['product_id'], null),
-                    new Index('product_rates_index', ['is_deleted', 'product_id'], null)
+                    new Index('PRIMARY', ['variation_id'], 'PRIMARY'),
+                    new Index('product_variations_uindex', ['product_id', 'sku', 'is_deleted', 'deletion_token'], 'UNIQUE'),
+                    new Index('product_variations_image_id_deletion_token_uindex', ['image_id', 'deletion_token'], 'UNIQUE'),
+                    new Index('product_variations_product_product_id_fk', ['product_id'], null),
+                    new Index('product_variations_product_images_image_id_fk', ['image_id'], null)
                 ],
                 'references' => [
                     new Reference(
-                        'product_rated_products_product_id_fk',
+                        'product_variations_product_images_image_id_fk',
+                        [
+                            'referencedTable' => 'images',
+                            'referencedSchema' => 'shop_products',
+                            'columns' => ['image_id'],
+                            'referencedColumns' => ['image_id'],
+                            'onUpdate' => 'NO ACTION',
+                            'onDelete' => 'NO ACTION'
+                        ]
+                    ),
+                    new Reference(
+                        'product_variations_product_product_id_fk',
                         [
                             'referencedTable' => 'products',
                             'referencedSchema' => 'shop_products',
                             'columns' => ['product_id'],
                             'referencedColumns' => ['product_id'],
                             'onUpdate' => 'NO ACTION',
-                            'onDelete' => 'CASCADE'
+                            'onDelete' => 'NO ACTION'
                         ]
                     )
                 ],

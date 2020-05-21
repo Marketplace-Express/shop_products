@@ -7,7 +7,7 @@
 
 namespace app\modules\api\controllers;
 
-
+use app\common\exceptions\NotFound;
 use app\common\requestHandler\product\{AbstractCreateRequestHandler,
     GetAllForAdminRequestHandler,
     GetAllRequestHandler,
@@ -81,6 +81,8 @@ class ProductsController extends BaseController
                 'status' => 200,
                 'message' => $this->service->getProduct($id)
             ]);
+        } catch (NotFound $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }

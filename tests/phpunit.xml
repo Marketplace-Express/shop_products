@@ -11,7 +11,7 @@
          stopOnFailure="false">
     <testsuite name="shop_products">
         <directory>./</directory>
-        <exclude>../app/common/library</exclude>
+        <exclude>../app/vendor</exclude>
     </testsuite>
     <filter>
         <whitelist addUncoveredFilesFromWhitelist="true"
@@ -22,7 +22,7 @@
                 <directory suffix=".php">../app/modules/api/*/config</directory>
                 <directory suffix=".php">../app/migrations</directory>
                 <directory suffix=".php">../app/config</directory>
-                <directory suffix=".php">../app/common/library</directory>
+                <directory suffix=".php">../app/vendor</directory>
                 <file>../app/bootstrap_cli.php</file>
                 <file>../app/bootstrap_web.php</file>
             </exclude>
