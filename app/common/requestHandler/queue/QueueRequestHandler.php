@@ -218,9 +218,9 @@ class QueueRequestHandler extends Injectable
         $this->initializeConsumer();
         $message = new AMQPMessage(json_encode([
             'service' => $this->service,
-            'action' => $this->method,
-            'data' => $this->data,
-            'service_args' => $this->serviceArgs
+            'service_args' => $this->serviceArgs,
+            'method' => $this->method,
+            'params' => $this->data
         ]), [
             'reply_to' => $this->replyTo,
             'correlation_id' => $this->getCorrelationId(),
@@ -247,7 +247,7 @@ class QueueRequestHandler extends Injectable
             'service' => $this->service,
             'service_args' => $this->serviceArgs,
             'method' => $this->method,
-            'data' => $this->data
+            'params' => $this->data
         ]));
         $this->channel->basic_publish($message, $this->exchange, $this->queueName);
     }
