@@ -50,7 +50,6 @@ class RateController extends BaseController
     /**
      * @Post('/')
      * @param CreateRequestHandler $request
-     * @AuthMiddleware('app\common\events\middleware\RequestMiddlewareEvent')
      */
     public function createAction(CreateRequestHandler $request)
     {
@@ -69,7 +68,6 @@ class RateController extends BaseController
     /**
      * @param $id
      * @param UpdateRequestHandler $request
-     * @AuthMiddleware('app\common\events\middleware\RequestMiddlewareEvent')
      * @Put('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
      */
     public function updateAction($id, UpdateRequestHandler $request)
@@ -89,7 +87,6 @@ class RateController extends BaseController
 
     /**
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware('app\common\events\middleware\RequestMiddlewareEvent')
      * @param $id
      */
     public function deleteAction($id)

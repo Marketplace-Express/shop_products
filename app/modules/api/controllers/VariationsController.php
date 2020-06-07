@@ -19,7 +19,6 @@ class VariationsController extends BaseController
 {
     /**
      * @Post('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware('\app\common\events\middleware\RequestMiddlewareEvent')
      * @param $id
      * @param CreateRequestHandler $request
      */
@@ -39,7 +38,6 @@ class VariationsController extends BaseController
 
     /**
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware('\app\common\events\middleware\RequestMiddlewareEvent')
      * @param $id
      */
     public function deleteAction($id)

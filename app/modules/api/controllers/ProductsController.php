@@ -90,7 +90,6 @@ class ProductsController extends BaseController
 
     /**
      * @Get('/owner')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param GetAllRequestHandler $request
      */
     public function getAllForAdminsAction(GetAllRequestHandler $request)
@@ -110,7 +109,6 @@ class ProductsController extends BaseController
 
     /**
      * @Get('/owner/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
      */
     public function getForAdminsAction($id)
@@ -127,7 +125,6 @@ class ProductsController extends BaseController
 
     /**
      * @Post('/')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param ProductRequestResolver $request
      */
     public function createAction(ProductRequestResolver $request)
@@ -148,7 +145,6 @@ class ProductsController extends BaseController
 
     /**
      * @Put('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
      * @param UpdateRequestHandler $request
      */
@@ -168,7 +164,6 @@ class ProductsController extends BaseController
 
     /**
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param $id
      */
     public function deleteAction($id)
@@ -183,7 +178,6 @@ class ProductsController extends BaseController
 
     /**
      * @Put('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}/quantity')
-     * @AuthMiddleware('app\common\events\middleware\RequestMiddlewareEvent')
      * @param $id
      * @param UpdateQuantityRequestHandler $request
      */
