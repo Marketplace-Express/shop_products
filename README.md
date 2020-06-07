@@ -48,7 +48,8 @@ Provide your user name and password on gitlab, you should have access to the pro
 docker pull registry.gitlab.com/shop_ecommerce/shop_products
 ```
        
-5- Run ```docker-compose up -d```, This command will create new containers:
+5- Run `docker-compose up -d`, This command will create new containers:
+
     1. shop_products_products-sync_1
     - This will declare a new queue “products_sync” in RabbitMQ queues list
     2. shop_products_products-async_1
