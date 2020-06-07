@@ -6,7 +6,6 @@ use Phalcon\Mvc\Dispatcher;
 use Phalcon\Mvc\Router;
 use Phalcon\Mvc\Url as UrlResolver;
 use Phalcon\Session\Adapter\Files as SessionAdapter;
-use Phalcon\Flash\Direct as Flash;
 
 /**
  * Registering a router
@@ -44,18 +43,6 @@ $di->setShared('session', function () {
     $session->start();
 
     return $session;
-});
-
-/**
- * Register the session flash service with the Twitter Bootstrap classes
- */
-$di->set('flash', function () {
-    return new Flash([
-        'error'   => 'alert alert-danger',
-        'success' => 'alert alert-success',
-        'notice'  => 'alert alert-info',
-        'warning' => 'alert alert-warning'
-    ]);
 });
 
 /**
