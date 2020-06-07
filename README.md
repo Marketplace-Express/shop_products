@@ -70,6 +70,7 @@ docker build -t registry.gitlab.com/shop_ecommerce/shop_products .
 4. shop_products_products-unit-test_1
 - This will run the unit test for this micro service.
 
+
 If you want to scale up the workers (sync / async), you can simply run this command:
 ```bash
 docker-compose up --scale products-{sync/async}=num -d
