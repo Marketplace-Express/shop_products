@@ -50,13 +50,13 @@ docker pull registry.gitlab.com/shop_ecommerce/shop_products
        
 5- Run `docker-compose up -d`, This command will create new containers:
 
-    1. shop_products_products-sync_1
-    - This will declare a new queue “products_sync” in RabbitMQ queues list
-    2. shop_products_products-async_1
-    - This will declare a new queue “products_async” in RabbitMQ queues list
-    3. shop_products_products-api_1
-    - This will start a new application server listening on a specific port specified in `docker-compose.yml` file, you can access it by going to this URL: [http://localhost:port](http://localhost:1001)
-    - As a default, the port value is 1001.
-    - You can use Postman with the collections provided to test micro service APIs.
-    4. shop_products_products-unit-test_1
-    - This will run the unit test for this micro service.
+1. shop_products_products-sync_1
+- This will declare a new queue “products_sync” in RabbitMQ queues list
+2. shop_products_products-async_1
+- This will declare a new queue “products_async” in RabbitMQ queues list
+3. shop_products_products-api_1
+- This will start a new application server listening on a specific port specified in `docker-compose.yml` file, you can access it by going to this URL: [http://localhost:port](http://localhost:1001)
+- As a default, the port value is 1001.
+- You can use Postman with the collections provided to test micro service APIs.
+4. shop_products_products-unit-test_1
+- This will run the unit test for this micro service.
