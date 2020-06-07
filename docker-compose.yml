@@ -1,54 +1,37 @@
 version: '3.3'
 services:
   products-sync:
-    build: .
-    image: 'shop/products'
-    working_dir: /var/www/html
+    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
+    command: ./run consumer syncConsumer
     volumes:
-      - .:/var/www/html
-    env_file:
-      - .env
-    command: >
-      bash -c "chmod +x utilities/start_service.sh
-      && utilities/start_service.sh
-      && ./run consumer syncConsumer"
+      - .:/src
+      - /src/app/vendor
+
   products-async:
-    build: .
-    image: 'shop/products'
-    working_dir: /var/www/html
+    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
+    command: ./run consumer asyncConsumer
     volumes:
-      - .:/var/www/html
-    env_file:
-      - .env
-    command: >
-      bash -c "chmod +x utilities/start_service.sh
-      && utilities/start_service.sh
-      && ./run consumer asyncConsumer"
+      - .:/src
+      - /src/app/vendor
+
   products-api:
-    build: .
-    image: 'shop/products'
-    working_dir: /var/www/html
+    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
     ports:
       - "1001:8000"
-    volumes:
-      - .:/var/www/html
-    env_file:
-      - .env
     command: >
-      bash -c "chmod +x utilities/start_service.sh
-      && utilities/start_service.sh
-      && rm -f /var/www/html/public/webtools*
+      bash -c "rm -f /src/public/webtools*
       && phalcon webtools enable
       && phalcon serve"
-  products-unit-test:
-    build: .
-    image: 'shop/products'
     volumes:
-      - .:/var/www/html
-    command: >
-      bash -c "chmod +x utilities/start_service.sh
-      && utilities/start_service.sh
-      && app/common/library/vendor/bin/phpunit -c tests/phpunit.xml"
+      - .:/src
+      - /src/app/vendor
+
+  products-unit-test:
+    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
+    command: app/vendor/bin/phpunit -c tests/phpunit.xml
+    volumes:
+      - .:/src
+      - /src/app/vendor
 
 networks:
   default:

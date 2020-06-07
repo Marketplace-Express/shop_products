@@ -39,17 +39,18 @@ RUN set -xe && \
         docker-php-ext-install intl gettext gd bcmath zip pdo_mysql sockets && \
         # Install extra extensions
         echo '' | pecl install redis mongodb xdebug
-# Copy PHP extensions to config directory
-COPY php_extensions/*.ini /usr/local/etc/php/conf.d/
 # Return working directory to its default state
-WORKDIR /var/www/html
-# Add project files to container
-ADD *.* ./
+WORKDIR /src
+# Copy project files to container
+ADD . ./
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 # Install dependencies
-RUN set -xe && \
-        rm -rf app/common/library/vendor composer.lock && \
-        composer clearcache && \
-        composer config -g github-oauth.github.com 3f6fd65b0d7958581f549b862ee49af9db1bcdf1 && \
-        composer install
+RUN rm -rf app/vendor composer.lock && \
+    composer clearcache && \
+    composer config -g github-oauth.github.com 3f6fd65b0d7958581f549b862ee49af9db1bcdf1 && \
+    composer install --ignore-platform-reqs
+# Create symlink for phalcon bin
+RUN ln -fs /src/app/vendor/bin/phalcon /usr/local/bin
+
+ENTRYPOINT ["/bin/bash", "utilities/docker-entrypoint.sh"]

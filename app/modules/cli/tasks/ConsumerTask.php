@@ -43,8 +43,8 @@ class ConsumerTask extends Task
                         $response = RequestHandler::process(
                             $payload['service'],
                             $payload['service_args'],
-                            $payload['action'],
-                            $payload['data']
+                            $payload['method'],
+                            $payload['params']
                         );
 
                         // send response
@@ -92,7 +92,7 @@ class ConsumerTask extends Task
                         $payload['service'],
                         $payload['service_args'],
                         $payload['method'],
-                        $payload['data']
+                        $payload['params']
                     );
                 }
             );

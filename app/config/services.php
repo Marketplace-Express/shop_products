@@ -22,25 +22,12 @@ use app\common\enums\ProductsCacheIndexesEnum;
 use app\common\logger\ApplicationLogger;
 use app\common\redis\Connector;
 
-/**
- * Remote config (global config among all services)
- */
-$di->set('remoteConfig', function() {
-    if (!file_exists(APP_PATH . '/config/remote_config.json')) {
-        throw new \Exception('Could not fetch global config');
-    }
-    return new \Phalcon\Config\Adapter\Json(APP_PATH . '/config/remote_config.json');
-});
-
 
 /**
  * Shared configuration service
  */
 $di->setShared('config', function () {
-    $remoteConfig = $this->getRemoteConfig();
-    /** @var \Phalcon\Config $localConfig */
-    $localConfig = require(APP_PATH . '/config/config.php');
-    return $localConfig->merge($remoteConfig);
+    return require(APP_PATH . '/config/config.php');
 });
 
 /**
