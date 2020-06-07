@@ -54,7 +54,6 @@ class QuestionsController extends BaseController
 
     /**
      * @Post('/')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param CreateRequestHandler $request
      */
     public function createAction(CreateRequestHandler $request)
@@ -76,7 +75,6 @@ class QuestionsController extends BaseController
      * @param $id
      * @param UpdateRequestHandler $request
      * @Put("/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}")
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
     public function updateAction($id, UpdateRequestHandler $request)
     {
@@ -96,7 +94,6 @@ class QuestionsController extends BaseController
     /**
      * @param $id
      * @Delete('/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
     public function deleteAction($id)
     {

@@ -51,7 +51,6 @@ class ImagesController extends BaseController
 
     /**
      * @Post('/upload')
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      * @param UploadRequestHandler $request
      */
     public function uploadAction(UploadRequestHandler $request)
@@ -73,7 +72,6 @@ class ImagesController extends BaseController
      * @Delete('/{id:[0-9a-zA-Z]{7}}')
      * @param $id
      * @param DeleteRequestHandler $request
-     * @AuthMiddleware("\app\common\events\middleware\RequestMiddlewareEvent")
      */
     public function deleteAction($id, DeleteRequestHandler $request)
     {
