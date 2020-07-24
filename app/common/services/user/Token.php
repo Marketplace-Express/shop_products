@@ -20,5 +20,5 @@ class Token
     public $exp;
 
     /** @var null|string */
-    public $vendor_id = null;
+    public $store_id = null;
 }

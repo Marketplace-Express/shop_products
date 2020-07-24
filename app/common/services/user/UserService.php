@@ -14,7 +14,7 @@ class UserService
     public $userId;
 
     /** @var string */
-    public $vendorId;
+    public $storeId;
 
     /** @var int */
     public $accessLevel = 0;

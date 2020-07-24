@@ -39,12 +39,12 @@ class ProductsService
      * Check if category exists
      *
      * @param string $categoryId
-     * @param string $vendorId
+     * @param string $storeId
      *
      * @throws \ErrorException
      * @throws \Exception
      */
-    public function checkCategoryExistence(string $categoryId, string $vendorId)
+    public function checkCategoryExistence(string $categoryId, string $storeId)
     {
         $exists = $this->getQueueRequestHandler()
             ->setQueueName(QueueNamesEnum::CATEGORY_SYNC_QUEUE)
@@ -54,7 +54,7 @@ class ProductsService
                 'ids' => [$categoryId]
             ])
             ->setServiceArgs([
-                'storeId' => $vendorId
+                'storeId' => $storeId
             ])
             ->sendSync();
 
@@ -74,11 +74,11 @@ class ProductsService
         $page = $params['page'];
         $limit = $params['limit'];
         $sort = $params['sort'];
-        $vendorId = array_key_exists('storeId', $params) ? $params['storeId'] : null;
+        $storeId = array_key_exists('storeId', $params) ? $params['storeId'] : null;
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
-        $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
-        $totalCount = ProductRepository::getInstance()->countAll($vendorId, $categoryId);
+        $products = ProductRepository::getInstance()->getByIdentifier($storeId, $categoryId, $limit, $page, $sort, false, true, true);
+        $totalCount = ProductRepository::getInstance()->countAll($storeId, $categoryId);
 
         $result = [];
         foreach ($products as $product) {

@@ -118,7 +118,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
     /**
      * Get products by category id
      *
-     * @param string $vendorId
+     * @param string $storeId
      * @param string $categoryId
      * @param null|int $limit
      * @param null|int $page
@@ -131,7 +131,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      * @throws \Exception
      */
     public function getByIdentifier(
-        string $vendorId,
+        string $storeId,
         ?string $categoryId,
         int $limit,
         int $page,
@@ -157,7 +157,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         $products = $this->getModel(true, $attachRelations, $getProperties)::find([
             'conditions' => $conditions,
             'bind' => array_merge([
-                'productStoreId' => $vendorId
+                'productStoreId' => $storeId
             ], $binds),
             'limit' => $limit,
             'offset' => ($page - 1) * $limit,
@@ -320,14 +320,14 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
     }
 
     /**
-     * @param string $vendorId
+     * @param string $storeId
      * @param string|null $categoryId
      * @return mixed
      */
-    public function countAll(string $vendorId, ?string $categoryId = null): int
+    public function countAll(string $storeId, ?string $categoryId = null): int
     {
         $conditions = 'productStoreId = :storeId:';
-        $bind = ['storeId' => $vendorId];
+        $bind = ['storeId' => $storeId];
 
         if (!empty($categoryId)) {
             $conditions .= ' AND productCategoryId = :categoryId:';

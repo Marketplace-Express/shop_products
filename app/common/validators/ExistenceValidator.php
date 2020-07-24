@@ -22,8 +22,8 @@ class ExistenceValidator extends Validator implements ValidatorInterface
      *               'model' => __CLASS__,
      *               'column' => 'categoryId',
      *               'conditions' => [
-     *                   'where' => 'categoryVendorId = :storeId:',
-     *                   'bind' => ['storeId' => $this->categoryVendorId]
+     *                   'where' => 'categorystoreId = :storeId:',
+     *                   'bind' => ['storeId' => $this->categorystoreId]
      *               ],
      *               'message' => 'Parent category does not exist'
      *           ]

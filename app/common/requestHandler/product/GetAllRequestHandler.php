@@ -25,7 +25,7 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
     public $categoryId;
 
     /** @var string */
-    public $vendorId;
+    public $storeId;
 
     /** @var int */
     public $limit;

@@ -20,7 +20,7 @@ use app\common\validators\UuidValidator;
 abstract class AbstractCreateRequestHandler extends RequestAbstract
 {
     /** @var string */
-    public $vendorId;
+    public $storeId;
 
     /** @var string */
     public $userId;

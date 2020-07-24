@@ -24,7 +24,7 @@ class ProductCache implements DataSourceInterface
     /** @var self */
     private static $instance;
 
-    private static $cacheKey = 'vendors:%s';
+    private static $cacheKey = 'stores:%s';
 
     /**
      * @return ProductCache
@@ -170,24 +170,24 @@ class ProductCache implements DataSourceInterface
         string $productId
     )
     {
-        if (empty($vendorId) || empty($categoryId)) {
+        if (empty($storeId) || empty($categoryId)) {
             throw new \Exception('Missing storeId or categoryId');
         }
-        if ($product = self::hGet($this->getKey($vendorId, $categoryId), $productId)) {
+        if ($product = self::hGet($this->getKey($storeId, $categoryId), $productId)) {
             return $product;
         }
         return [];
     }
 
     /**
-     * @param string $vendorId
+     * @param string $storeId
      * @param string $categoryId
      * @param array $product
      * @throws \Exception
      */
-    public function addToList(string $vendorId, string $categoryId, array $product): void
+    public function addToList(string $storeId, string $categoryId, array $product): void
     {
-        $cacheKey = $this->getKey($vendorId, $categoryId);
+        $cacheKey = $this->getKey($storeId, $categoryId);
         foreach (SortingCriteria::FIELD_MAPPING as $field => $attribute) {
             self::$redisInstance->sAdd($cacheKey, $categoryId, json_encode($product));
         }
