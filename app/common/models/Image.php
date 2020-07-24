@@ -39,6 +39,12 @@ class Image extends BaseModel
     public $productId;
 
     /**
+     * @var string
+     * @Column(column='user_id', type='string', length=36)
+     */
+    public $userId;
+
+    /**
      *
      * @var string
      * @Column(column='image_link', type='text')
@@ -228,6 +234,7 @@ class Image extends BaseModel
             'image_id' => 'imageId',
             'image_album_id' => 'imageAlbumId',
             'product_id' => 'productId',
+            'user_id' => 'userId',
             'image_link' => 'imageLink',
             'image_size' => 'imageSize',
             'image_type' => 'imageType',
@@ -260,7 +267,8 @@ class Image extends BaseModel
             'imageDeleteHash' => $this->imageDeleteHash,
             'imageOrder' => (int) $this->imageOrder,
             'imagesSizes' => ($this->imagesSizes) ? $this->imagesSizes->toApiArray() : [],
-            'isMain' => (bool) $this->isMain
+            'isMain' => (bool) $this->isMain,
+            'userId' => $this->userId
         ];
     }
 
@@ -277,6 +285,7 @@ class Image extends BaseModel
             'imageHeight' => (float) $this->imageHeight,
             'imageType' => $this->imageType,
             'imagesSizes' => ($this->imagesSizes) ? $this->imagesSizes->toApiArray() : [],
+            'userId' => $this->userId
         ];
     }
 

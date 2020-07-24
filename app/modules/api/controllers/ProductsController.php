@@ -97,7 +97,7 @@ class ProductsController extends BaseController
         try {
             /** @var GetAllRequestHandler $request */
             $request = $this->mapper->map($this->request->getQuery(), $request);
-            $request->vendorId = $this->di->getUserService()->vendorId;
+            $request->storeId = $this->di->getUserService()->storeId;
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }

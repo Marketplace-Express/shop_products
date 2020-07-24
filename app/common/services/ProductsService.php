@@ -54,7 +54,7 @@ class ProductsService
                 'ids' => [$categoryId]
             ])
             ->setServiceArgs([
-                'vendorId' => $vendorId
+                'storeId' => $vendorId
             ])
             ->sendSync();
 
@@ -74,7 +74,7 @@ class ProductsService
         $page = $params['page'];
         $limit = $params['limit'];
         $sort = $params['sort'];
-        $vendorId = array_key_exists('vendorId', $params) ? $params['vendorId'] : null;
+        $vendorId = array_key_exists('storeId', $params) ? $params['storeId'] : null;
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
         $products = ProductRepository::getInstance()->getByIdentifier($vendorId, $categoryId, $limit, $page, $sort, false, true, true);
@@ -107,7 +107,7 @@ class ProductsService
         if ($forOwner) {
             /** @var UserService $userService */
             $userService = \Phalcon\Di::getDefault()->getUserService();
-            if ($product->productVendorId != $userService->vendorId) {
+            if ($product->productStoreId != $userService->storeId) {
                 throw new OperationNotPermitted('You are not allowed to view this entity');
             }
         }
@@ -125,7 +125,7 @@ class ProductsService
      */
     public function create(array $data)
     {
-        $this->checkCategoryExistence($data['productCategoryId'], $data['productVendorId']);
+        $this->checkCategoryExistence($data['productCategoryId'], $data['productStoreId']);
 
         // Create product
         $product = ProductRepository::getInstance()->create($data);
@@ -133,7 +133,7 @@ class ProductsService
         $productAsArray = $product->toApiArray();
         try {
             if ($product['isPublished']) {
-                ProductCache::getInstance()->setInCache($product['productVendorId'], $product['productCategoryId'], $productAsArray);
+                ProductCache::getInstance()->setInCache($product['productStoreId'], $product['productCategoryId'], $productAsArray);
                 ProductCache::indexProduct($productAsArray);
             }
         } catch (\RedisException $exception) {
@@ -160,10 +160,10 @@ class ProductsService
         try {
             if ($product['isPublished']) {
                 unset($product['isPublished']);
-                ProductCache::getInstance()->updateCache($product['productVendorId'], $product['productCategoryId'], $product);
+                ProductCache::getInstance()->updateCache($product['productStoreId'], $product['productCategoryId'], $product);
                 ProductCache::indexProduct($product);
             } else {
-                ProductCache::getInstance()->invalidateCache($product['productVendorId'], $product['productCategoryId'], [$productId]);
+                ProductCache::getInstance()->invalidateCache($product['productStoreId'], $product['productCategoryId'], [$productId]);
             }
         } catch (\RedisException $exception) {
             // do nothing
@@ -185,7 +185,7 @@ class ProductsService
     {
         $deletedProduct = ProductRepository::getInstance()->delete($productId)->toApiArray();
         try {
-            ProductCache::getInstance()->invalidateCache($deletedProduct['productVendorId'], $deletedProduct['productCategoryId'], [$productId]);
+            ProductCache::getInstance()->invalidateCache($deletedProduct['productStoreId'], $deletedProduct['productCategoryId'], [$productId]);
             (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
                 ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
                 ->setService('products')

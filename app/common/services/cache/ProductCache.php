@@ -49,18 +49,18 @@ class ProductCache implements DataSourceInterface
     /**
      * Get cache key
      *
-     * @param string $vendorId
+     * @param string $storeId
      * @param string $categoryId
      * @return string
      *
      * @throws \Exception
      */
-    private function getKey(string $vendorId, ?string $categoryId = null)
+    private function getKey(string $storeId, ?string $categoryId = null)
     {
-        if (!empty($vendorId) && empty($categoryId)) {
-            return sprintf(self::$cacheKey, $vendorId.':*');
-        } elseif (!empty($categoryId) && !empty($vendorId)) {
-            return sprintf(self::$cacheKey, $vendorId.':categories:'.$categoryId);
+        if (!empty($storeId) && empty($categoryId)) {
+            return sprintf(self::$cacheKey, $storeId.':*');
+        } elseif (!empty($categoryId) && !empty($storeId)) {
+            return sprintf(self::$cacheKey, $storeId.':categories:'.$categoryId);
         } else {
             throw new \Exception('You should provide all arguments to get cache key');
         }
@@ -79,42 +79,42 @@ class ProductCache implements DataSourceInterface
     /**
      * Set product in cache
      *
-     * @param string $vendorId
+     * @param string $storeId
      * @param string $categoryId
      * @param array $data
      * @return bool|int
      * @throws \Exception
      */
-    public function setInCache(string $vendorId, string $categoryId, array $data)
+    public function setInCache(string $storeId, string $categoryId, array $data)
     {
-//        $this->addToList($vendorId, $categoryId, $data);
-        return self::$redisInstance->hSet($this->getKey($vendorId, $categoryId), $data['productId'], json_encode($data));
+//        $this->addToList($storeId, $categoryId, $data);
+        return self::$redisInstance->hSet($this->getKey($storeId, $categoryId), $data['productId'], json_encode($data));
     }
 
     /**
-     * @param string $vendorId
+     * @param string $storeId
      * @param array $products
      * @throws \Exception
      */
-    public function bulkCacheUpdate(string $vendorId, array $products): void
+    public function bulkCacheUpdate(string $storeId, array $products): void
     {
         foreach ($products as $product) {
-            $this->updateCache($vendorId, $product['productCategoryId'], $product);
+            $this->updateCache($storeId, $product['productCategoryId'], $product);
         }
     }
 
     /**
      * Invalidate product cache
      *
-     * @param string $vendorId
+     * @param string $storeId
      * @param string $categoryId
      * @param array|null $productsIds
      * @return int|mixed
      * @throws \Exception
      */
-    public function invalidateCache(string $vendorId, string $categoryId, ?array $productsIds = null)
+    public function invalidateCache(string $storeId, string $categoryId, ?array $productsIds = null)
     {
-        $cacheKey = $this->getKey($vendorId, $categoryId);
+        $cacheKey = $this->getKey($storeId, $categoryId);
         if ($productsIds) {
             return forward_static_call('self::hDelete', $cacheKey, $productsIds);
         }
@@ -124,33 +124,32 @@ class ProductCache implements DataSourceInterface
     /**
      * Update product cache
      *
-     * @param string $vendorId
+     * @param string $storeId
      * @param string $categoryId
-     * @param string $productId
      * @param array $data
      * @return bool|int
      *
      * @throws \Exception
      */
-    public function updateCache(string $vendorId, string $categoryId, array $data)
+    public function updateCache(string $storeId, string $categoryId, array $data)
     {
-        return self::$redisInstance->hSet($this->getKey($vendorId, $categoryId), $data['productId'], json_encode($data));
+        return self::$redisInstance->hSet($this->getKey($storeId, $categoryId), $data['productId'], json_encode($data));
     }
 
     /**
      * Get products by category id
      *
      * @param string $categoryId
-     * @param string $vendorId
+     * @param string $storeId
      * @param int $page
      * @param int $limit
-     * @param array $sort
+     * @param SortProduct $sort
      * @return array
      * @throws \Exception
      */
-    public function getByIdentifier(string $categoryId, string $vendorId, int $page, int $limit, SortProduct $sort): array
+    public function getByIdentifier(string $categoryId, string $storeId, int $page, int $limit, SortProduct $sort): array
     {
-        $cacheKey = $this->getKey($vendorId, $categoryId);
+        $cacheKey = $this->getKey($storeId, $categoryId);
         $result = self::$redisInstance->hGetAll($cacheKey);
         if ($result) {
             $result = array_values(array_map(function ($product) {
@@ -172,7 +171,7 @@ class ProductCache implements DataSourceInterface
     )
     {
         if (empty($vendorId) || empty($categoryId)) {
-            throw new \Exception('Missing vendorId or categoryId');
+            throw new \Exception('Missing storeId or categoryId');
         }
         if ($product = self::hGet($this->getKey($vendorId, $categoryId), $productId)) {
             return $product;

@@ -78,7 +78,7 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
         $validator = new Validation();
 
         $validator->add(
-            'vendorId',
+            'storeId',
             new UuidValidator()
         );
 
@@ -100,7 +100,7 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
 
         return $validator->validate([
             'categoryId' => $this->categoryId,
-            'vendorId' => $this->vendorId,
+            'storeId' => $this->storeId,
             'limit' => $this->limit,
             'page' => $this->page
         ]);
@@ -113,7 +113,7 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
     {
         return [
             'categoryId' => $this->categoryId,
-            'vendorId' => $this->vendorId,
+            'storeId' => $this->storeId,
             'limit' => $this->limit,
             'page' => $this->page,
             'sort' => $this->sort

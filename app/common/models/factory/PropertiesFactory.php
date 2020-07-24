@@ -11,6 +11,7 @@ namespace app\common\models\factory;
 
 use app\common\models\embedded\DownloadableProperties;
 use app\common\models\embedded\PhysicalProperties;
+use app\common\models\Product;
 
 class PropertiesFactory
 {
@@ -20,14 +21,14 @@ class PropertiesFactory
     ];
 
     /**
-     * @param string $type
+     * @param Product $product
      * @param array $data
      * @return DownloadableProperties|PhysicalProperties
      */
-    static public function create(string $type, array $data = [])
+    static public function create(Product $product, array $data = [])
     {
         /** @var PhysicalProperties|DownloadableProperties $properties */
-        $properties = self::TYPES[$type];
+        $properties = self::TYPES[$product->productType];
         $properties = new $properties;
         if ($data) {
             $properties->setAttributes($data);

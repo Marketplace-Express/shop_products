@@ -35,7 +35,7 @@ class ImageService
     public function upload(File $image, string $productId, string $entity, ?string $albumId = null)
     {
         $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
-            'productCategoryId', 'productVendorId', 'productAlbumId'
+            'productCategoryId', 'productStoreId', 'productAlbumId'
         ]);
 
         if (empty($simpleProductData['productAlbumId']) && !empty($album = $this->createAlbum($productId))) {
@@ -43,7 +43,7 @@ class ImageService
             // Override product data
             $simpleProductData = [
                 'productCategoryId' => $simpleProductData['productCategoryId'],
-                'productVendorId' => $simpleProductData['productVendorId'],
+                'productStoreId' => $simpleProductData['productStoreId'],
                 'productAlbumId' => $album['albumId']
             ];
             // Override sent album id

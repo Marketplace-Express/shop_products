@@ -9,7 +9,6 @@ namespace app\common\requestHandler\product;
 
 
 use app\common\requestHandler\RequestAbstract;
-use app\common\services\user\UserService;
 use app\common\validators\rules\AbstractProductRules;
 use app\common\validators\SpecialCharactersValidator;
 use app\common\validators\TypeValidator;
@@ -20,6 +19,12 @@ use app\common\validators\UuidValidator;
 
 abstract class AbstractCreateRequestHandler extends RequestAbstract
 {
+    /** @var string */
+    public $vendorId;
+
+    /** @var string */
+    public $userId;
+
     /** @var string */
     public $title;
 
@@ -57,19 +62,13 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     protected $validationRules;
 
     /**
-     * @return UserService
-     */
-    protected function getUserService(): UserService
-    {
-        return $this->di->getUserService();
-    }
-
-    /**
      * @return array
      */
     protected function fields()
     {
         return [
+            'storeId' => $this->storeId,
+            'userId' => $this->userId,
             'title' => $this->title,
             'categoryId' => $this->categoryId,
             'price' => $this->price,
@@ -111,7 +110,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
         );
 
         $validator->add(
-            'categoryId',
+            ['categoryId', 'storeId', 'userId'],
             new UuidValidator()
         );
 
@@ -217,8 +216,8 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     {
         return [
             'productCategoryId' => $this->categoryId,
-            'productUserId' => $this->getUserService()->userId,
-            'productVendorId' => $this->getUserService()->vendorId,
+            'productUserId' => $this->userId,
+            'productStoreId' => $this->storeId,
             'productCustomPageId' => $this->customPageId,
             'productTitle' => $this->title,
             'productPrice' => $this->price,

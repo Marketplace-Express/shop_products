@@ -3,6 +3,8 @@ services:
   products-sync:
     image: 'registry.gitlab.com/shop_ecommerce/shop_products'
     command: ./run consumer syncConsumer
+    environment:
+      - PHP_IDE_CONFIG=serverName=phalcon.local
     volumes:
       - .:/src
       - /src/app/vendor
@@ -10,6 +12,8 @@ services:
   products-async:
     image: 'registry.gitlab.com/shop_ecommerce/shop_products'
     command: ./run consumer asyncConsumer
+    environment:
+      - PHP_IDE_CONFIG=serverName=phalcon.local
     volumes:
       - .:/src
       - /src/app/vendor
@@ -22,6 +26,8 @@ services:
       bash -c "rm -f /src/public/webtools*
       && phalcon webtools enable
       && phalcon serve"
+    environment:
+      - PHP_IDE_CONFIG=serverName=phalcon.local
     volumes:
       - .:/src
       - /src/app/vendor

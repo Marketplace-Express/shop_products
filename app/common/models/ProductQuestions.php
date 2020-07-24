@@ -99,7 +99,7 @@ class ProductQuestions extends BaseModel
                 'reusable' => true
             ]
         );
-        $this->skipAttributesOnUpdate(['id', 'vendorId', 'userId']);
+        $this->skipAttributesOnUpdate(['id', 'storeId', 'userId']);
     }
 
     /**

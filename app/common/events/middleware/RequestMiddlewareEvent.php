@@ -105,7 +105,7 @@ class RequestMiddlewareEvent extends Plugin implements MiddlewareInterface
         }
 
         $this->userService->userId = $this->token->user_id;
-        $this->userService->vendorId = $this->token->vendor_id;
+        $this->userService->storeId = $this->token->vendor_id;
         $this->userService->accessLevel = $this->token->access_level;
         return true;
     }

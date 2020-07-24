@@ -38,7 +38,7 @@ class ProductMigration_100 extends Migration
                         ]
                     ),
                     new Column(
-                        'product_vendor_id',
+                        'product_store_id',
                         [
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
@@ -52,7 +52,7 @@ class ProductMigration_100 extends Migration
                             'type' => Column::TYPE_CHAR,
                             'notNull' => true,
                             'size' => 36,
-                            'after' => 'product_vendor_id'
+                            'after' => 'product_store_id'
                         ]
                     ),
                     new Column(
@@ -193,7 +193,7 @@ class ProductMigration_100 extends Migration
                 ],
                 'indexes' => [
                     new Index('PRIMARY', ['product_id'], 'PRIMARY'),
-                    new Index('product_listing_index', ['product_category_id', 'product_vendor_id', 'is_published', 'is_deleted'], null)
+                    new Index('product_listing_index', ['product_category_id', 'product_store_id', 'is_published', 'is_deleted'], null)
                 ],
                 'options' => [
                     'TABLE_TYPE' => 'BASE TABLE',

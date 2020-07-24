@@ -143,7 +143,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
     {
         $binds = [];
 
-        $conditions = 'productVendorId = :productVendorId:';
+        $conditions = 'productStoreId = :productStoreId:';
 
         if ($categoryId) {
             $conditions .= ' AND productCategoryId = :productCategoryId:';
@@ -157,7 +157,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
         $products = $this->getModel(true, $attachRelations, $getProperties)::find([
             'conditions' => $conditions,
             'bind' => array_merge([
-                'productVendorId' => $vendorId
+                'productStoreId' => $vendorId
             ], $binds),
             'limit' => $limit,
             'offset' => ($page - 1) * $limit,
@@ -184,23 +184,22 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      */
     public function create(array $data): Product
     {
-        /** @var Product $productModel */
-        $productModel = Product::model(true, false, true);
+        /** @var Product $product */
+        $product = Product::model(true, false, true);
 
-        if (!$productModel->create($data, $productModel::getWhiteList())) {
-            throw new OperationFailed($productModel->getMessages(), 400);
+        if (!$product->create($data, $product::getWhiteList())) {
+            throw new OperationFailed($product->getMessages(), 400);
         }
 
-        $data['productId'] = $productModel->productId;
-        $properties = PropertiesFactory::create($data['productType'], $data);
+        $properties = PropertiesFactory::create($product, $data);
         if (count(array_intersect(array_keys($data), $properties->attributes()))) {
             if (!$properties->save()) {
                 throw new OperationFailed($properties->getMessages(), 400);
             }
-            $productModel->properties = $properties;
+            $product->properties = $properties;
         }
 
-        return $productModel;
+        return $product;
     }
 
     /**
@@ -228,7 +227,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             }
 
             $data['productId'] = $productId;
-            $properties = PropertiesFactory::create($product->productType, $data);
+            $properties = PropertiesFactory::create($product, $data);
             if (count(array_intersect(array_keys($data), $properties->attributes()))) {
                 if ($product->properties) {
                     $properties = $product->properties;
@@ -327,8 +326,8 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      */
     public function countAll(string $vendorId, ?string $categoryId = null): int
     {
-        $conditions = 'productVendorId = :vendorId:';
-        $bind = ['vendorId' => $vendorId];
+        $conditions = 'productStoreId = :storeId:';
+        $bind = ['storeId' => $vendorId];
 
         if (!empty($categoryId)) {
             $conditions .= ' AND productCategoryId = :categoryId:';

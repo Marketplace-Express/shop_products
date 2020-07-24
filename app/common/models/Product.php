@@ -44,7 +44,7 @@ class Product extends BaseModel
         'productId',
         'productCategoryId',
         'productUserId',
-        'productVendorId',
+        'productStoreId',
         'productTitle',
         'productLinkSlug',
         'productType',
@@ -80,7 +80,7 @@ class Product extends BaseModel
 
     /**
      * @var string
-     * @Column(column='product_vendor_id', type='string', length=36)
+     * @Column(column='product_store_id', type='string', length=36)
      */
     public $productVendorId;
 
@@ -322,7 +322,7 @@ class Product extends BaseModel
         $this->productSalePrice = (float) $this->productSalePrice;
         $this->createdAt = new \DateTime($this->createdAt);
         $this->updatedAt = $this->updatedAt ? new \DateTime($this->updatedAt) : null;
-        $this->properties = PropertiesFactory::create($this->productType)::findFirst([
+        $this->properties = PropertiesFactory::create($this)::findFirst([
             ['productId' => $this->productId]
         ]);
     }
@@ -441,7 +441,7 @@ class Product extends BaseModel
             'product_id' => 'productId',
             'product_category_id' => 'productCategoryId',
             'product_user_id' => 'productUserId',
-            'product_vendor_id' => 'productVendorId',
+            'product_store_id' => 'productStoreId',
             'product_title' => 'productTitle',
             'product_link_slug' => 'productLinkSlug',
             'product_type' => 'productType',
@@ -470,7 +470,7 @@ class Product extends BaseModel
             [
                 'productId' => $this->productId,
                 'productCategoryId' => $this->productCategoryId,
-                'productVendorId' => $this->productVendorId,
+                'productStoreId' => $this->productStoreId,
                 'productTitle' => $this->productTitle,
                 'productType' => $this->productType,
                 'productLinkSlug' => $this->productLinkSlug,
@@ -503,7 +503,7 @@ class Product extends BaseModel
         $validation = new Validation();
 
         $validation->add(
-            ['productCategoryId', 'productVendorId', 'productUserId'],
+            ['productCategoryId', 'productStoreId', 'productUserId'],
             new UuidValidator()
         );
 
@@ -607,7 +607,7 @@ class Product extends BaseModel
 
         $this->_errorMessages = $validation->validate([
             'productCategoryId' => $this->productCategoryId,
-            'productVendorId' => $this->productVendorId,
+            'productStoreId' => $this->productStoreId,
             'productUserId' => $this->productUserId,
             'productCustomPageId' => $this->productCustomPageId,
             'productBrandId' => $this->productBrandId,
