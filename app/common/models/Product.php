@@ -82,7 +82,7 @@ class Product extends BaseModel
      * @var string
      * @Column(column='product_store_id', type='string', length=36)
      */
-    public $productstoreId;
+    public $productStoreId;
 
     /**
      * @var string
