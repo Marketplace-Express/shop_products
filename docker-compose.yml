@@ -2,18 +2,18 @@ version: '3.3'
 services:
   products-sync:
     image: 'registry.gitlab.com/shop_ecommerce/shop_products'
-    command: ./run consumer syncConsumer
+    command: bash -c "./run consumer syncConsumer | phalcon serve"
     environment:
-      - PHP_IDE_CONFIG=serverName=phalcon.local
+      - PHP_IDE_CONFIG=serverName=docker
     volumes:
       - .:/src
       - /src/app/vendor
 
   products-async:
     image: 'registry.gitlab.com/shop_ecommerce/shop_products'
-    command: ./run consumer asyncConsumer
+    command: bash -c "./run consumer asyncConsumer | phalcon serve"
     environment:
-      - PHP_IDE_CONFIG=serverName=phalcon.local
+      - PHP_IDE_CONFIG=serverName=docker
     volumes:
       - .:/src
       - /src/app/vendor
@@ -27,7 +27,7 @@ services:
       && phalcon webtools enable
       && phalcon serve"
     environment:
-      - PHP_IDE_CONFIG=serverName=phalcon.local
+      - PHP_IDE_CONFIG=serverName=docker
     volumes:
       - .:/src
       - /src/app/vendor

@@ -191,6 +191,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             throw new OperationFailed($product->getMessages(), 400);
         }
 
+        $data['productId'] = $product->productId;
         $properties = PropertiesFactory::create($product, $data);
         if (count(array_intersect(array_keys($data), $properties->attributes()))) {
             if (!$properties->save()) {

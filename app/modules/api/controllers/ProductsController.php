@@ -9,7 +9,6 @@ namespace app\modules\api\controllers;
 
 use app\common\exceptions\NotFound;
 use app\common\requestHandler\product\{AbstractCreateRequestHandler,
-    GetAllForAdminRequestHandler,
     GetAllRequestHandler,
     UpdateQuantityRequestHandler,
     UpdateRequestHandler};
@@ -101,7 +100,7 @@ class ProductsController extends BaseController
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->service->getAll($request->toArray(), $request->getAccessLevel()));
+            $request->successRequest($this->service->getAll($request->toArray()));
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }

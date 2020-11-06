@@ -7,26 +7,46 @@
 
 namespace app\modules\cli\request;
 
-use Exception;
+
+use GuzzleHttp\Client;
 use Phalcon\Di\Injectable;
 
-class Handler extends Injectable
+class Handler extends Injectable implements RequestHandlerInterface
 {
-    /**
-     * @param string $service
-     * @param $serviceArgs
-     * @param string $method
-     * @param $data
-     * @return mixed
-     *
-     * @throws Exception
-     */
-    static public function process(string $service, $serviceArgs, string $method, $data)
+    private static $instance;
+
+    private $guzzleHttp;
+
+    public function __construct()
     {
-        $service = \Phalcon\Di::getDefault()->get($service, $serviceArgs);
-        if (!is_callable([$service, $method])) {
-            throw new Exception('Method "' . get_class($service) . '::' . $method . '" is not a callable method');
+        $config = \Phalcon\Di::getDefault()->get('application');
+
+        $this->guzzleHttp = new Client([
+            'base_uri' => $config->api->base_uri,
+            'timeout' => $config->api->timeout
+        ]);
+    }
+
+    /**
+     * @return static
+     */
+    static public function getInstance(): self
+    {
+        return self::$instance ?? self::$instance = new self;
+    }
+
+    public function process(string $route = '', string $method = 'get', array $query = [], array $body = [], array $headers = [])
+    {
+        if (!empty($route)) {
+            $request = $this->guzzleHttp->request($method, $route, [
+                'json' => $body,
+                'query' => $query,
+                'headers' => $headers
+            ]);
+
+            return $request->getBody()->getContents();
         }
-        return call_user_func_array([$service, $method], $data);
+
+        return null;
     }
 }

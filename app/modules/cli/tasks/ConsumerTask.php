@@ -35,29 +35,28 @@ class ConsumerTask extends Task
                 '', false, false, false, false,
                 function (AMQPMessage $request) use ($channel) {
                     $payload = json_decode($request->getBody(), true);
+
                     /** @var AMQPChannel $amqpRequest */
                     $amqpRequest = $request->delivery_info['channel'];
+
                     try {
-
                         // handle request
-                        $response = RequestHandler::process(
-                            $payload['service'],
-                            $payload['service_args'],
+                        $message = RequestHandler::getInstance()->process(
+                            $payload['route'],
                             $payload['method'],
-                            $payload['params']
+                            $payload['query'],
+                            $payload['body'],
+                            $payload['headers']
                         );
-
-                        // send response
-                        $message = json_encode($response);
-
                     } catch (\Throwable $exception) {
                         $this->di->getLogger()->logError($exception->getMessage());
                         $message = json_encode([
                             'hasError' => true,
                             'message' => $exception->getMessage(),
-                            'code' => $exception->getCode()
+                            'status' => $exception->getCode()
                         ]);
                     }
+
                     $amqpRequest->basic_ack($request->delivery_info['delivery_tag']);
                     $amqpRequest->basic_publish(new AMQPMessage($message, [
                         'correlation_id' => $request->get('correlation_id'),
@@ -89,10 +88,11 @@ class ConsumerTask extends Task
                 function (AMQPMessage $message) {
                     $payload = json_decode($message->getBody(), true);
                     RequestHandler::process(
-                        $payload['service'],
-                        $payload['service_args'],
+                        $payload['route'],
                         $payload['method'],
-                        $payload['params']
+                        $payload['query'],
+                        $payload['body'],
+                        $payload['headers']
                     );
                 }
             );

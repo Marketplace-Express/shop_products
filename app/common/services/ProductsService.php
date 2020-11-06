@@ -17,12 +17,8 @@ use app\common\repositories\{ProductRepository,
     VariationRepository};
 use app\common\services\cache\ProductCache;
 use app\common\exceptions\{OperationFailed, NotFound, OperationNotPermitted};
-use app\common\enums\{
-    AccessLevelsEnum, QueueNamesEnum
-};
-use Mechpave\ImgurClient\Entity\Album;
+use app\common\enums\QueueNamesEnum;
 use app\common\requestHandler\queue\QueueRequestHandler;
-use app\common\utils\ImgurUtil;
 
 class ProductsService
 {
@@ -36,40 +32,11 @@ class ProductsService
     }
 
     /**
-     * Check if category exists
-     *
-     * @param string $categoryId
-     * @param string $storeId
-     *
-     * @throws \ErrorException
-     * @throws \Exception
-     */
-    public function checkCategoryExistence(string $categoryId, string $storeId)
-    {
-        $exists = $this->getQueueRequestHandler()
-            ->setQueueName(QueueNamesEnum::CATEGORY_SYNC_QUEUE)
-            ->setService('category')
-            ->setMethod('getCategories')
-            ->setData([
-                'ids' => [$categoryId]
-            ])
-            ->setServiceArgs([
-                'storeId' => $storeId
-            ])
-            ->sendSync();
-
-        if (empty($exists) || false === $exists) {
-            throw new NotFound('Category not found or maybe deleted');
-        }
-    }
-
-    /**
      * @param array $params
-     * @param int $accessLevel
      * @return array
      * @throws \Exception
      */
-    public function getAll(array $params, int $accessLevel = AccessLevelsEnum::NORMAL_USER)
+    public function getAll(array $params)
     {
         $page = $params['page'];
         $limit = $params['limit'];
@@ -125,8 +92,6 @@ class ProductsService
      */
     public function create(array $data)
     {
-        $this->checkCategoryExistence($data['productCategoryId'], $data['productStoreId']);
-
         // Create product
         $product = ProductRepository::getInstance()->create($data);
 

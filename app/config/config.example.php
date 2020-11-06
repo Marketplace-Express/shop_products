@@ -83,12 +83,12 @@ return new \Phalcon\Config([
             'apiSecret' => '09b2fcc7e71311b414ac5b16e37191e96f303735',
             'accessToken' => '6b02a3b092cadf34e1b9a84c01ab896ff3a7e7d1'
         ],
-        'token' => [
-            'saltKey' => 'abc@123456789012',
-            'allowedAlg' => 'HS512'
-        ],
         'debug' => 1,
         'debugSql' => 1,
+        'api' => [
+            'base_uri' => 'http://localhost:8000/api/',
+            'timeout' => 10
+        ]
     ],
     'printNewLine' => true
 ]);

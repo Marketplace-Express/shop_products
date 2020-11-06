@@ -55,14 +55,6 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
     }
 
     /**
-     * @return int
-     */
-    public function getAccessLevel(): int
-    {
-        return $this->getUserService()->accessLevel;
-    }
-
-    /**
      * @return UserService
      */
     protected function getUserService(): UserService
