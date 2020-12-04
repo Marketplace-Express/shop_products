@@ -82,16 +82,17 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      * @param bool $editMode
      * @param bool $getProperties
      * @param bool $attachRelations
+     * @param bool $lockRecord
      * @return Product
      *
      * @throws NotFound
-     * @throws \Exception
      */
     public function getById(
         string $productId,
         bool $editMode = false,
         bool $getProperties = true,
-        bool $attachRelations = false
+        bool $attachRelations = false,
+        bool $lockRecord = false
     )
     {
         $conditions = 'productId = :productId:';
@@ -105,7 +106,8 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
             'conditions' => $conditions,
             'bind' => [
                 'productId' => $productId
-            ]
+            ],
+            'for_update' => $lockRecord
         ]);
 
         if (!$product) {
@@ -215,7 +217,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      */
     public function update(string $productId, array $data): Product
     {
-        $product = $this->getById($productId, true, true, false);
+        $product = $this->getById($productId, true, true, false, true);
 
         // Start a transaction
         $txManager = new TxManager($product->getDI());
@@ -267,7 +269,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      */
     public function delete(string $productId): Product
     {
-        $product = $this->getById($productId, true, false, false);
+        $product = $this->getById($productId, true, false, false, true);
         if (!$product) {
             throw new NotFound('Product not found or maybe deleted');
         }
@@ -288,7 +290,7 @@ class ProductRepository extends BaseRepository implements DataSourceInterface
      */
     public function updateQuantity(string $productId, int $amount, string $operator = QuantityOperatorsEnum::OPERATOR_INCREMENT): Product
     {
-        $product = $this->getById($productId);
+        $product = $this->getById($productId, false, false, false, true);
         return $product->updateQuantity($amount, $operator);
     }
 

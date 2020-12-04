@@ -87,7 +87,7 @@ class ConsumerTask extends Task
             $channel->basic_consume(self::ASYNC_QUEUE_NAME, '', false, true, false, false,
                 function (AMQPMessage $message) {
                     $payload = json_decode($message->getBody(), true);
-                    RequestHandler::process(
+                    RequestHandler::getInstance()->process(
                         $payload['route'],
                         $payload['method'],
                         $payload['query'],

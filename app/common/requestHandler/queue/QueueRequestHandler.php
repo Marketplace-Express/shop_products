@@ -16,16 +16,16 @@ use app\common\exceptions\OperationFailed;
 
 class QueueRequestHandler extends Injectable
 {
-
     const REQUEST_TYPE_SYNC = 'sync';
     const REQUEST_TYPE_ASYNC = 'async';
 
     private $queueName;
-    private $service;
+    private $route;
     private $method;
-    private $data;
-    private $serviceArgs = [];
     private $correlationId;
+    private $headers = [];
+    private $body = [];
+    private $query = [];
     private $replyTo = null;
     private $exchange = null;
 
@@ -57,12 +57,13 @@ class QueueRequestHandler extends Injectable
     }
 
     /**
-     * @param string $service
+     * @param string $route
      * @return QueueRequestHandler
      */
-    public function setService(string $service)
+    public function setRoute(string $route)
     {
-        $this->service = $service;
+        $this->route = $route;
+
         return $this;
     }
 
@@ -73,26 +74,36 @@ class QueueRequestHandler extends Injectable
     public function setMethod(string $method)
     {
         $this->method = $method;
+
+        return $this;
+    }
+
+    public function setHeaders(array $headers = [])
+    {
+        $this->headers = $headers;
+
         return $this;
     }
 
     /**
-     * @param array $data
+     * @param array $body
      * @return QueueRequestHandler
      */
-    public function setData(array $data)
+    public function setBody(array $body)
     {
-        $this->data = $data;
+        $this->body = $body;
+
         return $this;
     }
 
     /**
-     * @param array $args
+     * @param array $query
      * @return QueueRequestHandler
      */
-    public function setServiceArgs(array $args = [])
+    public function setQuery(array $query)
     {
-        $this->serviceArgs = $args;
+        $this->query = $query;
+
         return $this;
     }
 
@@ -129,13 +140,13 @@ class QueueRequestHandler extends Injectable
         $validator = new Validation();
 
         $validator->add(
-            ['queueName', 'service', 'method'],
+            ['queueName', 'route', 'method'],
             new Validation\Validator\PresenceOf()
         );
 
         $messages = $validator->validate([
             'queueName' => $this->queueName,
-            'service' => $this->service,
+            'route' => $this->route,
             'method' => $this->method
         ]);
 
@@ -217,10 +228,11 @@ class QueueRequestHandler extends Injectable
 
         $this->initializeConsumer();
         $message = new AMQPMessage(json_encode([
-            'service' => $this->service,
-            'service_args' => $this->serviceArgs,
+            'route' => $this->route,
             'method' => $this->method,
-            'params' => $this->data
+            'headers' => $this->headers,
+            'query' => $this->query,
+            'body' => $this->body,
         ]), [
             'reply_to' => $this->replyTo,
             'correlation_id' => $this->getCorrelationId(),
@@ -244,10 +256,11 @@ class QueueRequestHandler extends Injectable
         $this->validate();
 
         $message = new AMQPMessage(json_encode([
-            'service' => $this->service,
-            'service_args' => $this->serviceArgs,
+            'route' => $this->route,
             'method' => $this->method,
-            'params' => $this->data
+            'headers' => $this->headers,
+            'query' => $this->query,
+            'body' => $this->body,
         ]));
         $this->channel->basic_publish($message, $this->exchange, $this->queueName);
     }

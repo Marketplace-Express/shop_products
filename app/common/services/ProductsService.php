@@ -9,14 +9,15 @@ namespace app\common\services;
 
 
 use app\common\models\embedded\Properties;
-use app\common\services\user\UserService;
-use app\common\repositories\{ProductRepository,
+use app\common\repositories\{
+    ProductRepository,
     ImageRepository,
     QuestionRepository,
     RateRepository,
-    VariationRepository};
+    VariationRepository
+};
 use app\common\services\cache\ProductCache;
-use app\common\exceptions\{OperationFailed, NotFound, OperationNotPermitted};
+use app\common\exceptions\{OperationFailed, NotFound};
 use app\common\enums\QueueNamesEnum;
 use app\common\requestHandler\queue\QueueRequestHandler;
 
@@ -44,7 +45,7 @@ class ProductsService
         $storeId = array_key_exists('storeId', $params) ? $params['storeId'] : null;
         $categoryId = array_key_exists('categoryId', $params) ? $params['categoryId'] : null;
 
-        $products = ProductRepository::getInstance()->getByIdentifier($storeId, $categoryId, $limit, $page, $sort, false, true, true);
+        $products = ProductRepository::getInstance()->getByIdentifier($storeId, $categoryId, $limit, $page, $sort, $params['editMode'], true, true);
         $totalCount = ProductRepository::getInstance()->countAll($storeId, $categoryId);
 
         $result = [];
@@ -66,18 +67,10 @@ class ProductsService
      * @return array
      *
      * @throws NotFound
-     * @throws OperationNotPermitted
      */
     public function getProduct(string $productId, bool $forOwner = false): array
     {
-        $product = ProductRepository::getInstance()->getById($productId, false, true, true);
-        if ($forOwner) {
-            /** @var UserService $userService */
-            $userService = \Phalcon\Di::getDefault()->getUserService();
-            if ($product->productStoreId != $userService->storeId) {
-                throw new OperationNotPermitted('You are not allowed to view this entity');
-            }
-        }
+        $product = ProductRepository::getInstance()->getById($productId, $forOwner, true, true);
         return $product->toApiArray();
     }
 
@@ -143,21 +136,17 @@ class ProductsService
      * @return bool
      *
      * @throws OperationFailed
-     * @throws NotFound
-     * @throws \Exception
      */
     public function delete(string $productId)
     {
         $deletedProduct = ProductRepository::getInstance()->delete($productId)->toApiArray();
         try {
             ProductCache::getInstance()->invalidateCache($deletedProduct['productStoreId'], $deletedProduct['productCategoryId'], [$productId]);
-            (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
+            $this->getQueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC)
                 ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
-                ->setService('products')
-                ->setMethod('deleteExtraInfo')
-                ->setData([
-                    'product_id' => $deletedProduct['productId']
-                ])->sendAsync();
+                ->setRoute(sprintf('products/extra/%s', $productId))
+                ->setMethod('delete')
+                ->sendAsync();
         } catch (\RedisException $exception) {
             // do nothing
         }
@@ -173,9 +162,13 @@ class ProductsService
     public function deleteExtraInfo(string $productId): void
     {
         /** Delete product related document */
-        Properties::findFirst([
-                ['product_id' => $productId]
-            ])->delete();
+        $properties = Properties::findFirst([
+            ['product_id' => $productId]
+        ]);
+
+        if ($properties) {
+            $properties->delete();
+        }
 
         /** Delete product cache index */
         ProductCache::deleteProductIndex($productId);
@@ -196,8 +189,6 @@ class ProductsService
      * @param string $entityId
      * @param array $data
      * @return array
-     * @throws NotFound
-     * @throws OperationFailed
      */
     public function updateQuantity(string $entityId, array $data): array
     {

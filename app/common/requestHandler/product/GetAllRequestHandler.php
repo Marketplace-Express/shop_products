@@ -33,6 +33,9 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
     /** @var int */
     public $page;
 
+    /** @var bool */
+    public $editMode = false;
+
     /** @var SortProduct */
     protected $sort;
 
@@ -108,7 +111,8 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
             'storeId' => $this->storeId,
             'limit' => $this->limit,
             'page' => $this->page,
-            'sort' => $this->sort
+            'sort' => $this->sort,
+            'editMode' => $this->editMode
         ];
     }
 }

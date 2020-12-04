@@ -9,7 +9,7 @@ namespace app\common\models;
 
 
 use app\common\models\factory\PropertiesFactory;
-use app\common\models\embedded\{PhysicalProperties, Properties, Variation};
+use app\common\models\embedded\{Properties, Variation};
 use app\common\validators\{
     SpecialCharactersValidator,
     TypeValidator,

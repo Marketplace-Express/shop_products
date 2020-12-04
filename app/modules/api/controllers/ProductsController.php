@@ -96,7 +96,7 @@ class ProductsController extends BaseController
         try {
             /** @var GetAllRequestHandler $request */
             $request = $this->mapper->map($this->request->getQuery(), $request);
-            $request->storeId = $this->di->getUserService()->storeId;
+            $request->editMode = true;
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
@@ -169,6 +169,20 @@ class ProductsController extends BaseController
     {
         try {
             $this->service->delete($id);
+            http_response_code(StatusCode::NO_CONTENT);
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * @Delete('/extra/{id:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}}')
+     * @param $id
+     */
+    public function deleteExtraInfoAction($id)
+    {
+        try {
+            $this->service->deleteExtraInfo($id);
             http_response_code(StatusCode::NO_CONTENT);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
