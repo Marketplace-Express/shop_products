@@ -1,39 +1,44 @@
 version: '3.3'
 services:
+  products-api:
+    build:
+      context: .
+    ports:
+      - "1001:8000"
+    command: phalcon serve
+    environment:
+      - PHP_IDE_CONFIG=serverName=docker
+    volumes:
+      - .:/src
+      - /src/app/vendor
+
   products-sync:
-    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
+    build:
+      context: .
     command: bash -c "./run consumer syncConsumer | phalcon serve"
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     volumes:
       - .:/src
       - /src/app/vendor
+    depends_on:
+      - products-api
 
   products-async:
-    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
+    build:
+      context: .
     command: bash -c "./run consumer asyncConsumer | phalcon serve"
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     volumes:
       - .:/src
       - /src/app/vendor
-
-  products-api:
-    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
-    ports:
-      - "1001:8000"
-    command: >
-      bash -c "rm -f /src/public/webtools*
-      && phalcon webtools enable
-      && phalcon serve"
-    environment:
-      - PHP_IDE_CONFIG=serverName=docker
-    volumes:
-      - .:/src
-      - /src/app/vendor
+    depends_on:
+      - products-api
 
   products-unit-test:
-    image: 'registry.gitlab.com/shop_ecommerce/shop_products'
+    build:
+      context: .
     command: app/vendor/bin/phpunit -c tests/phpunit.xml
     volumes:
       - .:/src

@@ -86,7 +86,7 @@ return new \Phalcon\Config([
         'debug' => 1,
         'debugSql' => 1,
         'api' => [
-            'base_uri' => 'http://localhost:8000/api/',
+            'base_uri' => 'http://172.19.0.1:1001/api/',
             'timeout' => 10
         ]
     ],

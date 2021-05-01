@@ -37,27 +37,12 @@ return new \Phalcon\Config([
 And so on for Redis and RabbitMQ ...
 >Note: You can use network (marketplace-network) gateway ip instead of providing each container ip
 
-Now, you have two options:
-
-Option 1:
-1. Login to docker registry provider, in order to pull this micro service docker image:
+3. Build a new image:
 ```bash
-docker login registry.gitlab.com
-```
-Provide your user name and password on gitlab, you should have access to the project, so you can pull the image.
-
-2. Pull the docker image from container registry:
-```bash
-docker pull registry.gitlab.com/shop_ecommerce/shop_products
+docker-compose build
 ```
 
-Option 2:
-1. Build a new image (for x64 arch):
-```bash
-docker build -t registry.gitlab.com/shop_ecommerce/shop_products .
-```
-
-3- Run `docker-compose up -d`, This command will create new containers:
+4- Run `docker-compose up -d`, This command will create new containers:
 
 1. shop_products_products-sync_1
 - This will declare a new queue “products_sync” in RabbitMQ queues list
