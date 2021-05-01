@@ -3,6 +3,7 @@
 namespace app\common\models;
 
 
+use app\common\interfaces\ApiArrayData;
 use app\common\models\resultset\RateImageResultSet;
 use app\common\validators\UuidValidator;
 use Phalcon\Validation;
@@ -15,7 +16,7 @@ use Phalcon\Validation;
  * @date 2019-01-11, 16:39:07
  * @property RateImageResultSet $images
  */
-class ProductRates extends BaseModel
+class ProductRates extends BaseModel implements ApiArrayData
 {
 
     /**

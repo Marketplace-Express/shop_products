@@ -22,6 +22,9 @@ class CreateRequestHandler extends RequestAbstract
     /** @var string */
     public $productId;
 
+    /** @var string */
+    public $userId;
+
     /** @var QuestionRules */
     protected $validationRules;
 
@@ -49,13 +52,14 @@ class CreateRequestHandler extends RequestAbstract
         );
 
         $validator->add(
-            'productId',
+            ['productId', 'userId'],
             new UuidValidator()
         );
 
         return $validator->validate([
             'text' => $this->text,
-            'productId' => $this->productId
+            'productId' => $this->productId,
+            'userId' => $this->userId,
         ]);
     }
 }

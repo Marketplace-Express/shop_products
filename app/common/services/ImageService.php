@@ -24,6 +24,7 @@ class ImageService
 {
     /**
      * @param File $image
+     * @param string $userId
      * @param string $productId
      * @param string $entity
      * @param string|null $albumId
@@ -32,7 +33,7 @@ class ImageService
      * @throws OperationFailed
      * @throws \Exception
      */
-    public function upload(File $image, string $productId, string $entity, ?string $albumId = null)
+    public function upload(File $image, string $userId, string $productId, string $entity, ?string $albumId = null)
     {
         $simpleProductData = ProductRepository::getInstance()->getColumnsForProduct($productId, [
             'productCategoryId', 'productStoreId', 'productAlbumId'
@@ -75,6 +76,7 @@ class ImageService
             $repository = ImageRepository::getInstance();
 
             $image = $repository->create(
+                $userId,
                 $productId,
                 $uploaded->getImageId(),
                 $albumId,
@@ -102,18 +104,14 @@ class ImageService
      * @param string $productId
      * @param string $imageId
      * @param string $albumId
-     * @param int $accessLevel
      * @throws OperationFailed
      * @throws NotFound
      * @throws OperationNotPermitted
      * @throws \RedisException
      * @throws \Exception
      */
-    public function delete(string $productId, string $imageId, string $albumId, int $accessLevel = AccessLevelsEnum::NORMAL_USER): void
+    public function delete(string $productId, string $imageId, string $albumId): void
     {
-        if ($accessLevel < 1) {
-            throw new OperationNotPermitted('Not allowed action');
-        }
         if (ImageRepository::getInstance()->delete($imageId, $albumId, $productId)) {
             ImagesCache::getInstance()->invalidate($productId, $imageId);
         }

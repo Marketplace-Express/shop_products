@@ -9,6 +9,7 @@ namespace app\common\services;
 
 
 use app\common\models\embedded\Properties;
+use app\common\models\embedded\Variation;
 use app\common\repositories\{
     ProductRepository,
     ImageRepository,
@@ -198,19 +199,15 @@ class ProductsService
     }
 
     /**
-     * @param string $productId
      * @param array $data
-     * @return array
+     * @return Variation
      * @throws OperationFailed
      * @throws NotFound
      */
-    public function createVariation(string $productId, array $data): array
+    public function createVariation(array $data): Variation
     {
-        if (empty($data['userId']) || empty($data['quantity']) || empty($data['price'])) {
-            throw new \InvalidArgumentException('variation has invalid input', 400);
-        }
-
         $userId = $data['userId'];
+        $productId = $data['productId'];
         $quantity = $data['quantity'];
         $price = $data['price'];
         $imageId = array_key_exists('imageId', $data) ? $data['imageId'] : null;
@@ -218,14 +215,31 @@ class ProductsService
         $salePrice = array_key_exists('salePrice', $data) ? $data['salePrice'] : 0;
         $sku = $data['sku'];
 
-        if ($imageId) {
-            // Throw NotFound exception if image does not exist
-            ImageRepository::getInstance()->getUnused($imageId);
-        }
+        $variation = VariationRepository::getInstance()
+            ->create($productId, $userId, $imageId, $quantity, $sku, $price, $salePrice, $attributes);
+
+        // Mark image as used
+        ImageRepository::getInstance()->markAsUsed([$imageId]);
+
+        return $variation;
+    }
+
+    /**
+     * @param string $variationId
+     * @param array $data
+     * @return Variation
+     */
+    public function updateVariation(string $variationId, array $data = []): Variation
+    {
+        $quantity = $data['quantity'];
+        $price = $data['price'];
+        $imageId = array_key_exists('imageId', $data) ? $data['imageId'] : null;
+        $attributes = array_key_exists('attributes', $data) ? $data['attributes'] : [];
+        $salePrice = array_key_exists('salePrice', $data) ? $data['salePrice'] : 0;
+        $sku = $data['sku'];
 
         $variation = VariationRepository::getInstance()
-            ->create($productId, $userId, $imageId, $quantity, $sku, $price, $salePrice, $attributes)
-            ->toApiArray();
+            ->update($variationId, $imageId, $quantity, $sku, $price, $salePrice, $attributes);
 
         // Mark image as used
         ImageRepository::getInstance()->markAsUsed([$imageId]);

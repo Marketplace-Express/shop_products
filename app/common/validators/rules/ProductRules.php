@@ -8,10 +8,12 @@
 namespace app\common\validators\rules;
 
 
-abstract class AbstractProductRules extends RulesAbstract
+class ProductRules extends RulesAbstract
 {
     /** @var \stdClass */
     public $productTitle;
+
+    public $minQuantity = 0;
 
     public function __construct()
     {

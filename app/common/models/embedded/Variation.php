@@ -8,6 +8,8 @@
 namespace app\common\models\embedded;
 
 
+use app\common\interfaces\ApiArrayData;
+use app\common\validators\rules\CommonVariationRules;
 use app\common\validators\SkuValidator;
 use app\common\models\{
     BaseModel,
@@ -23,7 +25,7 @@ use Phalcon\Validation;
  * @package app\common\models\embedded
  * @property Image $image
  */
-class Variation extends BaseModel
+class Variation extends BaseModel implements ApiArrayData
 {
     const WHITE_LIST = [
         'productId',
@@ -33,6 +35,11 @@ class Variation extends BaseModel
         'price',
         'salePrice'
     ];
+
+    /**
+     * @var CommonVariationRules
+     */
+    private $validationRules;
 
     /**
      * @var string
@@ -299,6 +306,14 @@ class Variation extends BaseModel
     }
 
     /**
+     * @return CommonVariationRules
+     */
+    private function getValidationRules(): CommonVariationRules
+    {
+        return $this->validationRules ?? $this->validationRules = new CommonVariationRules();
+    }
+
+    /**
      * @return bool
      */
     public function validation(): bool
@@ -316,6 +331,7 @@ class Variation extends BaseModel
         $validation->add(
             'quantity',
             new Validation\Validator\NumericValidator([
+                'min' => $this->getValidationRules()->minQuantity,
                 'allowFloat' => false,
                 'allowSign' => false,
                 'allowEmpty' => false
@@ -348,13 +364,6 @@ class Variation extends BaseModel
             ['productId', 'sku', 'isDeleted'],
             new Validation\Validator\Uniqueness([
                 'message' => 'SKU should be unique per variation'
-            ])
-        );
-
-        $validation->add(
-            ['imageId', 'deletionToken'],
-            new Validation\Validator\Uniqueness([
-                'message' => 'The image is already used'
             ])
         );
 

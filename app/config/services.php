@@ -5,7 +5,6 @@ use app\common\services\ProductsService;
 use app\common\services\QuestionsService;
 use app\common\services\RateService;
 use app\common\services\SearchService;
-use app\common\services\user\UserService;
 use app\common\utils\AMQPHandler;
 use Ehann\RediSearch\Index;
 use Ehann\RediSearch\Suggestion;
@@ -201,11 +200,6 @@ $di->setShared('amqp', function () {
     );
     return new AMQPHandler($connection->channel(), $config);
 });
-
-/**
- * UserService should be shared among application
- */
-$di->setShared('userService', UserService::class);
 
 /**
  * AppServices

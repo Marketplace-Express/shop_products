@@ -8,7 +8,7 @@
 namespace app\common\validators\rules;
 
 
-class PhysicalProductRules extends AbstractProductRules
+class PhysicalProductRules extends ProductRules
 {
 
     /**
@@ -16,6 +16,6 @@ class PhysicalProductRules extends AbstractProductRules
      */
     public function toArray(): array
     {
-        return [];
+        return array_merge(parent::toArray(), []);
     }
 }

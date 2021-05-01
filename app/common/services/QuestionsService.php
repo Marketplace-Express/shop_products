@@ -8,24 +8,13 @@
 namespace app\common\services;
 
 
-use app\common\repositories\ProductRepository;
 use app\common\repositories\QuestionRepository;
-use app\common\services\cache\ProductCache;
 use app\common\services\cache\QuestionsCache;
-use app\common\services\user\UserService;
 
 class QuestionsService
 {
     /** @var QuestionRepository */
     private $repository;
-
-    /**
-     * @return UserService
-     */
-    protected function getUserService(): UserService
-    {
-        return \Phalcon\Di::getDefault()->getUserService();
-    }
 
     /**
      * @return QuestionRepository
@@ -37,15 +26,13 @@ class QuestionsService
 
     /**
      * @param string $productId
+     * @param string $userId
      * @param string $text
      * @return array
-     * @throws \RedisException
-     * @throws \app\common\exceptions\NotFound
      * @throws \app\common\exceptions\OperationFailed
      */
-    public function create(string $productId, string $text)
+    public function create(string $productId, string $userId, string $text)
     {
-        $userId = $this->getUserService()->userId;
         $question = $this->getRepository()->create($userId, $productId, $text);
         QuestionsCache::getInstance()->set($productId, $question);
         return $question;

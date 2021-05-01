@@ -202,8 +202,8 @@ class ProductsController extends BaseController
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $request->successRequest($this->service->updateQuantity($id, $request->toArray()));
-
+            $this->service->updateQuantity($id, $request->toArray());
+            http_response_code(StatusCode::NO_CONTENT);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());
         }

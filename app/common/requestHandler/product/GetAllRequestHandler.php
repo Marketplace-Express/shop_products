@@ -12,7 +12,6 @@ use app\common\requestHandler\IArrayData;
 use app\common\requestHandler\RequestAbstract;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
-use app\common\services\user\UserService;
 use app\common\validators\UuidValidator;
 
 /**
@@ -55,14 +54,6 @@ class GetAllRequestHandler extends RequestAbstract implements IArrayData
                 new SortProduct()
             );
         }
-    }
-
-    /**
-     * @return UserService
-     */
-    protected function getUserService(): UserService
-    {
-        return $this->di->getUserService();
     }
 
     /** Validate request fields using \Phalcon\Validation\Validator

@@ -64,7 +64,7 @@ class QuestionsController extends BaseController
             if (!$request->isValid()) {
                 $request->invalidRequest();
             }
-            $question = $this->service->create($request->productId, $request->text);
+            $question = $this->service->create($request->productId, $request->userId, $request->text);
             $request->successRequest($question);
         } catch (\Throwable $exception) {
             $this->handleError($exception->getMessage(), $exception->getCode());

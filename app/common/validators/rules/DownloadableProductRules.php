@@ -8,13 +8,13 @@
 namespace app\common\validators\rules;
 
 
-class DownloadableProductRules extends AbstractProductRules
+class DownloadableProductRules extends ProductRules
 {
     /** @var int */
     public $maxDigitalSize = 104857600; // 100 MB
 
     public function toArray(): array
     {
-        return [];
+        return array_merge(parent::toArray(), []);
     }
 }

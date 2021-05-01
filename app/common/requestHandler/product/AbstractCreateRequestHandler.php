@@ -9,7 +9,7 @@ namespace app\common\requestHandler\product;
 
 
 use app\common\requestHandler\RequestAbstract;
-use app\common\validators\rules\AbstractProductRules;
+use app\common\validators\rules\ProductRules;
 use app\common\validators\SpecialCharactersValidator;
 use app\common\validators\TypeValidator;
 use Phalcon\Utils\Slug;
@@ -58,7 +58,7 @@ abstract class AbstractCreateRequestHandler extends RequestAbstract
     /** @var bool */
     public $isPublished = false;
 
-    /** @var AbstractProductRules */
+    /** @var ProductRules */
     protected $validationRules;
 
     /**

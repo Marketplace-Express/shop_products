@@ -10,8 +10,10 @@ namespace app\common\requestHandler;
 
 use app\common\exceptions\NotFound;
 use app\common\exceptions\ValidationFailed;
+use app\common\interfaces\ApiArrayData;
 use app\common\validators\rules\RulesAbstract;
 use Phalcon\Di\Injectable;
+use Phalcon\Http\Response\StatusCode;
 
 abstract class RequestAbstract extends Injectable implements IRequestHandler
 {
@@ -56,10 +58,21 @@ abstract class RequestAbstract extends Injectable implements IRequestHandler
      * @param int $code
      * @return mixed|\Phalcon\Http\Response|\Phalcon\Http\ResponseInterface
      */
-    public function successRequest($message = null, int $code = 200)
+    public function successRequest($message = null, int $code = StatusCode::OK)
     {
         http_response_code($code);
-        if ($code != 204) {
+
+        if ($message instanceof ApiArrayData) {
+            $message = $message->toApiArray();
+        }
+
+        if (is_array($message)) {
+            array_walk($message, function (&$data) {
+                $data = ($data instanceof ApiArrayData) ? $data->toApiArray() : $data;
+            });
+        }
+
+        if ($code != StatusCode::NO_CONTENT) {
             $this->response
                 ->setJsonContent([
                     'status' => 200,

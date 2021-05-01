@@ -45,6 +45,10 @@ class TypeValidator extends Validator implements ValidatorInterface
         $values = $validation->getValue($attribute);
         $allowEmpty = $this->getOption('allowEmpty', true);
 
+        if (empty($value) && $allowEmpty) {
+            return true;
+        }
+
         if ($type == self::TYPE_ARRAY) {
             if (!is_array($values)) {
                 $message = $this->getOption('message', 'Invalid array parameter');
@@ -94,7 +98,7 @@ class TypeValidator extends Validator implements ValidatorInterface
                 default:
                     throw new \Exception('Unknown Type', 400);
             }
-            if ($filteredValue !== $value && !$allowEmpty) {
+            if ($filteredValue !== $value) {
                 $message = $this->getOption('message', 'Invalid value type');
                 $validation->appendMessage(new Message($message, $attribute));
                 return false;

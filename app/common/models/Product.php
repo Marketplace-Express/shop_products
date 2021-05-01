@@ -8,13 +8,14 @@
 namespace app\common\models;
 
 
+use app\common\interfaces\ApiArrayData;
 use app\common\models\factory\PropertiesFactory;
 use app\common\models\embedded\{Properties, Variation};
-use app\common\validators\{
+use app\common\validators\{rules\CommonVariationRules,
+    rules\ProductRules,
     SpecialCharactersValidator,
     TypeValidator,
-    UuidValidator
-};
+    UuidValidator};
 use Phalcon\Mvc\Model\Transaction\{
     Failed as TxFailed,
     Manager as TxManager
@@ -38,7 +39,7 @@ use app\common\exceptions\OperationFailed;
  * @property-read  ProductRates[] $productRates
  * @property Variation[] $variations
  */
-class Product extends BaseModel
+class Product extends BaseModel implements ApiArrayData
 {
     const WHITE_LIST = [
         'productId',
@@ -58,6 +59,14 @@ class Product extends BaseModel
         'productQuantity',
         'isPublished'
     ];
+
+    private static $attachRelations = false;
+    private static $editMode = false;
+
+    /**
+     * @var ProductRules
+     */
+    private $validationRules;
 
     /**
      * @var string
@@ -174,11 +183,10 @@ class Product extends BaseModel
      */
     public $isPublished = false;
 
-    /** @var Properties */
+    /**
+     * @var Properties
+     */
     public $properties;
-
-    private static $attachRelations = false;
-    private static $editMode = false;
 
     /**
      *
@@ -496,6 +504,14 @@ class Product extends BaseModel
     }
 
     /**
+     * @return ProductRules
+     */
+    private function getValidationRules(): ProductRules
+    {
+        return $this->validationRules ?? $this->validationRules = new ProductRules();
+    }
+
+    /**
      * @return bool
      */
     public function validation()
@@ -591,7 +607,7 @@ class Product extends BaseModel
         $validation->add(
             'productQuantity',
             new Validation\Validator\NumericValidator([
-                'min' => 1,
+                'min' => $this->getValidationRules()->minQuantity,
                 'allowFloat' => false,
                 'allowSign' => false,
                 'allowEmpty' => false

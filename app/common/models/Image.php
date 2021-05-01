@@ -2,6 +2,7 @@
 
 namespace app\common\models;
 
+use app\common\interfaces\ApiArrayData;
 use app\common\models\embedded\Variation;
 use Phalcon\Mvc\Model\ResultInterface;
 use Phalcon\Mvc\Model\Resultset;
@@ -15,7 +16,7 @@ use Phalcon\Mvc\Model\ResultSetInterface;
  * @date 2019-01-11, 16:39:33
  * @property ImageSizes $imagesSizes
  */
-class Image extends BaseModel
+class Image extends BaseModel implements ApiArrayData
 {
     /**
      *

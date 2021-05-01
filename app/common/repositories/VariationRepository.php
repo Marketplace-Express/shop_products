@@ -24,7 +24,7 @@ class VariationRepository extends BaseRepository
      * @param int $quantity
      * @param string $sku
      * @param float $price
-     * @param float $salePrice
+     * @param float|null $salePrice
      * @param array $attributes
      * @return Variation
      * @throws NotFound
@@ -42,33 +42,23 @@ class VariationRepository extends BaseRepository
         array $attributes = []
     ): Variation
     {
-        $productQuantity = (int) ProductRepository::getInstance()->getColumnsForProduct($productId, ['productQuantity'])['productQuantity'];
-        $productVariations = Variation::find([
-            'conditions' => 'productId = :productId:',
-            'columns' => 'quantity',
-            'bind' => ['productId' => $productId]
-        ]);
-
-        $variationsQuantities = 0;
-        if (count($productVariations)) {
-            foreach ($productVariations as $variation) {
-                $variationsQuantities += (int) $variation->quantity;
-            }
+        if (!$this->isValidQuantity($productId, $quantity)) {
+            throw new \Exception('variation quantity is bigger that product quantity');
         }
 
-        if ($quantity + $variationsQuantities > $productQuantity) {
-            throw new OperationFailed('variation quantity is bigger that product quantity', 400);
+        if ($imageId) {
+            // Throw NotFound exception if image does not exist
+            ImageRepository::getInstance()->getUnused($imageId);
         }
 
-        /** @var Variation $variation */
         $variation = Variation::model(true);
 
         // Start a transaction to guarantee data lost
-        $transaction = new TxManager($variation->getDI());
+        $txManager = new TxManager($variation->getDI());
 
         try {
 
-            $variation->setTransaction($transaction->getOrCreateTransaction());
+            $variation->setTransaction($txManager->getOrCreateTransaction());
 
             $isCreated = $variation->create([
                 'productId' => $productId,
@@ -84,13 +74,15 @@ class VariationRepository extends BaseRepository
                 throw new OperationFailed($variation->getMessages(), 400);
             }
 
-            $image = ImageRepository::getInstance()->getModel()::findFirst([
-                'conditions' => 'imageId = :imageId:',
-                'bind' => ['imageId' => $imageId]
-            ]);
+            if ($imageId) {
+                $image = ImageRepository::getInstance()->getModel()::findFirst([
+                    'conditions' => 'imageId = :imageId:',
+                    'bind' => ['imageId' => $imageId]
+                ]);
 
-            if ($image) {
-                $image->update(['isUsed' => true]);
+                if ($image) {
+                    $image->update(['isUsed' => true]);
+                }
             }
 
             /** @var VariationProperties $properties */
@@ -99,20 +91,118 @@ class VariationRepository extends BaseRepository
             $properties->variationId = $variation->variationId;
             $properties->attributes = $attributes;
             if (!$properties->create()) {
-                $transaction->rollback();
+                $txManager->rollback();
                 throw new OperationFailed($properties->getMessages(), 400);
             }
 
             // Commit the transaction if data saved
-            $transaction->commit();
+            $txManager->commit();
             $variation->properties = $properties;
 
         } catch (TxFailed $exception) {
-            $transaction->rollback();
+            $txManager->rollback();
             throw new OperationFailed($exception->getMessage());
         }
 
         return $variation;
+    }
+
+    /**
+     * @param string $variationId
+     * @param string|null $imageId
+     * @param int $quantity
+     * @param string $sku
+     * @param float $price
+     * @param float|null $salePrice
+     * @param array $attributes
+     * @return Variation|\Phalcon\Mvc\Model
+     * @throws NotFound
+     * @throws OperationFailed
+     */
+    public function update(
+        string $variationId,
+        ?string $imageId,
+        int $quantity,
+        string $sku,
+        float $price,
+        ?float $salePrice,
+        array $attributes = []
+    ) {
+        $variation = Variation::model()::findFirst([
+            'conditions' => 'variationId = :variationId:',
+            'bind' => ['variationId' => $variationId],
+            'for_update' => true
+        ]);
+
+        if (!$variation) {
+            throw new NotFound('variation not found or maybe deleted');
+        }
+
+        if (!$this->isValidQuantity($variation->productId, abs($variation->quantity - $quantity))) {
+            throw new \Exception('variation quantity is bigger that product quantity');
+        }
+
+        if (!empty($imageId) && $imageId !== $variation->imageId) {
+            // Throw NotFound exception if image does not exist
+            ImageRepository::getInstance()->getUnused($imageId);
+        }
+
+        $txManager = new TxManager($variation->getDI());
+
+        try {
+            $variation->setTransaction($txManager->getOrCreateTransaction());
+            $isVariationUpdated = $variation->update([
+                'quantity' => $quantity,
+                'sku' => $sku,
+                'price' => $price,
+                'salePrice' => $salePrice,
+                'imageId' => $imageId
+            ]);
+
+            if (!$isVariationUpdated) {
+                $txManager->rollback();
+                throw new OperationFailed($variation->getMessages());
+            }
+
+            $variation->properties->attributes = $attributes;
+            $isPropertiesUpdated = $variation->properties->save();
+
+            if (!$isPropertiesUpdated) {
+                $txManager->rollback();
+            }
+
+            $txManager->commit();
+
+        } catch (TxFailed $exception) {
+            $txManager->rollback();
+            throw new OperationFailed($exception->getRecordMessages());
+        }
+
+        return $variation;
+    }
+
+    /**
+     * @param string $productId
+     * @param int $quantity
+     * @return bool
+     */
+    public function isValidQuantity(string $productId, int $quantity = 0): bool
+    {
+        $productQuantity = (int) ProductRepository::getInstance()->getColumnsForProduct($productId, ['productQuantity'])['productQuantity'];
+        $productVariations = Variation::find([
+            'conditions' => 'productId = :productId:',
+            'columns' => 'quantity',
+            'bind' => ['productId' => $productId]
+        ]);
+
+        $variationsQuantities = 0;
+        if (count($productVariations)) {
+            foreach ($productVariations as $variation) {
+                $variationsQuantities += (int) $variation->quantity;
+            }
+        }
+
+        return ($quantity + $variationsQuantities) <= $productQuantity;
     }
 
     /**

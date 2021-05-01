@@ -27,6 +27,9 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
     public $albumId;
 
     /** @var string */
+    public $userId;
+
+    /** @var string */
     public $productId;
 
     /** @var string */
@@ -53,7 +56,12 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
         $validator = new Validation();
 
         $validator->add(
-            'productId',
+            ['userId', 'productId'],
+            new Validation\Validator\PresenceOf()
+        );
+
+        $validator->add(
+            ['userId', 'productId'],
             new UuidValidator()
         );
 
@@ -91,6 +99,7 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
                 'type' => $this->image->getType(),
                 'size' => $this->image->getSize()
             ],
+            'userId' => $this->userId,
             'productId' => $this->productId,
             'entity' => $this->entity
         ]);
@@ -115,6 +124,7 @@ class UploadRequestHandler extends RequestAbstract implements IArrayData
     {
         return [
             'image' => $this->image,
+            'userId' => $this->userId,
             'productId' => $this->productId,
             'entity' => $this->entity,
             'albumId' => $this->albumId

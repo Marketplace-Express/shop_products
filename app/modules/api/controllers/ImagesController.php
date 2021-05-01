@@ -9,10 +9,12 @@ namespace app\modules\api\controllers;
 
 
 use app\common\services\ImageService;
-use app\common\requestHandler\image\{DeleteRequestHandler,
+use app\common\requestHandler\image\{
+    DeleteRequestHandler,
     MakeMainImageRequestHandler,
     UpdateOrderRequestHandler,
-    UploadRequestHandler};
+    UploadRequestHandler
+};
 
 /**
  * Class ImagesController
@@ -84,8 +86,7 @@ class ImagesController extends BaseController
             $this->service->delete(
                 $request->productId,
                 $id,
-                $request->albumId,
-                $request->getAccessLevel()
+                $request->albumId
             );
             $request->successRequest('Deleted');
         } catch (\Throwable $exception) {

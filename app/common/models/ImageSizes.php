@@ -7,9 +7,10 @@
 
 namespace app\common\models;
 
+use app\common\interfaces\ApiArrayData;
 use Phalcon\Mvc\Model\Resultset;
 
-class ImageSizes extends BaseModel
+class ImageSizes extends BaseModel implements ApiArrayData
 {
 
     /**

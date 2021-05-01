@@ -9,7 +9,6 @@ namespace app\common\requestHandler\image;
 
 
 use app\common\requestHandler\RequestAbstract;
-use app\common\services\user\UserService;
 use app\common\validators\UuidValidator;
 use Phalcon\Validation;
 use Phalcon\Validation\Message\Group;
@@ -21,22 +20,6 @@ class DeleteRequestHandler extends RequestAbstract
 
     /** @var string */
     public $productId;
-
-    /**
-     * @return UserService
-     */
-    private function getUserService(): UserService
-    {
-        return $this->di->getUserService();
-    }
-
-    /**
-     * @return int
-     */
-    public function getAccessLevel(): int
-    {
-        return $this->getUserService()->accessLevel;
-    }
 
     /** Validate request fields using \Phalcon\Validation\Validator
      * @return Group

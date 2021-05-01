@@ -28,6 +28,11 @@ class UpdateQuantityRequestHandler extends RequestAbstract
     {
         $validator = new Validation();
         $validator->add(
+            ['amount', 'operator'],
+            new Validation\Validator\PresenceOf()
+        );
+
+        $validator->add(
             'amount',
             new Validation\Validator\NumericValidator([
                 'allowFloat' => false,

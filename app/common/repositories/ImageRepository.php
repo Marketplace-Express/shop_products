@@ -43,6 +43,7 @@ class ImageRepository extends BaseRepository
      * @throws OperationFailed
      */
     public function create(
+        string $userId,
         string $productId,
         string $imageId,
         string $albumId,
@@ -58,6 +59,7 @@ class ImageRepository extends BaseRepository
     {
         $model = new Image();
         $data = [
+            'userId' => $userId,
             'imageId' => $imageId,
             'imageAlbumId' => $albumId,
             'productId' => $productId,

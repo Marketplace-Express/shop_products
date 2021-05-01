@@ -10,7 +10,6 @@ namespace app\common\requestHandler\rate;
 
 use app\common\requestHandler\IArrayData;
 use app\common\requestHandler\RequestAbstract;
-use app\common\services\user\UserService;
 use app\common\validators\rules\RateRules;
 use app\common\validators\UuidValidator;
 use Phalcon\Validation;
@@ -45,14 +44,6 @@ class CreateRequestHandler extends RequestAbstract implements IArrayData
     }
 
     /**
-     * @return UserService
-     */
-    protected function getUserService(): UserService
-    {
-        return $this->di->getUserService();
-    }
-
-    /**
      * @inheritDoc
      */
     public function validate(): Group
@@ -60,7 +51,7 @@ class CreateRequestHandler extends RequestAbstract implements IArrayData
         $validator = new Validation();
 
         $validator->add(
-            'productId',
+            ['productId', 'userId'],
             new UuidValidator()
         );
 
@@ -95,6 +86,7 @@ class CreateRequestHandler extends RequestAbstract implements IArrayData
 
         return $validator->validate([
             'productId' => $this->productId,
+            'userId' => $this->userId,
             'stars' => $this->stars,
             'text' => $this->text,
             'imagesIds' => $this->imagesIds
@@ -107,7 +99,7 @@ class CreateRequestHandler extends RequestAbstract implements IArrayData
     public function toArray(): array
     {
         return [
-            'userId' => $this->getUserService()->userId,
+            'userId' => $this->userId,
             'productId' => $this->productId,
             'stars' => $this->stars,
             'text' => $this->text,
