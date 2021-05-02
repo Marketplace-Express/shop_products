@@ -24,13 +24,9 @@ env:
     LATEST_TAG: 1.0.0
 
 jobs:
-    test:
+    pull_request:
         runs-on: ubuntu-latest
+        if: github.event_name == 'pull_request'
         steps:
             - uses: actions/checkout@v2
             - run: docker-compose run products-unit-test
-
-    pull_request:
-        needs: test
-        runs-on: ubuntu-latest
-        if: github.event_name == 'pull_request'
