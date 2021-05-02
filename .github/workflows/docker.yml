@@ -1,0 +1,36 @@
+name: docker
+
+on:
+    push:
+        # publish image as master=dev or on new tag
+        # except on document and ci changes
+        branches:
+            - master
+        tags:
+            - '*'
+        paths-ignore:
+            - '**.md'
+            - '.github/workflows/*yml'
+
+    # always run tests on merge
+    # except on document and ci changes
+    pull_request:
+        paths-ignore:
+            - '**.md'
+            - '.github/workflows/*yml'
+
+env:
+    # TODO: remember to update version on new tag
+    LATEST_TAG: 1.0.0
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - run: docker-compose run products-unit-test
+
+    pull_request:
+        needs: test
+        runs-on: ubuntu-latest
+        if: github.event_name == 'pull_request'

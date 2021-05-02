@@ -20,7 +20,7 @@ set_include_path(
 );
 
 // Required for phalcon/incubator
-include APP_PATH . "/common/library/vendor/autoload.php";
+include APP_PATH . "/vendor/autoload.php";
 
 // Use the application autoloader to autoload the classes
 // Autoload the dependencies found in composer
@@ -44,6 +44,7 @@ $loader->registerNamespaces([
     'app\modules\api\controllers' => APP_PATH . '/modules/api/controllers',
     'app\common\utils' => APP_PATH . '/common/utils',
     'app\common\logger' => APP_PATH . '/common/logger/',
+    'app\common\enums' => APP_PATH . '/common/enums',
     'tests' => ROOT_PATH . '/'
 ]);
 
