@@ -22,9 +22,5 @@
   "require-dev": {
     "phpunit/phpunit": "^7.3",
     "phalcon/devtools": "~3.4"
-  },
-  "scripts": {
-    "pre-update-cmd": [
-      "@php -r \"file_exists('app/config/config.php') || copy('app/config/config.example.php', 'app/config/config.php');\""]
   }
 }

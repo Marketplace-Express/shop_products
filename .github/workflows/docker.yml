@@ -30,6 +30,8 @@ jobs:
         steps:
             - name: Check out Site Repository 📄
               uses: actions/checkout@v2
+            - name: Create config.php file
+              run: cp app/config/config.example.php app/config/config.php
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Running unit test
