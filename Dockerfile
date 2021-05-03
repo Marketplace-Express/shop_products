@@ -35,6 +35,4 @@ RUN rm -rf app/vendor composer.lock && \
 # Create symlink for phalcon bin
 RUN ln -fs /src/app/vendor/bin/phalcon /usr/local/bin
 
-RUN ls -la app/config
-
 ENTRYPOINT ["/bin/bash", "utilities/docker-entrypoint.sh"]
