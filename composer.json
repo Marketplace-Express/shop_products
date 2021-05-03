@@ -23,5 +23,10 @@
   "require-dev": {
     "phpunit/phpunit": "^7.3",
     "phalcon/devtools": "~3.4"
+  },
+  "scripts": {
+    "pre-update-cmd": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ]
   }
 }
