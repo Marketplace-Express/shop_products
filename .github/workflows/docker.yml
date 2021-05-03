@@ -22,6 +22,10 @@ on:
 env:
     # TODO: remember to update version on new tag
     LATEST_TAG: 1.0.0
+    MYSQL_ROOT_PASSWORD: root
+    MYSQL_DATABASE: shop_products
+    MYSQL_USER: phalcon
+    MYSQL_PASSWORD: secret
 
 jobs:
     unit_test:
@@ -30,8 +34,17 @@ jobs:
         steps:
             - name: Check out Site Repository 📄
               uses: actions/checkout@v2
-            - name: Create config.php file
-              run: cp app/config/config.example.php app/config/config.php
+            - name: Create MySQL container
+              run: |
+                docker run --name marketplace-mysql \
+                  --network marketplace-network \
+                  -p 3306:3306 \
+                  -e MYSQL_ROOT_PASSWORD={$MYSQL_ROOT_PASSWORD} \
+                  -e MYSQL_DATABASE={$MYSQL_DATABASE}
+                  -d mysql:8 \
+                  mysql -uroot -proot \
+                  -e "CREATE USER '{$MYSQL_USER}' IDENTIFIED WITH mysql_native_password BY '{$MYSQL_PASSWORD}'; \
+                    GRANT ALL PRIVILEGES ON shop_products.* TO phalcon;"
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Running unit test

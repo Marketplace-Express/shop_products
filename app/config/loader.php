@@ -43,13 +43,6 @@ $loader->registerNamespaces([
 ]);
 
 /**
- * Register Vendors
- */
-$loader->registerFiles([
-    APP_PATH . '/vendor/autoload.php'
-]);
-
-/**
  * Register module classes
  */
 $loader->registerClasses([

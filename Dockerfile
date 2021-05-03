@@ -29,7 +29,7 @@ RUN chmod +x ./utilities/install-extensions.sh && ./utilities/install-extensions
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 # Install composer dependencies
-RUN rm -rf app/vendor composer.lock && \
+RUN rm -rf app/vendor && \
     composer clearcache && \
     composer install --ignore-platform-reqs
 
