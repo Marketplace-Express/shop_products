@@ -25,6 +25,9 @@
     "phalcon/devtools": "~3.4"
   },
   "scripts": {
+    "pre-install-cmd": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
     "pre-update-cmd": [
       "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     ]
