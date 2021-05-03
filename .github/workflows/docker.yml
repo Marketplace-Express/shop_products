@@ -24,16 +24,13 @@ env:
     LATEST_TAG: 1.0.0
 
 jobs:
-    create_network:
-        runs-on: ubuntu-latest
-        if: github.event_name == 'pull_request'
-        steps:
-            - uses: actions/checkout@v2
-            - run: docker network create marketplace-network
     unit_test:
-        needs: create_network
         runs-on: ubuntu-latest
         if: github.event_name == 'pull_request'
         steps:
-            - uses: actions/checkout@v2
-            - run: docker-compose up products-unit-test
+            - name: Create docker network
+              uses: actions/checkout@v2
+              run: docker network create marketplace-network
+            - name: Running unit test
+              uses: actions/checkout@v2
+              run: docker-compose up products-unit-test
