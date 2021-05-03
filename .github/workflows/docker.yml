@@ -30,8 +30,6 @@ jobs:
         steps:
             - name: Check out Site Repository 📄
               uses: actions/checkout@v2
-            - name: Display list of files and folders
-              run: ls -la
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Running unit test
