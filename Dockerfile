@@ -32,6 +32,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN rm -rf app/vendor composer.lock && \
     composer clearcache && \
     composer install --ignore-platform-reqs
+    
 # Create symlink for phalcon bin
 RUN ln -fs /src/app/vendor/bin/phalcon /usr/local/bin
 
