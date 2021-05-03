@@ -28,8 +28,10 @@ jobs:
         runs-on: ubuntu-latest
         if: github.event_name == 'pull_request'
         steps:
-            - name: In which directory we are
-              run: pwd
+            - name: Check out Site Repository 📄
+              uses: actions/checkout@v2
+            - name: Display list of files and folders
+              run: ls -la
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Running unit test
