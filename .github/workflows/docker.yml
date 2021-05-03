@@ -28,6 +28,8 @@ jobs:
         runs-on: ubuntu-latest
         if: github.event_name == 'pull_request'
         steps:
+            - name: Display list of folders
+              run: ls -la
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Running unit test
