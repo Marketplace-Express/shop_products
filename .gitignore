@@ -1,9 +1,6 @@
 # .idea PHPSTORM
 .idea
 
-# phalcon aut generated folder
-.phalcon
-
 # exclude router file
 .htrouter.php
 
