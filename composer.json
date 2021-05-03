@@ -26,6 +26,9 @@
   "scripts": {
     "post-install-cmd": [
       "@php -r \"file_exists('app/config/config.php') || copy('app/config/config.example.php', 'app/config/config.php');\""
+    ],
+    "post-update-cmd": [
+      "@php -r \"file_exists('app/config/config.php') || copy('app/config/config.example.php', 'app/config/config.php');\""
     ]
   }
 }
