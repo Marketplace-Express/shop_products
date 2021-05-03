@@ -29,8 +29,6 @@ jobs:
         if: github.event_name == 'pull_request'
         steps:
             - name: Create docker network
-              uses: actions/checkout@v2
               run: docker network create marketplace-network
             - name: Running unit test
-              uses: actions/checkout@v2
               run: docker-compose up products-unit-test
