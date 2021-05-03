@@ -24,7 +24,7 @@
     "phalcon/devtools": "~3.4"
   },
   "scripts": {
-    "post-package-install": [
+    "post-install-cmd": [
       "@php -r \"file_exists('app/config/config.php') || copy('app/config/config.example.php', 'app/config/config.php');\""
     ]
   }
