@@ -31,4 +31,4 @@ jobs:
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Running unit test
-              run: docker-compose up products-unit-test
+              run: docker-compose -f ../../docker-compose.yml up products-unit-test
