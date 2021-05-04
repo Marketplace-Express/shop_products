@@ -59,3 +59,5 @@ jobs:
                     GRANT ALL PRIVILEGES ON shop_products.* TO phalcon;"
             - name: Running unit test
               run: docker-compose run -e MYSQL_HOST=${{ steps.docker-network.outputs.gateway-ip-address }} products-unit-test
+              env:
+                  MYSQL_HOST: ${{ steps.docker-network.outputs.gateway-ip-address }}
