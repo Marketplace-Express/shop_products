@@ -20,12 +20,8 @@ on:
             - '.github/workflows/*yml'
 
 env:
-    # TODO: remember to update version on new tag
-    LATEST_TAG: 1.0.0
+    ENV_FILE: .env
     MYSQL_ROOT_PASSWORD: root
-    MYSQL_DATABASE: shop_products
-    MYSQL_USER: phalcon
-    MYSQL_PASSWORD: secret
 
 jobs:
     unit_test:
@@ -34,13 +30,22 @@ jobs:
         steps:
             - name: Check out Site Repository 📄
               uses: actions/checkout@v2
+            - name: Create .env file
+              run: cp .env.example .env
+            - name: Import environment variables from a file
+              id: import-env
+              shell: bash
+              run: |
+                while read line; do
+                  echo "$line" >> $GITHUB_ENV
+                  done < ${{ env.ENV_FILE }}
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Create MySQL container
               run: |
                 docker run --name marketplace-mysql \
                   --network marketplace-network \
-                  -p 3306:3306 \
+                  -p ${MYSQL_PORT}:${MYSQL_PORT} \
                   -e MYSQL_ROOT_PASSWORD={$MYSQL_ROOT_PASSWORD} \
                   -e MYSQL_DATABASE={$MYSQL_DATABASE} \
                   -d mysql:8 \
