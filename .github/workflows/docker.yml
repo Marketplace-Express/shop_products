@@ -30,8 +30,6 @@ jobs:
         steps:
             - name: Check out Site Repository 📄
               uses: actions/checkout@v2
-              with:
-                  ref: ${{ github.event.pull_request.head.sha }}
             - name: Create .env file
               run: cp .env.example .env
             - name: Import environment variables from a file
