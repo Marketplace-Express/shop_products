@@ -44,8 +44,6 @@ jobs:
             - name: Get docker network gateway IP address
               id: docker-network
               run: echo "::set-output name=gateway-ip-address::$(docker network inspect marketplace-network -f '{{range .IPAM.Config}}{{.Gateway}}{{end}}')"
-            - name: Print docker network gateway ip address
-              run: echo ${{ steps.docker-network.outputs.gateway-ip-address }}
             - name: Create MySQL container
               run: |
                 docker run --name marketplace-mysql \
