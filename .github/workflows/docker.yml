@@ -47,7 +47,7 @@ jobs:
                   echo "$line" >> $GITHUB_ENV
                   done < ${{ env.ENV_FILE }}
             - name: Print env variables
-              run: echo ${{ join(steps.import-env.outputs.*, '\n') }}
+              run: echo ${{ join(steps.import-env.outputs.env.MYSQL_HOST, '\n') }}
             - name: Create MySQL container
               run: |
                 docker run --name marketplace-mysql \
