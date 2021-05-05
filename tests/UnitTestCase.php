@@ -25,6 +25,8 @@ abstract class UnitTestCase extends PhalconTestCase
         $di->setShared('response', ResponseMock::class);
         $di->setShared('logger', ApplicationLogger::class);
 
+        var_dump($di->getConfig()->database);
+
         $this->setDi($di);
     }
 }
