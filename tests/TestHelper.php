@@ -19,9 +19,6 @@ set_include_path(
     ROOT_PATH . PATH_SEPARATOR . get_include_path()
 );
 
-// Required for phalcon/incubator
-include APP_PATH . "/vendor/autoload.php";
-
 // Use the application autoloader to autoload the classes
 // Autoload the dependencies found in composer
 $loader = new Loader();
@@ -51,6 +48,10 @@ $loader->registerNamespaces([
 $loader->registerClasses([
     'app\common\exceptions\OperationFailed' => APP_PATH . '/common/exceptions/OperationFailed.php',
     'app\common\exceptions\NotFound' => APP_PATH . '/common/exceptions/NotFound.php'
+]);
+
+$loader->registerFiles([
+    APP_PATH . "/vendor/autoload.php"
 ]);
 
 $loader->register();
