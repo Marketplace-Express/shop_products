@@ -38,7 +38,7 @@ jobs:
             - name: Create .env file
               run: cp .env.example .env
             - name: Replace hosts with docker network IP address
-              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST='$steps.docker-network.outputs.gateway-ip-address'/g' .env
+              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST='${{ steps.docker-network.outputs.gateway-ip-address }}'/g' .env
             - name: Print env variables
               run: cat .env
             - name: Import environment variables from a file
