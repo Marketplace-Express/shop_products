@@ -46,18 +46,16 @@ jobs:
                 while read line; do
                   echo "$line" >> $GITHUB_ENV
                   done < ${{ env.ENV_FILE }}
-            - name: Print env variables
-              run: echo ${{ env.MYSQL_HOST }}
             - name: Create MySQL container
               run: |
                 docker run --name marketplace-mysql \
                   --network marketplace-network \
-                  -p ${{ steps.import-env.outputs.MYSQL_PORT }}:${{ steps.import-env.outputs.MYSQL_PORT }} \
+                  -p ${{ env.MYSQL_PORT }}:${{ env.MYSQL_PORT }} \
                   -e MYSQL_ROOT_PASSWORD={$MYSQL_ROOT_PASSWORD} \
-                  -e MYSQL_DATABASE=${{ steps.import-env.outputs.MYSQL_DATABASE }} \
+                  -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
                   -d mysql:8 \
                   mysql -uroot -p{$MYSQL_ROOT_PASSWORD} \
-                  -e "CREATE USER '${{ steps.import-env.outputs.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ steps.import-env.outputs.MYSQL_PASSWORD }}'; \
+                  -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
                     GRANT ALL PRIVILEGES ON shop_products.* TO phalcon;"
             - name: Running unit test
               run: docker-compose up products-unit-test
