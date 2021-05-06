@@ -19,10 +19,6 @@ on:
             - '**.md'
             - '.github/workflows/*yml'
 
-env:
-    ENV_FILE: .env
-    MYSQL_ROOT_PASSWORD: root
-
 jobs:
     unit_test:
         runs-on: ubuntu-latest
@@ -34,26 +30,25 @@ jobs:
               uses: actions/checkout@v2
             - name: Create .env file
               run: cp .env.example .env
+            - name: Replace hosts with MySQL IP address
+              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=0.0.0.0/g' .env
             - name: Import environment variables from a file
               id: import-env
               shell: bash
               run: |
                 while read line; do
                   echo "$line" >> $GITHUB_ENV
-                  done < ${{ env.ENV_FILE }}
+                  done < .env
             - name: Create MySQL container
               run: |
                 docker run --name marketplace-mysql \
-                  --network marketplace-network \
+                  --network host \
                   -p ${{ env.MYSQL_PORT }}:${{ env.MYSQL_PORT }} \
-                  -e MYSQL_ROOT_PASSWORD={$MYSQL_ROOT_PASSWORD} \
+                  -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
                   -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
                   -d mysql:8 \
                   mysql -uroot -p{$MYSQL_ROOT_PASSWORD} \
                   -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
                     GRANT ALL PRIVILEGES ON '${{ env.MYSQL_DATABASE }}'.* TO '${{ env.MYSQL_USER }}';"
-            - name: Get docker network gateway IP address
-              id: docker-network
-              run: echo "::set-output name=ip-address::$(docker inspect marketplace-mysql -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}')"
             - name: Running unit test
-              run: docker-compose run -e MYSQL_HOST=${{ steps.docker-network.outputs.ip-address }} products-unit-test
+              run: docker-compose up products-unit-test
