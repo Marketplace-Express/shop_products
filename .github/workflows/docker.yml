@@ -43,11 +43,10 @@ jobs:
               run: |
                 docker run --name marketplace-mysql \
                   --network host \
-                  -p ${{ env.MYSQL_PORT }}:${{ env.MYSQL_PORT }} \
                   -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
                   -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
                   -d mysql:8 \
-                  mysql -uroot -p{$MYSQL_ROOT_PASSWORD} \
+                  mysql -uroot \
                   -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
                     GRANT ALL PRIVILEGES ON '${{ env.MYSQL_DATABASE }}'.* TO '${{ env.MYSQL_USER }}';"
             - name: Running unit test
