@@ -18,8 +18,6 @@ $loader->registerFiles([
 $dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
 $dotenv->load();
 
-var_dump($_ENV); exit;
-
 return new \Phalcon\Config([
     'database' => [
         'adapter' => 'Mysql',
