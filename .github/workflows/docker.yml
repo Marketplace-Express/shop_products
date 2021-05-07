@@ -5,7 +5,7 @@ on:
         # publish image as master=dev or on new tag
         # except on document and ci changes
         branches:
-            - master
+            - main
         tags:
             - '*'
         paths-ignore:
@@ -31,7 +31,7 @@ jobs:
             - name: Create .env file
               run: cp .env.example .env
             - name: Replace hosts with MySQL IP address
-              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=0.0.0.0/g' .env
+              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=172.18.0.1/g' .env
             - name: Import environment variables from a file
               id: import-env
               shell: bash
@@ -42,7 +42,7 @@ jobs:
             - name: Create MySQL container
               run: |
                 docker run --name marketplace-mysql \
-                  --network host \
+                  --network marketplace-network \
                   -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
                   -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
                   -d mysql:8 \

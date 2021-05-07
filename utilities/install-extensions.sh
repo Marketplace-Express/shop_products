@@ -8,7 +8,7 @@ export PHALCON_VERSION=3.4.4
 export PHALCON_EXT_PATH=php7/64bits
 
 php_extensions=(intl gettext gd bcmath zip pdo_mysql sockets)
-pecl_extensions=(redis mongodb xdebug)
+pecl_extensions=(redis mongodb xdebug-2.9.1)
 
 ########## START DO NOT EDIT AREA #########
 # Install Phalcon & PSR
@@ -57,7 +57,7 @@ echo "Installing PECL extensions..."
 pecl_extensions_count=${#pecl_extensions[@]}
 i=0
 draw_progress_bar $i ${pecl_extensions_count} "extensions"
-for ext in redis mongodb xdebug; do
+for ext in ${pecl_extensions[*]}; do
   pecl install ${ext} > /dev/null
   i=$((i+1))
   draw_progress_bar $i ${pecl_extensions_count} "extensions"

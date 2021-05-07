@@ -1,6 +1,7 @@
 version: '3.3'
 services:
   products-api:
+    image: marketplace_shop_products
     build:
       context: .
     ports:
@@ -13,8 +14,7 @@ services:
       - /src/app/vendor
 
   products-sync:
-    build:
-      context: .
+    image: marketplace_shop_products
     command: bash -c "./run consumer syncConsumer | phalcon serve"
     environment:
       - PHP_IDE_CONFIG=serverName=docker
@@ -25,8 +25,7 @@ services:
       - products-api
 
   products-async:
-    build:
-      context: .
+    image: marketplace_shop_products
     command: bash -c "./run consumer asyncConsumer | phalcon serve"
     environment:
       - PHP_IDE_CONFIG=serverName=docker
@@ -37,8 +36,7 @@ services:
       - products-api
 
   products-unit-test:
-    build:
-      context: .
+    image: marketplace_shop_products
     command: app/vendor/bin/phpunit -c tests/phpunit.xml
     volumes:
       - .:/src
