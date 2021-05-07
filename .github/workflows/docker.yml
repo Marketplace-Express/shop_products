@@ -50,6 +50,8 @@ jobs:
                     mysql -uroot \
                     -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
                     GRANT ALL PRIVILEGES ON '${{ env.MYSQL_DATABASE }}'.* TO '${{ env.MYSQL_USER }}';"
+            - name: Start MySQL container
+              run: docker container start marketplace-mysql
             - name: Check MySQL container availability
               run: |
                   until docker exec -it marketplace-mysql mysqladmin ping -P 3306 | grep "mysqld is alive" ; do
