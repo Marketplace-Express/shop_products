@@ -31,7 +31,7 @@ jobs:
             - name: Create .env file
               run: cp .env.example .env
             - name: Replace hosts with MySQL IP address
-              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=172.18.0.2/g' .env
+              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=172.18.0.1/g' .env
             - name: Import environment variables from a file
               id: import-env
               shell: bash
