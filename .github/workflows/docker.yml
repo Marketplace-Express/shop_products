@@ -49,5 +49,7 @@ jobs:
                   mysql -uroot \
                   -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
                     GRANT ALL PRIVILEGES ON '${{ env.MYSQL_DATABASE }}'.* TO '${{ env.MYSQL_USER }}';"
+            - name: Build docker image
+              run: docker build -t marketplace_shop_products .
             - name: Running unit test
-              run: docker-compose up --build products-unit-test
+              run: docker-compose up products-unit-test
