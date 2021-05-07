@@ -32,16 +32,16 @@ jobs:
                     MYSQL_USER: phalcon
                     MYSQL_PASSWORD: secret
                     MYSQL_DATABASE: shop_products_test
-                    MYSQL_ROOT_PASSWORD: root
+                    MYSQL_ALLOW_EMPTY_PASSWORD: yes
                 options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         steps:
-            - name: Verify MySQL connection
-              env:
-                  PORT: ${{ job.services.mysql.ports[3306] }}
-              run: |
-                  while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
-                    sleep 1
-                  done
+#            - name: Verify MySQL connection
+#              env:
+#                  PORT: ${{ job.services.mysql.ports[3306] }}
+#              run: |
+#                  while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+#                    sleep 1
+#                  done
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Check out Site Repository 📄
@@ -52,13 +52,6 @@ jobs:
               run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=0.0.0.0/g' .env
             - name: Replace port with MySQL port
               run: sed -i 's/MYSQL_PORT.*/MYSQL_PORT=${{ job.services.mysql.ports[3306] }}/g' .env
-            - name: Import environment variables from a file
-              id: import-env
-              shell: bash
-              run: |
-                while read line; do
-                  echo "$line" >> $GITHUB_ENV
-                  done < .env
             - name: Build docker image
               run: docker build -t marketplace_shop_products .
             - name: Running unit test
