@@ -31,17 +31,10 @@ jobs:
                 env:
                     MYSQL_USER: phalcon
                     MYSQL_PASSWORD: secret
-                    MYSQL_DATABASE: shop_products_test
+                    MYSQL_DATABASE: shop_products
                     MYSQL_ALLOW_EMPTY_PASSWORD: yes
                 options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         steps:
-#            - name: Verify MySQL connection
-#              env:
-#                  PORT: ${{ job.services.mysql.ports[3306] }}
-#              run: |
-#                  while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
-#                    sleep 1
-#                  done
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Check out Site Repository 📄
