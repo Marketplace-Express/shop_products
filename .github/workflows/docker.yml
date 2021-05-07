@@ -57,5 +57,7 @@ jobs:
                 while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
                   sleep 1
                 done
+            - name: Build docker image
+              run: docker build -t marketplace_shop_products .
             - name: Running unit test
               run: docker-compose up products-unit-test
