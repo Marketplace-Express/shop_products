@@ -23,6 +23,17 @@ jobs:
     unit_test:
         runs-on: ubuntu-latest
         if: github.event_name == 'pull_request'
+        services:
+            mysql:
+                image: mysql:8
+                ports:
+                    - 3306
+                env:
+                    MYSQL_USER: phalcon
+                    MYSQL_PASSWORD: secret
+                    MYSQL_DATABASE: shop_products_test
+                    MYSQL_ROOT_PASSWORD: root
+                options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         steps:
             - name: Create docker network
               run: docker network create marketplace-network
@@ -31,7 +42,7 @@ jobs:
             - name: Create .env file
               run: cp .env.example .env
             - name: Replace hosts with MySQL IP address
-              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=0.0.0.0/g' .env
+              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=127.0.0.1/g' .env
             - name: Import environment variables from a file
               id: import-env
               shell: bash
@@ -39,15 +50,12 @@ jobs:
                 while read line; do
                   echo "$line" >> $GITHUB_ENV
                   done < .env
-            - name: Create MySQL server
-              uses: mirromutth/mysql-action@v1.1
-              with:
-                  mysql version: '8.0'
-                  mysql database: 'shop_products_test'
-                  mysql user: 'phalcon'
-                  mysql password: 'secret'
-
-            - name: Build docker image
-              run: docker build -t marketplace_shop_products .
+            - name: Verify MySQL connection
+              env:
+                PORT: ${{ job.services.mysql.ports[3306] }}
+              run: |
+                while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
+                  sleep 1
+                done
             - name: Running unit test
               run: docker-compose up products-unit-test
