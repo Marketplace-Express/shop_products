@@ -43,6 +43,7 @@ jobs:
               run: |
                 docker run --name marketplace-mysql \
                   --network marketplace-network \
+                  -p ${{ env.MYSQL_PORT }}:${{ env.MYSQL_PORT }} \
                   -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
                   -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
                   -d mysql:8 \
