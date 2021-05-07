@@ -31,7 +31,7 @@ jobs:
             - name: Create .env file
               run: cp .env.example .env
             - name: Replace hosts with MySQL IP address
-              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=172.18.0.1/g' .env
+              run: sed -i 's/MYSQL_HOST.*/MYSQL_HOST=172.18.0.2/g' .env
             - name: Import environment variables from a file
               id: import-env
               shell: bash
@@ -41,15 +41,21 @@ jobs:
                   done < .env
             - name: Create MySQL container
               run: |
-                docker run --name marketplace-mysql \
-                  --network marketplace-network \
-                  -p ${{ env.MYSQL_PORT }}:${{ env.MYSQL_PORT }} \
-                  -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-                  -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
-                  -d mysql:8 \
-                  mysql -uroot \
-                  -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
+                  docker run --name marketplace-mysql \
+                    --network marketplace-network \
+                    -p ${{ env.MYSQL_PORT }}:${{ env.MYSQL_PORT }} \
+                    -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+                    -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} \
+                    -d mysql:8 \
+                    mysql -uroot \
+                    -e "CREATE USER '${{ env.MYSQL_USER }}' IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_PASSWORD }}'; \
                     GRANT ALL PRIVILEGES ON '${{ env.MYSQL_DATABASE }}'.* TO '${{ env.MYSQL_USER }}';"
+            - name: Check MySQL container availability
+              run: |
+                  until docker container exec -it marketplace-mysql mysqladmin ping -P 3306 -proot | grep "mysqld is alive" ; do
+                    >&2 echo "MySQL is unavailable - waiting for it... 😴"
+                    sleep 1
+                  done
             - name: Build docker image
               run: docker build -t marketplace_shop_products .
             - name: Running unit test
