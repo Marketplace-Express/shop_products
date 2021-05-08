@@ -47,7 +47,7 @@ jobs:
               run: echo "::set-output name=container-id::$(docker ps | grep -i mysql | awk '{print $1}')"
             - name: Create MySQL user
               run: |
-                docker exec -it ${{ steps.mysql-service.outputs.container-id }} \
+                docker exec ${{ steps.mysql-service.outputs.container-id }} \
                 mysql -uroot -proot -e "CREATE USER ${{ env.MYSQL_TEST_USER }} IDENTIFIED WITH mysql_native_password BY '${{ env.MYSQL_TEST_PASSWORD}}'; \
                 GRANT ALL PRIVILEGES ON ${{ env.MYSQL_TEST_DB }}.* TO ${{ env.MYSQL_TEST_USER }};";
             - name: Get Github network gateway address
