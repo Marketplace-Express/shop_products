@@ -23,20 +23,28 @@ jobs:
     unit_test:
         runs-on: ubuntu-latest
         if: github.event_name == 'pull_request'
+        env:
+            MYSQL_TEST_USER: phalcon
+            MYSQL_TEST_PASSWORD: secret
+            MYSQL_TEST_DB: shop_products_test
         services:
             mysql:
                 image: mysql:8
                 ports:
                     - 3306
                 env:
-                    MYSQL_USER: phalcon
-                    MYSQL_PASSWORD: secret
-                    MYSQL_DATABASE: shop_products
+                    MYSQL_USER: ${{ env.MYSQL_TEST_USER }}
+                    MYSQL_PASSWORD: ${{ env.MYSQL_TEST_PASSWORD }}
+                    MYSQL_DATABASE: ${{ env.MYSQL_TEST_DB }}
                     MYSQL_ALLOW_EMPTY_PASSWORD: yes
-                options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+                options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3 --entrypoint sh mysql:8 -c "exec docker-entrypoint.sh mysqld --default-authentication-plugin=mysql_native_password"
         steps:
-            - name: Print github network info
-              run: docker network inspect $(docker network ls -q)
+            - name: Get MySQL service ID
+              id: mysql-service
+              run: echo "::set-output name=container-id::$(docker ps | grep -i mysql | awk '{print $1}')"
+            - name: Get Github network gateway address
+              id: github-network
+              run: echo "::set-output name=gateway-address::$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.Gateway}}{{end}}' ${{ steps.mysql-service.outputs.container-id }})"
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Check out Site Repository 📄
@@ -45,8 +53,11 @@ jobs:
               run: cp .env.example .env
             - name: Replace environment variables
               run: |
-                  sed -i 's/MYSQL_HOST.*/MYSQL_HOST=172.18.0.1/g' .env
+                  sed -i 's/MYSQL_HOST.*/MYSQL_HOST=${{ steps.github-network.outputs.gateway-address }}/g' .env
                   sed -i 's/MYSQL_PORT.*/MYSQL_PORT=${{ job.services.mysql.ports[3306] }}/g' .env
+                  sed -i 's/MYSQL_USER.*/MYSQL_USER=${{ env.MYSQL_TEST_USER }}/g' .env
+                  sed -i 's/MYSQL_PASSWORD.*/MYSQL_PASSWORD=${{ env.MYSQL_TEST_PASSWORD }}/g' .env
+                  sed -i 's/MYSQL_DATABASE.*/MYSQL_DATABASE=${{ env.MYSQL_TEST_DB }}/g' .env
             - name: Build docker image
               run: docker build -t marketplace_shop_products .
             - name: Running unit test

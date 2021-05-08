@@ -41,6 +41,8 @@ services:
     volumes:
       - .:/src
       - /src/app/vendor
+    environment:
+      - UNIT_TEST=1
 
 networks:
   default:

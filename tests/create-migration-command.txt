@@ -1,0 +1,3 @@
+# To create a migration for test suite, use the following command:
+# --table argument is optional, you can skip it to create migrations for all tables in the test database
+phalcon migration generate --migrations=tests/migrations --table=test --version=test
