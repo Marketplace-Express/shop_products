@@ -35,14 +35,8 @@ jobs:
                     MYSQL_ALLOW_EMPTY_PASSWORD: yes
                 options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         steps:
-            - name: Verify MySQL connection
-              env:
-                  PORT: ${{ job.services.mysql.ports[3306] }}
-              run: |
-                    while ! mysqladmin ping -h"127.0.0.1" -P"$PORT" --silent; do
-                      echo "Waiting for MySQL service ..."
-                      sleep 1
-                    done
+            - name: Print github network info
+              run: docker network inspect github_network_e97c2874ceaf48b09c9fe2ebaad30356
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Check out Site Repository 📄
