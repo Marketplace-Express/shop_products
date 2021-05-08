@@ -19,14 +19,15 @@ on:
             - '**.md'
             - '.github/workflows/*yml'
 
+env:
+    MYSQL_TEST_USER: phalcon
+    MYSQL_TEST_PASSWORD: secret
+    MYSQL_TEST_DB: shop_products_test
+
 jobs:
     unit_test:
         runs-on: ubuntu-latest
         if: github.event_name == 'pull_request'
-        env:
-            MYSQL_TEST_USER: phalcon
-            MYSQL_TEST_PASSWORD: secret
-            MYSQL_TEST_DB: shop_products_test
         services:
             mysql:
                 image: mysql:8
