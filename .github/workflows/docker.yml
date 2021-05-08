@@ -36,7 +36,7 @@ jobs:
                 options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         steps:
             - name: Print github network info
-              run: docker network inspect github_network_e97c2874ceaf48b09c9fe2ebaad30356
+              run: docker network inspect $(docker network ls -q)
             - name: Create docker network
               run: docker network create marketplace-network
             - name: Check out Site Repository 📄
