@@ -37,9 +37,9 @@ jobs:
                          --health-timeout=2s
                          --health-retries=3
                          -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
-                         -e MYSQL_USER=$MYSQL_TEST_USER
-                         -e MYSQL_PASSWORD=$MYSQL_TEST_PASSWORD
-                         -e MYSQL_DATABASE=$MYSQL_TEST_DB 
+                         -e MYSQL_USER=${{ env.MYSQL_TEST_USER }}
+                         -e MYSQL_PASSWORD=${{ env.MYSQL_TEST_PASSWORD }}
+                         -e MYSQL_DATABASE=${{ env.MYSQL_TEST_DB }}
                          --entrypoint sh mysql:8 -c "exec docker-entrypoint.sh mysqld --default-authentication-plugin=mysql_native_password"
         steps:
             - name: Get MySQL service ID

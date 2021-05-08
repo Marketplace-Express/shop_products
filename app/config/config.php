@@ -15,9 +15,6 @@ $loader->registerFiles([
     APP_PATH . '/vendor/autoload.php'
 ])->loadFiles();
 
-$dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
-$dotenv->load();
-
 return new \Phalcon\Config([
     'database' => [
         'adapter' => 'Mysql',

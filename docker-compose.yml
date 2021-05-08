@@ -7,6 +7,8 @@ services:
     ports:
       - "1001:8000"
     command: phalcon serve
+    env_file:
+      - .env
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     volumes:
@@ -16,6 +18,8 @@ services:
   products-sync:
     image: marketplace_shop_products
     command: bash -c "./run consumer syncConsumer | phalcon serve"
+    env_file:
+      - .env
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     volumes:
@@ -27,6 +31,8 @@ services:
   products-async:
     image: marketplace_shop_products
     command: bash -c "./run consumer asyncConsumer | phalcon serve"
+    env_file:
+      - .env
     environment:
       - PHP_IDE_CONFIG=serverName=docker
     volumes:
@@ -41,6 +47,8 @@ services:
     volumes:
       - .:/src
       - /src/app/vendor
+    env_file:
+      - .env
     environment:
       - UNIT_TEST=1
 
