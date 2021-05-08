@@ -34,14 +34,15 @@ jobs:
                 image: mysql:8
                 ports:
                     - 3306
+                env:
+                    MYSQL_USER: ${{ env.MYSQL_TEST_USER }}
+                    MYSQL_PASSWORD: ${{ env.MYSQL_TEST_PASSWORD }}
+                    MYSQL_DATABASE: ${{ env.MYSQL_TEST_DB }}
                 options: --health-cmd="mysqladmin ping"
                          --health-interval=5s
                          --health-timeout=2s
                          --health-retries=3
-                         -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
-                         -e "MYSQL_USER=${{env.MYSQL_TEST_USER}}"
-                         -e "MYSQL_PASSWORD=${{env.MYSQL_TEST_PASSWORD}}"
-                         -e "MYSQL_DATABASE=${{env.MYSQL_TEST_DB}}"
+                         -e MYSQL_ROOT_PASSWORD=root
                          --entrypoint sh mysql:8 -c "exec docker-entrypoint.sh mysqld --default-authentication-plugin=mysql_native_password"
         steps:
             - name: Get MySQL service ID
@@ -63,8 +64,6 @@ jobs:
                   sed -i 's/MYSQL_USER.*/MYSQL_USER=${{ env.MYSQL_TEST_USER }}/g' .env
                   sed -i 's/MYSQL_PASSWORD.*/MYSQL_PASSWORD=${{ env.MYSQL_TEST_PASSWORD }}/g' .env
                   sed -i 's/MYSQL_DATABASE.*/MYSQL_DATABASE=${{ env.MYSQL_TEST_DB }}/g' .env
-            - name: Print env variables
-              run: cat .env
             - name: Build docker image
               run: docker build -t marketplace_shop_products .
             - name: Running unit test
