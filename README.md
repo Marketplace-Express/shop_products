@@ -9,7 +9,7 @@ This service handles products functionality, including CRUDs, processing and han
 
 1. Clone the repository:
 ```shell script
-git clone git@gitlab.com:shop_ecommerce/shop_products.git
+git clone git@github.com:Marketplace-Express/shop_products.git
 ```
 
 2- Rename file “config.example.php” under “app/config” to “config.php” then change the parameters to match your preferences, example:
