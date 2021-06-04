@@ -66,4 +66,4 @@ jobs:
             - name: Build docker image
               run: docker build -t marketplace_shop_products .
             - name: Running unit test
-              run: docker-compose up products-unit-test
+              run: docker-compose run products-unit-test

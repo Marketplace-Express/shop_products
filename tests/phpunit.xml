@@ -28,4 +28,8 @@
             </exclude>
         </whitelist>
     </filter>
+    <php>
+        <env name="MYSQL_DATABASE" value="shop_products_test" force="true" />
+        <env name="MONGODB_DATABASE" value="shop_products_test" force="true" />
+    </php>
 </phpunit>

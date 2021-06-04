@@ -4,8 +4,6 @@ services:
     image: marketplace_shop_products
     build:
       context: .
-    ports:
-      - "1001:8000"
     command: phalcon serve
     env_file:
       - .env
@@ -14,6 +12,8 @@ services:
     volumes:
       - .:/src
       - /src/app/vendor
+    ports:
+      - "1001:8000"
 
   products-sync:
     image: marketplace_shop_products
