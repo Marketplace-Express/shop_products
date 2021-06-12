@@ -73,11 +73,11 @@ return new \Phalcon\Config([
         'password' => $_ENV['RABBITMQ_PASSWORD'],
         'sync_queue' => [
             'queue_name' => $_ENV['RABBITMQ_SYNC_QUEUE_NAME'],
-            'message_ttl' => $_ENV['RABBITMQ_SYNC_MESSAGE_TTL']
+            'message_ttl' => (int) $_ENV['RABBITMQ_SYNC_MESSAGE_TTL']
         ],
         'async_queue' => [
             'queue_name' => $_ENV['RABBITMQ_ASYNC_QUEUE_NAME'],
-            'message_ttl' => $_ENV['RABBITMQ_ASYNC_MESSAGE_TTL']
+            'message_ttl' => (int) $_ENV['RABBITMQ_ASYNC_MESSAGE_TTL']
         ]
     ],
     'application' => [

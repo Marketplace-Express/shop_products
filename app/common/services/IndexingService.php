@@ -5,7 +5,7 @@
  * Time: 12:11 م
  */
 
-namespace app\modules\cli\services;
+namespace app\common\services;
 
 
 use Ehann\RediSearch\Index;

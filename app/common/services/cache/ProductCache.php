@@ -204,9 +204,9 @@ class ProductCache implements DataSourceInterface
         }
         (new QueueRequestHandler(QueueRequestHandler::REQUEST_TYPE_ASYNC))
             ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
-            ->setService('indexing')
-            ->setMethod('add')
-            ->setData([
+            ->setRoute('search/indexing')
+            ->setMethod('POST')
+            ->setBody([
                 'id' => $product['productId'],
                 'title' => $product['productTitle'],
                 'linkSLug' => $product['productLinkSlug']
@@ -225,9 +225,9 @@ class ProductCache implements DataSourceInterface
 
         (new QueueRequestHandler(QueueNamesEnum::PRODUCT_ASYNC_QUEUE))
             ->setQueueName(QueueNamesEnum::PRODUCT_ASYNC_QUEUE)
-            ->setService('indexing')
-            ->setMethod('delete')
-            ->setData([
+            ->setRoute('search/indexing')
+            ->setMethod('DELETE')
+            ->setBody([
                 'id' => $productId
             ])->sendAsync();
     }

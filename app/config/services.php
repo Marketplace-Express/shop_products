@@ -1,6 +1,7 @@
 <?php
 
 use app\common\services\ImageService;
+use app\common\services\IndexingService;
 use app\common\services\ProductsService;
 use app\common\services\QuestionsService;
 use app\common\services\RateService;
@@ -210,7 +211,8 @@ $di->set('appServices', function($serviceName) {
         'imageService' => ImageService::class,
         'questionService' => QuestionsService::class,
         'searchService' => SearchService::class,
-        'rateService' => RateService::class
+        'rateService' => RateService::class,
+        'indexingService' => IndexingService::class
     ];
 
     if (!array_key_exists($serviceName, $services)) {

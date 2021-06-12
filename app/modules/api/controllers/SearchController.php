@@ -58,4 +58,35 @@ class SearchController extends BaseController
         }
     }
 
+    /**
+     * @Post('/indexing')
+     */
+    public function indexingAction()
+    {
+        try {
+            $requestBody = json_decode($this->request->getRawBody(), true);
+            $this->di->getAppServices('indexingService')->add(
+                $requestBody['id'],
+                $requestBody['title'],
+                $requestBody['linkSlug']
+            );
+            $this->response->setStatusCode(202)->send();
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
+        }
+    }
+
+    /**
+     * @Delete('/indexing')
+     */
+    public function deleteIndexAction()
+    {
+        try {
+            $requestBody = json_decode($this->request->getRawBody(), true);
+            $this->di->getAppServices('indexingService')->delete($requestBody['id']);
+            $this->response->setStatusCode(204)->send();
+        } catch (\Throwable $exception) {
+            $this->handleError($exception->getMessage(), $exception->getCode() ?: 500);
+        }
+    }
 }
