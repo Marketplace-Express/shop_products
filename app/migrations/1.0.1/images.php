@@ -29,6 +29,14 @@ class ImagesMigration_101 extends Migration
                         ]
                     ),
                     new Column(
+                        'user_id',
+                        [
+                            'type' => Column::TYPE_VARCHAR,
+                            'notNull' => true,
+                            'size' => 36
+                        ]
+                    ),
+                    new Column(
                         'image_album_id',
                         [
                             'type' => Column::TYPE_VARCHAR,
